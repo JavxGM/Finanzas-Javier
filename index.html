@@ -18,7 +18,6 @@
   --amber:#ffb830;--adim:rgba(255,184,48,.1);--ab:rgba(255,184,48,.2);
   --red:#ff4f6a;--rdim:rgba(255,79,106,.1);--rb:rgba(255,79,106,.2);
   --blue:#4f9eff;--bdim:rgba(79,158,255,.1);--bb:rgba(79,158,255,.2);
-  --purple:#a78bfa;
   --r:14px;--rsm:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -26,6 +25,22 @@ html{font-size:16px;background:var(--bg)}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   min-height:100dvh;padding-bottom:calc(80px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased}
+
+/* LOADING SCREEN */
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .4s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{width:60px;height:60px;border-radius:18px;
+  background:linear-gradient(135deg,var(--green),#00b8ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;color:#0a0a0f}
+.loading-text{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
+.loading-dots span{animation:dot 1.4s infinite;display:inline-block}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
 .topbar{background:rgba(10,10,15,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);padding:14px 20px;
   padding-top:calc(14px + env(safe-area-inset-top));
@@ -44,6 +59,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .sync-dot.loading{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:pulse 1s infinite}
 .sync-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
 .tabs{display:flex;gap:5px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;
   background:var(--surface);border-bottom:1px solid var(--border);
   position:sticky;top:64px;z-index:40}
@@ -52,10 +68,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   font-family:'Syne',sans-serif;border:1px solid var(--border2);
   background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
 .tab.active{background:var(--green);color:#0a0a0f;border-color:var(--green);font-weight:700}
+
 .page{display:none;padding:14px;flex-direction:column;gap:11px}
 .page.active{display:flex}
 .sec{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--faint);padding:0 2px;margin-top:2px;font-family:'DM Mono',monospace}
+
 .hero{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);
   padding:20px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-50px;right:-50px;
@@ -63,29 +81,29 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .hero-label{font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace}
 .hero-value{font-size:38px;font-weight:800;color:var(--green);line-height:1;letter-spacing:-1px}
 .hero-sub{font-size:11px;color:var(--muted);margin-top:5px}
+
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
 .stat{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 12px}
 .stat-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'DM Mono',monospace;letter-spacing:.04em}
 .stat-value{font-size:20px;font-weight:700}
 .g{color:var(--green)}.a{color:var(--amber)}.r{color:var(--red)}.b{color:var(--blue)}.m{color:var(--muted)}
-.pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
-  font-size:10px;font-weight:700;margin-top:5px;font-family:'DM Mono',monospace}
-.pg{background:var(--gdim);color:var(--green);border:1px solid var(--gb)}
-.pa{background:var(--adim);color:var(--amber);border:1px solid var(--ab)}
-.pr{background:var(--rdim);color:var(--red);border:1px solid var(--rb)}
-.pb{background:var(--bdim);color:var(--blue);border:1px solid var(--bb)}
+
+.total-pagado-bar{background:var(--raised);border:1px solid var(--gb);border-radius:var(--rsm);padding:12px 14px}
+.prog-track{height:4px;background:var(--card);border-radius:3px;overflow:hidden;margin:6px 0 3px}
+.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .6s}
+
 .cuenta{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
-  padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
-.cuenta:active{border-color:var(--border2)}
-.cuenta-dot{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:800;flex-shrink:0}
+  padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.cuenta-dot{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
 .cuenta-info{flex:1}
 .cuenta-name{font-size:13px;font-weight:700}
 .cuenta-desc{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
 .cuenta-saldo{text-align:right}
 .cuenta-monto{font-size:16px;font-weight:800;font-family:'DM Mono',monospace}
 .cuenta-edit{font-size:10px;color:var(--faint);margin-top:2px;font-family:'DM Mono',monospace}
+
 .card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px}
 .form-title{font-size:15px;font-weight:700;margin-bottom:14px}
 .field{margin-bottom:12px}
@@ -103,20 +121,13 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.5}
 .btn-g{background:var(--green);color:#0a0a0f}
-.deuda{background:var(--raised);border:1px solid var(--ab);border-radius:var(--r);padding:18px}
-.deuda-row{display:flex;justify-content:space-between;align-items:center;
-  padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-.deuda-row:last-child{border-bottom:none;padding-bottom:0}
-.deuda-lbl{color:var(--muted)}
-.deuda-val{font-weight:700;font-family:'DM Mono',monospace}
-.prog-track{height:5px;background:var(--card);border-radius:3px;overflow:hidden;margin:8px 0 4px}
-.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .5s}
+
 .pay-section{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .pay-section-hdr{padding:13px 15px 9px;display:flex;align-items:center;justify-content:space-between}
 .pay-section-title{font-size:13px;font-weight:700}
 .pay-section-amt{font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Mono',monospace}
 .pay-item{display:flex;align-items:center;gap:11px;padding:11px 15px;
-  border-top:1px solid var(--border);transition:background .15s;cursor:pointer;position:relative}
+  border-top:1px solid var(--border);cursor:pointer;transition:background .15s}
 .pay-item:active{background:var(--card)}
 .pay-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
   justify-content:center;font-size:14px;flex-shrink:0}
@@ -133,6 +144,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .pay-check.done svg{opacity:1}
 .pay-item.done .pay-name{color:var(--muted);text-decoration:line-through}
 .pay-item.done .pay-amount{color:var(--muted)}
+
 .hecho-item{display:flex;align-items:center;gap:10px;padding:9px 14px;
   border-top:1px solid var(--border);background:rgba(0,229,160,.03)}
 .hecho-check{width:20px;height:20px;border-radius:6px;background:var(--green);
@@ -142,6 +154,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .hecho-name{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hecho-ts{font-size:9px;color:var(--faint);font-family:'DM Mono',monospace;margin-top:1px}
 .hecho-amount{font-size:13px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace}
+
 .gasto-item{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
   padding:11px 13px;display:flex;align-items:center;gap:11px}
 .gasto-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
@@ -149,12 +162,21 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .gasto-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gasto-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
 .gasto-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
+
+.deuda{background:var(--raised);border:1px solid var(--ab);border-radius:var(--r);padding:18px}
+.deuda-row{display:flex;justify-content:space-between;padding:8px 0;
+  border-bottom:1px solid var(--border);font-size:13px}
+.deuda-row:last-child{border-bottom:none;padding-bottom:0}
+.deuda-lbl{color:var(--muted)}
+.deuda-val{font-weight:700;font-family:'DM Mono',monospace}
+
 .score-track{height:6px;border-radius:3px;
   background:linear-gradient(to right,var(--red),var(--amber),var(--green));
   margin:12px 0 4px;position:relative}
 .score-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;
   background:var(--text);border:2px solid var(--bg);transform:translateX(-50%)}
 .score-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);font-family:'DM Mono',monospace}
+
 .tl-item{display:flex;gap:13px;padding-bottom:18px}
 .tl-item:last-child{padding-bottom:0}
 .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
@@ -164,6 +186,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .tl-body{flex:1}
 .tl-month{font-size:13px;font-weight:700}
 .tl-detail{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+
 .rrow{display:flex;align-items:center;justify-content:space-between;
   padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
 .rrow:last-child{border-bottom:none}
@@ -172,6 +195,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .alert{border-radius:var(--rsm);padding:11px 13px;font-size:12px;line-height:1.6}
 .alert.a{background:var(--adim);border:1px solid var(--ab);color:var(--amber)}
 .alert.g{background:var(--gdim);border:1px solid var(--gb);color:var(--green)}
+.pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
+  font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
+.pg{background:var(--gdim);color:var(--green);border:1px solid var(--gb)}
+.pa{background:var(--adim);color:var(--amber);border:1px solid var(--ab)}
+
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:90;
   display:none;align-items:flex-end;justify-content:center}
 .modal-bg.open{display:flex}
@@ -190,13 +218,15 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .toast.ok{border-color:var(--gb);color:var(--green)}
 .toast.err{border-color:var(--rb);color:var(--red)}
 .toast.info{border-color:var(--bb);color:var(--blue)}
-.total-pagado-bar{background:var(--raised);border:1px solid var(--gb);border-radius:var(--rsm);padding:12px 14px;margin-top:2px}
-.total-pagado-label{font-size:10px;color:var(--green);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-.total-pagado-val{font-size:26px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace}
-.total-pagado-sub{font-size:11px;color:var(--muted);margin-top:3px}
 </style>
 </head>
 <body>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loading">
+  <div class="loading-logo">JG</div>
+  <div class="loading-text">Cargando desde Drive<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+</div>
 
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:11px">
@@ -207,8 +237,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
   </div>
   <div class="sync-wrap" onclick="sincronizar()">
-    <div class="sync-dot" id="sync-dot"></div>
-    <div class="sync-txt" id="sync-txt">Sync</div>
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <div class="sync-txt" id="sync-txt">...</div>
   </div>
 </div>
 
@@ -226,44 +256,39 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="hero">
     <div class="hero-label">Balance neto total</div>
     <div class="hero-value" id="h-neto">—</div>
-    <div class="hero-sub" id="h-sub">Toca cada cuenta para actualizar el saldo</div>
+    <div class="hero-sub" id="h-sub">BHD + Qik + Banreservas</div>
   </div>
   <div class="grid3">
-    <div class="stat">
-      <div class="stat-label">Ingresos mes</div>
-      <div class="stat-value g" id="s-ingresos">RD$0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Gastos hoy</div>
-      <div class="stat-value r" id="s-gastos">RD$0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Pagos hechos</div>
-      <div class="stat-value b" id="s-pagos">0/17</div>
-    </div>
+    <div class="stat"><div class="stat-label">Ingresos mes</div><div class="stat-value g" id="s-ingresos">RD$0</div></div>
+    <div class="stat"><div class="stat-label">Gastos hoy</div><div class="stat-value r" id="s-gastos">RD$0</div></div>
+    <div class="stat"><div class="stat-label">Pagos hechos</div><div class="stat-value b" id="s-pagos">0/17</div></div>
   </div>
   <div class="total-pagado-bar">
-    <div class="total-pagado-label">Total pagado este mes</div>
-    <div class="total-pagado-val" id="s-total-pagado">RD$0</div>
-    <div class="total-pagado-sub" id="s-total-pagado-sub">de RD$31,050 comprometidos</div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase">Total pagado este mes</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace" id="s-pct-pagado">0%</div>
+    </div>
+    <div style="font-size:26px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px" id="s-total-pagado">RD$0</div>
+    <div class="prog-track"><div class="prog-fill" id="prog-pagado" style="width:0%"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px" id="s-total-pagado-sub">de RD$31,050 comprometidos</div>
   </div>
   <div class="sec">Cuentas</div>
   <div class="cuenta" onclick="openModal('bhd')">
     <div class="cuenta-dot" style="background:var(--gdim);color:var(--green)">B</div>
     <div class="cuenta-info"><div class="cuenta-name">BHD</div><div class="cuenta-desc">Nomina · pagos fijos</div></div>
-    <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-bhd">— tocar</div><div class="cuenta-edit">editar saldo</div></div>
+    <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-bhd">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="cuenta" onclick="openModal('qik')">
     <div class="cuenta-dot" style="background:var(--bdim);color:var(--blue)">Q</div>
     <div class="cuenta-info"><div class="cuenta-name">Qik</div><div class="cuenta-desc">Solo ahorro · intocable</div></div>
-    <div class="cuenta-saldo"><div class="cuenta-monto b" id="saldo-qik">— tocar</div><div class="cuenta-edit">editar saldo</div></div>
+    <div class="cuenta-saldo"><div class="cuenta-monto b" id="saldo-qik">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="cuenta" onclick="openModal('banreservas')">
     <div class="cuenta-dot" style="background:var(--adim);color:var(--amber)">R</div>
     <div class="cuenta-info"><div class="cuenta-name">Banreservas</div><div class="cuenta-desc">Salidas · gasto libre</div></div>
-    <div class="cuenta-saldo"><div class="cuenta-monto a" id="saldo-banreservas">— tocar</div><div class="cuenta-edit">editar saldo</div></div>
+    <div class="cuenta-saldo"><div class="cuenta-monto a" id="saldo-banreservas">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
-  <div class="alert a"><b style="display:block;margin-bottom:3px">Regla de oro</b>Qik intocable. Banreservas = limite libre. BHD nunca a cero.</div>
+  <div class="alert a"><b style="display:block;margin-bottom:2px">Regla de oro</b>Qik intocable. Banreservas = limite libre. BHD nunca a cero.</div>
 </div>
 
 <!-- BALANCE -->
@@ -276,7 +301,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
         <select id="e-cuenta"><option value="BHD">BHD</option><option value="Qik">Qik</option><option value="Banreservas">Banreservas</option><option value="Efectivo">Efectivo</option></select>
       </div>
     </div>
-    <div class="field"><label>Descripcion</label><input type="text" id="e-desc" placeholder="Quincena 1 · Salario · Freelance..."/></div>
+    <div class="field"><label>Descripcion</label><input type="text" id="e-desc" placeholder="Quincena 1 · Salario..."/></div>
     <div class="field"><label>Tipo</label>
       <select id="e-tipo"><option value="Quincena">Quincena / Salario</option><option value="Freelance">Freelance</option><option value="Prestamo">Prestamo recibido</option><option value="Otro">Otro ingreso</option></select>
     </div>
@@ -284,9 +309,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="sec">Resumen del mes</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-    <div class="rrow"><span class="rrow-lbl">Total entradas registradas</span><span class="rrow-val g" id="r-entradas">RD$0</span></div>
-    <div class="rrow"><span class="rrow-lbl">Total pagado (pagos marcados)</span><span class="rrow-val g" id="r-pagado">RD$0</span></div>
-    <div class="rrow"><span class="rrow-lbl">Gastos diarios registrados</span><span class="rrow-val r" id="r-gastos">RD$0</span></div>
+    <div class="rrow"><span class="rrow-lbl">Total entradas</span><span class="rrow-val g" id="r-entradas">RD$0</span></div>
+    <div class="rrow"><span class="rrow-lbl">Total pagado (marcados)</span><span class="rrow-val g" id="r-pagado">RD$0</span></div>
+    <div class="rrow"><span class="rrow-lbl">Gastos diarios</span><span class="rrow-val r" id="r-gastos">RD$0</span></div>
     <div class="rrow"><span class="rrow-lbl">Comprometido fijo</span><span class="rrow-val a">RD$31,050</span></div>
     <div class="rrow" style="border-top:2px solid var(--border2)"><span class="rrow-lbl" style="font-weight:600">Margen real estimado</span><span class="rrow-val g" id="r-margen">—</span></div>
   </div>
@@ -296,115 +321,101 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 
 <!-- PAGOS -->
 <div class="page" id="page-pagos">
-
-  <!-- PAGOS HECHOS -->
-  <div class="pay-section" id="section-hechos" style="border-color:var(--gb)">
+  <div class="pay-section" style="border-color:var(--gb)">
     <div class="pay-section-hdr">
-      <div class="pay-section-title" style="color:var(--green)">Pagos realizados</div>
-      <div class="pay-section-amt" id="total-hechos-amt" style="color:var(--green)">RD$0</div>
+      <div class="pay-section-title" style="color:var(--green)">Pagados este mes</div>
+      <div class="pay-section-amt" style="color:var(--green)" id="total-hechos-amt">RD$0</div>
     </div>
-    <div id="hechos-lista">
-      <div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:'DM Mono',monospace">Ninguno marcado aun</div>
-    </div>
+    <div id="hechos-lista"><div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:'DM Mono',monospace">Ninguno marcado aun</div></div>
   </div>
-
-  <!-- Q1 PENDIENTES -->
   <div class="pay-section">
-    <div class="pay-section-hdr">
-      <div class="pay-section-title">Quincena 1 · 1–20 abril</div>
-      <div class="pay-section-amt">RD$15,850</div>
-    </div>
+    <div class="pay-section-hdr"><div class="pay-section-title">Quincena 1 · 1–20 abril</div><div class="pay-section-amt">RD$15,850</div></div>
     <div class="pay-item" id="py-qik1" onclick="togglePago(this,'Qik ahorro Q1','Presupuesto Abril',2500)">
       <div class="pay-icon" style="background:var(--bdim)"><span style="font-size:10px;font-weight:800;color:var(--blue)">QIK</span></div>
-      <div class="pay-info"><div class="pay-name">Qik ahorro Q1</div><div class="pay-meta">Transferir al cobrar</div></div>
+      <div class="pay-info"><div class="pay-name">Qik ahorro Q1</div><div class="pay-meta">Transferir al cobrar</div><div class="pay-ts" id="ts-py-qik1"></div></div>
       <div class="pay-right"><div class="pay-amount b">RD$2,500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-banreservas1" onclick="togglePago(this,'Banreservas Q1','Presupuesto Abril',2000)">
+    <div class="pay-item" id="py-banreservas1" onclick="togglePago(this,'Banreservas Q1','Presupuesto Abril',2000)">
       <div class="pay-icon" style="background:var(--adim)"><span style="font-size:10px;font-weight:700;color:var(--amber)">→R</span></div>
-      <div class="pay-info"><div class="pay-name">Banreservas Q1</div><div class="pay-meta">Salidas y comida</div></div>
-      <div class="pay-right"><div class="pay-amount a">RD$2,000</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Banreservas Q1</div><div class="pay-meta">Salidas y comida</div><div class="pay-ts" id="ts-py-banreservas1"></div></div>
+      <div class="pay-right"><div class="pay-amount a">RD$2,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-gimnasio" onclick="togglePago(this,'Gimnasio','Presupuesto Abril',1500)">
+    <div class="pay-item" id="py-gimnasio" onclick="togglePago(this,'Gimnasio','Presupuesto Abril',1500)">
       <div class="pay-icon" style="background:rgba(99,102,241,.12)"><span style="font-size:14px">🏋</span></div>
-      <div class="pay-info"><div class="pay-name">Gimnasio</div><div class="pay-meta">BHD · Dia 1</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$1,500</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Gimnasio</div><div class="pay-meta">BHD · Dia 1</div><div class="pay-ts" id="ts-py-gimnasio"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$1,500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-internet" onclick="togglePago(this,'Internet','Presupuesto Abril',900)">
+    <div class="pay-item" id="py-internet" onclick="togglePago(this,'Internet','Presupuesto Abril',900)">
       <div class="pay-icon" style="background:var(--rdim)"><span style="font-size:13px">📡</span></div>
-      <div class="pay-info"><div class="pay-name">Internet</div><div class="pay-meta">BHD · Limite dia 4</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$900</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Internet</div><div class="pay-meta">BHD · Limite dia 4</div><div class="pay-ts" id="ts-py-internet"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$900</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-crunchyroll" onclick="togglePago(this,'Crunchyroll','Presupuesto Abril',250)">
+    <div class="pay-item" id="py-crunchyroll" onclick="togglePago(this,'Crunchyroll','Presupuesto Abril',250)">
       <div class="pay-icon" style="background:rgba(249,115,22,.1)"><span style="font-size:13px">▶</span></div>
-      <div class="pay-info"><div class="pay-name">Crunchyroll</div><div class="pay-meta">BHD · Dia 3</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$250</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Crunchyroll</div><div class="pay-meta">BHD · Dia 3</div><div class="pay-ts" id="ts-py-crunchyroll"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$250</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-sam1" onclick="togglePago(this,'SAM parte 1','Presupuesto Abril',2000)">
+    <div class="pay-item" id="py-sam1" onclick="togglePago(this,'SAM parte 1','Presupuesto Abril',2000)">
       <div class="pay-icon" style="background:var(--gdim)"><span style="font-size:11px;font-weight:800;color:var(--green)">SAM</span></div>
-      <div class="pay-info"><div class="pay-name">SAM parte 1</div><div class="pay-meta">Ahorro interno empresa</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$2,000</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">SAM parte 1</div><div class="pay-meta">Ahorro interno empresa</div><div class="pay-ts" id="ts-py-sam1"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$2,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-residencial1" onclick="togglePago(this,'Residencial adelanto','Presupuesto Abril',1500)">
       <div class="pay-icon" style="background:rgba(148,163,184,.08)"><span style="font-size:13px">🏠</span></div>
-      <div class="pay-info"><div class="pay-name">Residencial adelanto</div><div class="pay-meta">BHD · Flexible</div></div>
+      <div class="pay-info"><div class="pay-name">Residencial adelanto</div><div class="pay-meta">BHD · Flexible</div><div class="pay-ts" id="ts-py-residencial1"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$1,500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-gasolina1" onclick="togglePago(this,'Gasolina Q1','Presupuesto Abril',2200)">
+    <div class="pay-item" id="py-gasolina1" onclick="togglePago(this,'Gasolina Q1','Presupuesto Abril',2200)">
       <div class="pay-icon" style="background:rgba(234,179,8,.1)"><span style="font-size:13px">⛽</span></div>
-      <div class="pay-info"><div class="pay-name">Gasolina Q1</div><div class="pay-meta">Pasola + carro</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$2,200</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Gasolina Q1</div><div class="pay-meta">Pasola + carro</div><div class="pay-ts" id="ts-py-gasolina1"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$2,200</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
-    <div class="pay-item done" id="py-carro" onclick="togglePago(this,'Pago carro completo','Presupuesto Abril',5000)">
+    <div class="pay-item" id="py-carro" onclick="togglePago(this,'Pago carro completo','Presupuesto Abril',5000)">
       <div class="pay-icon" style="background:rgba(99,102,241,.1)"><span style="font-size:13px">🚗</span></div>
-      <div class="pay-info"><div class="pay-name">Pago carro completo</div><div class="pay-meta">BHD · Pagado de una vez</div></div>
-      <div class="pay-right"><div class="pay-amount">RD$5,000</div><div class="pay-check done"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
+      <div class="pay-info"><div class="pay-name">Pago carro completo</div><div class="pay-meta">BHD · Pagado de una vez</div><div class="pay-ts" id="ts-py-carro"></div></div>
+      <div class="pay-right"><div class="pay-amount">RD$5,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-barberia1" onclick="togglePago(this,'Barberia parte 1','Presupuesto Abril',500)">
       <div class="pay-icon" style="background:rgba(20,184,166,.1)"><span style="font-size:13px">✂</span></div>
-      <div class="pay-info"><div class="pay-name">Barberia parte 1</div><div class="pay-meta">BHD</div></div>
+      <div class="pay-info"><div class="pay-name">Barberia parte 1</div><div class="pay-meta">BHD</div><div class="pay-ts" id="ts-py-barberia1"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
   </div>
-
-  <!-- Q2 -->
   <div class="pay-section">
-    <div class="pay-section-hdr">
-      <div class="pay-section-title">Quincena 2 · 20 abr–5 mayo</div>
-      <div class="pay-section-amt">RD$15,200</div>
-    </div>
+    <div class="pay-section-hdr"><div class="pay-section-title">Quincena 2 · 20 abr–5 mayo</div><div class="pay-section-amt">RD$15,200</div></div>
     <div class="pay-item" id="py-qik2" onclick="togglePago(this,'Qik ahorro Q2','Presupuesto Abril',2500)">
       <div class="pay-icon" style="background:var(--bdim)"><span style="font-size:10px;font-weight:800;color:var(--blue)">QIK</span></div>
-      <div class="pay-info"><div class="pay-name">Qik ahorro Q2</div><div class="pay-meta">Al cobrar Q2</div></div>
+      <div class="pay-info"><div class="pay-name">Qik ahorro Q2</div><div class="pay-meta">Al cobrar Q2</div><div class="pay-ts" id="ts-py-qik2"></div></div>
       <div class="pay-right"><div class="pay-amount b">RD$2,500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-banreservas2" onclick="togglePago(this,'Banreservas Q2','Presupuesto Abril',2000)">
       <div class="pay-icon" style="background:var(--adim)"><span style="font-size:10px;font-weight:700;color:var(--amber)">→R</span></div>
-      <div class="pay-info"><div class="pay-name">Banreservas Q2</div><div class="pay-meta">Salidas Q2</div></div>
+      <div class="pay-info"><div class="pay-name">Banreservas Q2</div><div class="pay-meta">Salidas Q2</div><div class="pay-ts" id="ts-py-banreservas2"></div></div>
       <div class="pay-right"><div class="pay-amount a">RD$2,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-sam2" onclick="togglePago(this,'SAM parte 2','Presupuesto Abril',2000)">
       <div class="pay-icon" style="background:var(--gdim)"><span style="font-size:11px;font-weight:800;color:var(--green)">SAM</span></div>
-      <div class="pay-info"><div class="pay-name">SAM parte 2</div><div class="pay-meta">Quedan RD$4,000 en mayo</div></div>
+      <div class="pay-info"><div class="pay-name">SAM parte 2</div><div class="pay-meta">Quedan RD$4,000 en mayo</div><div class="pay-ts" id="ts-py-sam2"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$2,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-residencial2" onclick="togglePago(this,'Residencial restante','Presupuesto Abril',1500)">
       <div class="pay-icon" style="background:rgba(148,163,184,.08)"><span style="font-size:13px">🏠</span></div>
-      <div class="pay-info"><div class="pay-name">Residencial restante</div><div class="pay-meta">Completa el mes</div></div>
+      <div class="pay-info"><div class="pay-name">Residencial restante</div><div class="pay-meta">Completa el mes</div><div class="pay-ts" id="ts-py-residencial2"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$1,500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-mant" onclick="togglePago(this,'Mantenimiento vehiculo','Presupuesto Abril',2000)">
       <div class="pay-icon" style="background:var(--rdim)"><span style="font-size:13px">🔧</span></div>
-      <div class="pay-info"><div class="pay-name">Mantenimiento vehiculo</div><div class="pay-meta">BHD · Preventivo</div></div>
+      <div class="pay-info"><div class="pay-name">Mantenimiento vehiculo</div><div class="pay-meta">BHD · Preventivo</div><div class="pay-ts" id="ts-py-mant"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$2,000</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-barberia2" onclick="togglePago(this,'Barberia parte 2','Presupuesto Abril',500)">
       <div class="pay-icon" style="background:rgba(20,184,166,.1)"><span style="font-size:13px">✂</span></div>
-      <div class="pay-info"><div class="pay-name">Barberia parte 2</div><div class="pay-meta">Completa el mes</div></div>
+      <div class="pay-info"><div class="pay-name">Barberia parte 2</div><div class="pay-meta">Completa el mes</div><div class="pay-ts" id="ts-py-barberia2"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$500</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
     <div class="pay-item" id="py-gasolina2" onclick="togglePago(this,'Gasolina Q2','Presupuesto Abril',2200)">
       <div class="pay-icon" style="background:rgba(234,179,8,.1)"><span style="font-size:13px">⛽</span></div>
-      <div class="pay-info"><div class="pay-name">Gasolina Q2</div><div class="pay-meta">Pasola + carro</div></div>
+      <div class="pay-info"><div class="pay-name">Gasolina Q2</div><div class="pay-meta">Pasola + carro</div><div class="pay-ts" id="ts-py-gasolina2"></div></div>
       <div class="pay-right"><div class="pay-amount">RD$2,200</div><div class="pay-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div>
     </div>
   </div>
@@ -442,7 +453,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       <span class="pill pg">En proceso</span>
     </div>
     <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val g">RD$6,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Pago abril Q2 (dia 20)</span><span class="deuda-val">RD$2,000</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Pago abril Q2</span><span class="deuda-val">RD$2,000</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Ultimo pago mayo</span><span class="deuda-val">RD$4,000</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Liquidacion</span><span class="deuda-val g">Mayo 2026</span></div>
     <div class="prog-track"><div class="prog-fill" style="width:40%"></div></div>
@@ -451,27 +462,16 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="sec">Prestamo Ademi</div>
   <div class="deuda">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="font-size:14px;font-weight:700">Banco Ademi · Prestamo consumo</div>
+      <div style="font-size:14px;font-weight:700">Banco Ademi · Consumo</div>
       <span class="pill pa">Pendiente</span>
     </div>
-    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Estrategia aprobada</b>Usas RD$5,000 y aplicas RD$5,000 al capital inmediatamente para reducir intereses.</div>
+    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Estrategia</b>Usas RD$5,000 y aplicas RD$5,000 al capital inmediatamente.</div>
     <div class="deuda-row"><span class="deuda-lbl">Monto total</span><span class="deuda-val">RD$10,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Capital efectivo que usas</span><span class="deuda-val b">RD$5,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Aplica a capital inmediato</span><span class="deuda-val g">RD$5,000</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Cuota mensual estimada</span><span class="deuda-val a">~RD$2,590</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Plazo</span><span class="deuda-val">4 meses</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Intereses totales estimados</span><span class="deuda-val a">~RD$422</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Liquidacion estimada</span><span class="deuda-val g">Agosto 2026</span></div>
     <div class="prog-track"><div class="prog-fill" style="width:3%;background:var(--amber)"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>Inicio</span><span>0 de 4 cuotas</span><span>Agosto</span></div>
-  </div>
-  <div class="sec">Impacto en presupuesto</div>
-  <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-    <div class="rrow"><span class="rrow-lbl">Abril</span><span class="rrow-val g">Sin cuota · normal</span></div>
-    <div class="rrow"><span class="rrow-lbl">Mayo</span><span class="rrow-val a">SAM RD$4,000 + Ademi RD$2,590</span></div>
-    <div class="rrow"><span class="rrow-lbl">Junio</span><span class="rrow-val g">Solo Ademi · SAM libre</span></div>
-    <div class="rrow"><span class="rrow-lbl">Julio</span><span class="rrow-val g">Solo Ademi · comodo</span></div>
-    <div class="rrow"><span class="rrow-lbl">Agosto</span><span class="rrow-val g">Ultima cuota · liquidado</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>0 de 4 cuotas</span><span>Agosto 2026</span></div>
   </div>
 </div>
 
@@ -483,7 +483,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div style="font-size:12px;color:var(--muted);margin-top:4px">Bueno en cooperativas · construyendo historial bancario</div>
     <div class="score-track"><div class="score-marker" style="left:78.3%"></div></div>
     <div class="score-labels"><span>400</span><span>600</span><span>750</span><span>850</span><span>999</span></div>
-    <div style="margin-top:12px;font-size:12px;color:var(--muted)">Meta tarjeta bancaria: <span style="color:var(--green);font-weight:700">820+</span></div>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted)">Meta: <span style="color:var(--green);font-weight:700">820+ · Agosto 2026</span></div>
   </div>
   <div class="sec">Hoja de ruta</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:18px">
@@ -491,21 +491,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       <div class="tl-body"><div class="tl-month">Abril 2026 <span class="pill pa" style="margin-top:0;margin-left:4px;font-size:9px">Ahora</span></div>
       <div class="tl-detail">Prestamo Ademi en proceso · aplicar RD$5k al capital · pagar a tiempo</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div>
-      <div class="tl-body"><div class="tl-month">Mayo 2026</div><div class="tl-detail">1ra cuota Ademi + ultimo SAM · historial bancario activo · score ~800</div></div></div>
+      <div class="tl-body"><div class="tl-month">Mayo 2026</div><div class="tl-detail">1ra cuota Ademi + ultimo SAM · score ~800</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div>
       <div class="tl-body"><div class="tl-month">Junio 2026</div><div class="tl-detail">SAM liquidado · RD$4,000/mes libres · score ~808</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div>
-      <div class="tl-body"><div class="tl-month">Agosto 2026</div><div class="tl-detail">Prestamo liquidado · 4 meses historial limpio · score ~828 · <span style="color:var(--green)">solicitar tarjeta bancaria</span></div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--blue)"></div></div>
-      <div class="tl-body"><div class="tl-month">Sep 2026+</div><div class="tl-detail">Tarjeta bancaria activa · max 30% limite · pagar balance completo · score 840+</div></div></div>
-  </div>
-  <div class="sec">Reglas de oro</div>
-  <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-    <div class="rrow"><span class="rrow-lbl">Pagar siempre a tiempo</span><span class="rrow-val g">Prioridad 1</span></div>
-    <div class="rrow"><span class="rrow-lbl">No solicitar mas creditos simultaneos</span><span class="rrow-val a">Esperar 6 meses</span></div>
-    <div class="rrow"><span class="rrow-lbl">BHD con saldo positivo siempre</span><span class="rrow-val b">Historial</span></div>
-    <div class="rrow"><span class="rrow-lbl">Qik intocable</span><span class="rrow-val g">Capacidad de ahorro</span></div>
-    <div class="rrow"><span class="rrow-lbl">No cancelar Credicefi</span><span class="rrow-val m">Antiguedad</span></div>
+      <div class="tl-body"><div class="tl-month">Agosto 2026</div><div class="tl-detail">Prestamo liquidado · score ~828 · <span style="color:var(--green)">solicitar tarjeta bancaria</span></div></div></div>
   </div>
 </div>
 
@@ -518,7 +508,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <button class="btn btn-g" onclick="guardarSaldo()">Actualizar saldo</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -526,97 +515,112 @@ const WEBHOOK = 'https://script.google.com/macros/s/AKfycbw1OYUg2ZTPhMnXZXYBTkOh
 const CAT_COLORS = {'Comida':'#ff4f6a','Transporte':'#4f9eff','Gasolina':'#ffb830','Salud':'#00e5a0','Entretenimiento':'#a78bfa','Ropa':'#f472b6','Hogar':'#fb923c','General':'#8888a0'};
 const COMPROMETIDO = 31050;
 
-// STATE
-var state = JSON.parse(localStorage.getItem('fj_v2') || '{}');
-if (!state.saldos) state.saldos = {bhd:0,qik:0,banreservas:0};
-if (!state.pagos) state.pagos = {};
-if (!state.gastosHoy) state.gastosHoy = [];
-if (!state.entradasMes) state.entradasMes = [];
-if (!state.lastDate) state.lastDate = '';
+// Estado en memoria — siempre viene de la nube
+var state = {pagos:{},saldos:{bhd:0,qik:0,banreservas:0},gastosHoy:[],entradasMes:[]};
 
-var hoy = new Date().toDateString();
-if (state.lastDate !== hoy) { state.gastosHoy = []; state.lastDate = hoy; }
-save();
-
-function save() { localStorage.setItem('fj_v2', JSON.stringify(state)); }
-function fmt(n) { return 'RD$' + Math.round(n||0).toLocaleString('es-DO'); }
-
-// Init fecha
+// Fecha topbar
 var now = new Date();
 document.getElementById('topbar-date').textContent = now.toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
 
-// Init todo
-initSaldos();
-initPagos();
-renderGastosHoy();
-renderEntradas();
-updateStats();
+// AL CARGAR: traer todo desde Drive
+window.addEventListener('load', function() { cargarDesdeNube(); });
 
-function initSaldos() {
-  var total = (state.saldos.bhd||0) + (state.saldos.qik||0) + (state.saldos.banreservas||0);
-  document.getElementById('h-neto').textContent = total ? fmt(total) : '—';
-  document.getElementById('h-sub').textContent = total ? 'BHD + Qik + Banreservas · Abril 2026' : 'Toca cada cuenta para configurar el saldo';
-  document.getElementById('saldo-bhd').textContent = state.saldos.bhd ? fmt(state.saldos.bhd) : '— tocar';
-  document.getElementById('saldo-qik').textContent = state.saldos.qik ? fmt(state.saldos.qik) : '— tocar';
-  document.getElementById('saldo-banreservas').textContent = state.saldos.banreservas ? fmt(state.saldos.banreservas) : '— tocar';
+function cargarDesdeNube() {
+  setSyncLoading();
+  fetch(WEBHOOK)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      // Aplicar estado desde el Sheet
+      state.pagos = data.pagos || {};
+      state.saldos = data.saldos || {bhd:0,qik:0,banreservas:0};
+      state.gastosHoy = data.gastosHoy || [];
+      state.entradasMes = data.entradasMes || [];
+      aplicarEstado();
+      setSyncOk(true);
+      document.getElementById('loading').classList.add('hidden');
+      showToast('Sincronizado con Drive', 'ok');
+    })
+    .catch(function() {
+      // Sin conexion — mostrar app igual sin datos
+      setSyncErr();
+      document.getElementById('loading').classList.add('hidden');
+      showToast('Sin conexion · datos locales', 'err');
+    });
 }
 
-function initPagos() {
+function aplicarEstado() {
+  // Aplicar pagos
   Object.keys(state.pagos).forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
     var p = state.pagos[id];
+    var check = el.querySelector('.pay-check');
+    var tsEl = document.getElementById('ts-' + id);
     if (p.done) {
       el.classList.add('done');
-      el.querySelector('.pay-check').classList.add('done');
+      check.classList.add('done');
+      if (tsEl && p.ts) tsEl.textContent = p.ts;
+    } else {
+      el.classList.remove('done');
+      check.classList.remove('done');
+      if (tsEl) tsEl.textContent = '';
     }
   });
+  // Aplicar saldos
+  initSaldos();
   renderHechos();
-  updatePagosCount();
+  renderGastosHoy();
+  renderEntradas();
+  updateStats();
+}
+
+function fmt(n) { return 'RD$' + Math.round(n||0).toLocaleString('es-DO'); }
+
+function initSaldos() {
+  var total = (state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0);
+  document.getElementById('h-neto').textContent = total ? fmt(total) : '—';
+  document.getElementById('saldo-bhd').textContent = state.saldos.bhd ? fmt(state.saldos.bhd) : '—';
+  document.getElementById('saldo-qik').textContent = state.saldos.qik ? fmt(state.saldos.qik) : '—';
+  document.getElementById('saldo-banreservas').textContent = state.saldos.banreservas ? fmt(state.saldos.banreservas) : '—';
+}
+
+function calcTotalPagado() {
+  var total = 0;
+  Object.keys(state.pagos).forEach(function(id) {
+    if (state.pagos[id].done) total += state.pagos[id].monto||0;
+  });
+  return total;
 }
 
 function updateStats() {
   var gastosTotal = state.gastosHoy.reduce(function(s,g){return s+(g.monto||0);},0);
   var entradasTotal = state.entradasMes.reduce(function(s,e){return s+(e.monto||0);},0);
   var totalPagado = calcTotalPagado();
-  var total17 = Object.keys(state.pagos).length;
-  var hechos17 = Object.keys(state.pagos).filter(function(k){return state.pagos[k].done;}).length;
+  var totalItems = document.querySelectorAll('.pay-item').length;
+  var hechos = document.querySelectorAll('.pay-item.done').length;
 
   document.getElementById('s-gastos').textContent = fmt(gastosTotal);
   document.getElementById('s-ingresos').textContent = fmt(entradasTotal);
+  document.getElementById('s-pagos').textContent = hechos + '/' + totalItems;
   document.getElementById('s-total-pagado').textContent = fmt(totalPagado);
-  document.getElementById('s-total-pagado-sub').textContent = 'de ' + fmt(COMPROMETIDO) + ' comprometidos · ' + Math.round(totalPagado/COMPROMETIDO*100) + '% completado';
+  var pct = COMPROMETIDO > 0 ? Math.round(totalPagado/COMPROMETIDO*100) : 0;
+  document.getElementById('s-pct-pagado').textContent = pct + '%';
+  document.getElementById('prog-pagado').style.width = Math.min(pct,100) + '%';
+  document.getElementById('s-total-pagado-sub').textContent = 'de ' + fmt(COMPROMETIDO) + ' comprometidos';
 
   document.getElementById('r-entradas').textContent = fmt(entradasTotal);
   document.getElementById('r-pagado').textContent = fmt(totalPagado);
   document.getElementById('r-gastos').textContent = fmt(gastosTotal);
-
   var margen = entradasTotal - gastosTotal - COMPROMETIDO;
   var mEl = document.getElementById('r-margen');
   mEl.textContent = fmt(margen);
   mEl.className = 'rrow-val ' + (margen >= 0 ? 'g' : 'r');
 }
 
-function calcTotalPagado() {
-  var total = 0;
-  Object.keys(state.pagos).forEach(function(id) {
-    if (state.pagos[id].done) {
-      total += state.pagos[id].monto || 0;
-    }
-  });
-  return total;
-}
-
-function updatePagosCount() {
-  var total = document.querySelectorAll('.pay-item').length;
-  var done = document.querySelectorAll('.pay-item.done').length;
-  document.getElementById('s-pagos').textContent = done + '/' + total;
-}
-
 function renderHechos() {
   var lista = document.getElementById('hechos-lista');
   var hechos = Object.keys(state.pagos).filter(function(k){return state.pagos[k].done;});
-  if (hechos.length === 0) {
+  if (!hechos.length) {
     lista.innerHTML = '<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';
     document.getElementById('total-hechos-amt').textContent = 'RD$0';
     return;
@@ -625,14 +629,13 @@ function renderHechos() {
   var html = '';
   hechos.forEach(function(id) {
     var p = state.pagos[id];
-    totalH += p.monto || 0;
+    totalH += p.monto||0;
     html += '<div class="hecho-item">';
     html += '<div class="hecho-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>';
-    html += '<div class="hecho-info"><div class="hecho-name">' + (p.nombre||id) + '</div>';
-    if (p.ts) html += '<div class="hecho-ts">' + p.ts + '</div>';
+    html += '<div class="hecho-info"><div class="hecho-name">'+(p.nombre||id)+'</div>';
+    if (p.ts) html += '<div class="hecho-ts">'+p.ts+'</div>';
     html += '</div>';
-    html += '<div class="hecho-amount">' + fmt(p.monto) + '</div>';
-    html += '</div>';
+    html += '<div class="hecho-amount">'+fmt(p.monto)+'</div></div>';
   });
   lista.innerHTML = html;
   document.getElementById('total-hechos-amt').textContent = fmt(totalH);
@@ -653,11 +656,10 @@ function closeModal(e) {
   document.getElementById('modal-bg').classList.remove('open');
 }
 function guardarSaldo() {
-  var val = parseFloat(document.getElementById('modal-saldo').value) || 0;
+  var val = parseFloat(document.getElementById('modal-saldo').value)||0;
   state.saldos[modalCuenta] = val;
-  save(); initSaldos();
-  closeModal(null);
-  showToast('Saldo ' + modalCuenta.toUpperCase() + ' actualizado','ok');
+  initSaldos(); closeModal(null);
+  showToast('Saldo '+modalCuenta.toUpperCase()+' actualizado','ok');
   enviar({tipo:'saldo',cuenta:modalCuenta,monto:val});
 }
 
@@ -666,29 +668,27 @@ function togglePago(el, concepto, hoja, monto) {
   var id = el.id;
   var done = !el.classList.contains('done');
   var check = el.querySelector('.pay-check');
+  var tsEl = document.getElementById('ts-' + id);
   var ts = new Date().toLocaleString('es-DO',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
 
   if (done) {
-    el.classList.add('done');
-    check.classList.add('done');
-    state.pagos[id] = {done:true, ts:ts, nombre:concepto, monto:monto};
-    showToast('✓ ' + concepto + ' marcado','ok');
+    el.classList.add('done'); check.classList.add('done');
+    if (tsEl) tsEl.textContent = ts;
+    state.pagos[id] = {done:true,ts:ts,nombre:concepto,monto:monto};
+    showToast('✓ '+concepto+' marcado','ok');
   } else {
-    el.classList.remove('done');
-    check.classList.remove('done');
-    state.pagos[id] = {done:false, nombre:concepto, monto:monto};
-    showToast(concepto + ' desmarcado','info');
+    el.classList.remove('done'); check.classList.remove('done');
+    if (tsEl) tsEl.textContent = '';
+    state.pagos[id] = {done:false,nombre:concepto,monto:monto};
+    showToast(concepto+' desmarcado','info');
   }
-  save();
-  renderHechos();
-  updatePagosCount();
-  updateStats();
+  renderHechos(); updateStats();
   enviar({tipo:'pago',concepto:concepto,hoja:hoja,estado:done?'Hecho':'Pendiente',timestamp:new Date().toISOString()});
 }
 
 // ENTRADAS
 function guardarEntrada() {
-  var monto = parseFloat(document.getElementById('e-monto').value) || 0;
+  var monto = parseFloat(document.getElementById('e-monto').value)||0;
   var desc = document.getElementById('e-desc').value.trim();
   var cuenta = document.getElementById('e-cuenta').value;
   var tipo = document.getElementById('e-tipo').value;
@@ -700,12 +700,12 @@ function guardarEntrada() {
   state.entradasMes.push(entrada);
   var cKey = cuenta.toLowerCase().replace('é','e');
   if (state.saldos[cKey] !== undefined) state.saldos[cKey] += monto;
-  save(); renderEntradas(); initSaldos(); updateStats();
+  initSaldos(); renderEntradas(); updateStats();
   document.getElementById('e-monto').value = '';
   document.getElementById('e-desc').value = '';
   btn.disabled = false; btn.textContent = 'Registrar entrada';
   enviar({tipo:'entrada',desc:desc,monto:monto,cuenta:cuenta,tipo_entrada:tipo}).then(function(ok){
-    showToast(ok ? '✓ Entrada guardada en Drive' : '✓ Guardado local', ok ? 'ok' : 'info');
+    showToast(ok?'✓ Entrada guardada en Drive':'✓ Guardado local',ok?'ok':'info');
   });
 }
 
@@ -721,16 +721,16 @@ function renderEntradas() {
     var hora = d.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
     return '<div class="gasto-item" style="border-color:var(--gb)">' +
       '<div class="gasto-dot" style="background:var(--green)"></div>' +
-      '<div class="gasto-info"><div class="gasto-desc">' + e.desc + '</div>' +
-      '<div class="gasto-meta">' + e.tipo + ' · ' + e.cuenta + ' · ' + fecha + ' ' + hora + '</div></div>' +
-      '<div class="gasto-monto" style="color:var(--green)">+' + fmt(e.monto) + '</div></div>';
+      '<div class="gasto-info"><div class="gasto-desc">'+e.desc+'</div>' +
+      '<div class="gasto-meta">'+e.tipo+' · '+e.cuenta+' · '+fecha+' '+hora+'</div></div>' +
+      '<div class="gasto-monto" style="color:var(--green)">+'+fmt(e.monto)+'</div></div>';
   }).join('');
 }
 
 // GASTOS
 function guardarGasto() {
   var desc = document.getElementById('g-desc').value.trim();
-  var monto = parseFloat(document.getElementById('g-monto').value) || 0;
+  var monto = parseFloat(document.getElementById('g-monto').value)||0;
   var cuenta = document.getElementById('g-cuenta').value;
   var cat = document.getElementById('g-cat').value;
   var notas = document.getElementById('g-notas').value.trim();
@@ -739,14 +739,14 @@ function guardarGasto() {
   var btn = document.getElementById('btn-gasto');
   btn.disabled = true; btn.textContent = 'Guardando...';
   var gasto = {desc:desc,monto:monto,cuenta:cuenta,categoria:cat,notas:notas,timestamp:Date.now()};
-  state.gastosHoy.push(gasto); save(); renderGastosHoy(); updateStats();
+  state.gastosHoy.push(gasto); renderGastosHoy(); updateStats();
   document.getElementById('g-desc').value = '';
   document.getElementById('g-monto').value = '';
   document.getElementById('g-notas').value = '';
   btn.disabled = false; btn.textContent = 'Guardar · fecha/hora automatica';
   var hora = new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
   enviar({tipo:'gasto',descripcion:desc,monto:monto,cuenta:cuenta,categoria:cat,notas:notas,timestamp:new Date().toISOString()}).then(function(ok){
-    showToast(ok ? '✓ Guardado en Drive · ' + hora : '✓ Guardado local', ok ? 'ok' : 'info');
+    showToast(ok?'✓ Guardado en Drive · '+hora:'✓ Guardado local',ok?'ok':'info');
   });
 }
 
@@ -758,53 +758,51 @@ function renderGastosHoy() {
   }
   lista.innerHTML = state.gastosHoy.slice().reverse().map(function(g) {
     var hora = new Date(g.timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
-    var color = CAT_COLORS[g.categoria] || '#8888a0';
+    var color = CAT_COLORS[g.categoria]||'#8888a0';
     return '<div class="gasto-item">' +
-      '<div class="gasto-dot" style="background:' + color + '"></div>' +
-      '<div class="gasto-info"><div class="gasto-desc">' + g.desc + '</div>' +
-      '<div class="gasto-meta">' + g.categoria + ' · ' + g.cuenta + ' · ' + hora + '</div></div>' +
-      '<div class="gasto-monto">-' + fmt(g.monto) + '</div></div>';
+      '<div class="gasto-dot" style="background:'+color+'"></div>' +
+      '<div class="gasto-info"><div class="gasto-desc">'+g.desc+'</div>' +
+      '<div class="gasto-meta">'+g.categoria+' · '+g.cuenta+' · '+hora+'</div></div>' +
+      '<div class="gasto-monto">-'+fmt(g.monto)+'</div></div>';
   }).join('');
 }
 
 // WEBHOOK
 function enviar(payload) {
-  return fetch(WEBHOOK, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-    .then(function(){ setSyncOk(true); return true; })
-    .catch(function(){ setSyncOk(false); return false; });
+  return fetch(WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(){setSyncOk(true);return true;})
+    .catch(function(){setSyncErr();return false;});
 }
 
 function sincronizar() {
-  setSyncLoading();
-  fetch(WEBHOOK).then(function(r){return r.json();}).then(function(d){
-    if (d.status) { setSyncOk(true); showToast('Webhook activo · v' + (d.version||'1'), 'ok'); }
-  }).catch(function(){ setSyncOk(false); showToast('Sin conexion al Sheet', 'err'); });
+  cargarDesdeNube();
+  showToast('Sincronizando...','info');
 }
 
 function setSyncOk(ok) {
   var d = document.getElementById('sync-dot');
-  var t = document.getElementById('sync-txt');
-  d.className = 'sync-dot' + (ok ? '' : ' err');
-  t.textContent = ok ? 'Sync' : 'Sin red';
+  d.className = 'sync-dot';
+  document.getElementById('sync-txt').textContent = 'Sync';
+}
+function setSyncErr() {
+  document.getElementById('sync-dot').className = 'sync-dot err';
+  document.getElementById('sync-txt').textContent = 'Sin red';
 }
 function setSyncLoading() {
   document.getElementById('sync-dot').className = 'sync-dot loading';
   document.getElementById('sync-txt').textContent = '...';
 }
 
-// PAGES
 function showPage(id, btn) {
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
 }
-
-// TOAST
-function showToast(msg, type) {
+function showToast(msg,type) {
   var t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast ' + type + ' show';
-  setTimeout(function(){t.classList.remove('show');}, 3000);
+  t.textContent = msg; t.className = 'toast '+type+' show';
+  setTimeout(function(){t.classList.remove('show');},3000);
 }
 </script>
 </body>
