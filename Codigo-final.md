@@ -282,7 +282,109 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({status: "Webhook activo", version: "2.0"})).setMimeType(ContentService.MimeType.JSON);
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var estado = {
+    pagos: {},
+    saldos: {bhd: 0, qik: 0, banreservas: 0},
+    gastosHoy: [],
+    entradasMes: [],
+    lastUpdate: new Date().toLocaleString("es-DO", {timeZone: "America/Santo_Domingo"})
+  };
+
+  // Leer pagos del Sheet
+  var wsAbril = ss.getSheetByName("Presupuesto Abril");
+  if (wsAbril) {
+    var filas = wsAbril.getDataRange().getValues();
+    var idMap = {
+      "Qik ahorro Q1": "py-qik1",
+      "Banreservas Q1": "py-banreservas1",
+      "Gimnasio": "py-gimnasio",
+      "Internet": "py-internet",
+      "Crunchyroll": "py-crunchyroll",
+      "SAM parte 1": "py-sam1",
+      "Residencial adelanto": "py-residencial1",
+      "Gasolina Q1": "py-gasolina1",
+      "Pago carro completo": "py-carro",
+      "Barberia parte 1": "py-barberia1",
+      "Qik ahorro Q2": "py-qik2",
+      "Banreservas Q2": "py-banreservas2",
+      "SAM parte 2": "py-sam2",
+      "Residencial restante": "py-residencial2",
+      "Mantenimiento vehiculo": "py-mant",
+      "Barberia parte 2": "py-barberia2",
+      "Gasolina Q2": "py-gasolina2"
+    };
+    for (var i = 0; i < filas.length; i++) {
+      var nombre = (filas[i][0] || "").toString();
+      var estadoPago = (filas[i][2] || "").toString();
+      var ts = (filas[i][4] || "").toString();
+      var monto = parseFloat(filas[i][1]) || 0;
+      var id = idMap[nombre];
+      if (id) {
+        estado.pagos[id] = {
+          done: estadoPago.indexOf("Hecho") !== -1,
+          nombre: nombre,
+          monto: monto,
+          ts: ts
+        };
+      }
+    }
+  }
+
+  // Leer saldos mas recientes
+  var wsSaldos = ss.getSheetByName("Saldos");
+  if (wsSaldos && wsSaldos.getLastRow() > 1) {
+    var sfilas = wsSaldos.getDataRange().getValues();
+    for (var j = 1; j < sfilas.length; j++) {
+      var cuenta = (sfilas[j][1] || "").toString().toLowerCase();
+      var mS = parseFloat(sfilas[j][2]) || 0;
+      if (cuenta === "bhd") estado.saldos.bhd = mS;
+      else if (cuenta === "qik") estado.saldos.qik = mS;
+      else if (cuenta === "banreservas") estado.saldos.banreservas = mS;
+    }
+  }
+
+  // Leer gastos de hoy
+  var wsG = ss.getSheetByName("Gastos Diarios");
+  if (wsG && wsG.getLastRow() > 1) {
+    var hoy = new Date().toDateString();
+    var gfilas = wsG.getDataRange().getValues();
+    for (var k = 1; k < gfilas.length; k++) {
+      var ts2 = gfilas[k][0] ? new Date(gfilas[k][0]) : null;
+      if (ts2 && ts2.toDateString() === hoy) {
+        estado.gastosHoy.push({
+          desc: (gfilas[k][1] || "").toString(),
+          categoria: (gfilas[k][2] || "General").toString(),
+          monto: parseFloat(gfilas[k][3]) || 0,
+          cuenta: (gfilas[k][4] || "").toString(),
+          timestamp: ts2.getTime()
+        });
+      }
+    }
+  }
+
+  // Leer entradas del mes
+  var wsE = ss.getSheetByName("Entradas");
+  if (wsE && wsE.getLastRow() > 1) {
+    var mesActual = new Date().getMonth();
+    var efilas = wsE.getDataRange().getValues();
+    for (var m = 1; m < efilas.length; m++) {
+      var tsE = efilas[m][0] ? new Date(efilas[m][0]) : null;
+      if (tsE && tsE.getMonth() === mesActual) {
+        estado.entradasMes.push({
+          desc: (efilas[m][1] || "").toString(),
+          tipo: (efilas[m][2] || "").toString(),
+          monto: parseFloat(efilas[m][3]) || 0,
+          cuenta: (efilas[m][4] || "").toString(),
+          timestamp: tsE.getTime()
+        });
+      }
+    }
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify(estado))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function registrarPago(data) {
