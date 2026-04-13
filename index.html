@@ -270,7 +270,10 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
     <div style="font-size:26px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px" id="s-total-pagado">RD$0</div>
     <div class="prog-track"><div class="prog-fill" id="prog-pagado" style="width:0%"></div></div>
-    <div style="font-size:11px;color:var(--muted);margin-top:2px" id="s-total-pagado-sub">de RD$31,050 comprometidos</div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <div style="font-size:11px;color:var(--muted)">de RD$31,050 comprometidos</div>
+      <div style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;font-weight:700" id="s-pendiente-pagar">RD$31,050 pendiente</div>
+    </div>
   </div>
   <div class="sec">Cuentas</div>
   <div class="cuenta" onclick="openModal('bhd')">
@@ -311,6 +314,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
     <div class="rrow"><span class="rrow-lbl">Total entradas</span><span class="rrow-val g" id="r-entradas">RD$0</span></div>
     <div class="rrow"><span class="rrow-lbl">Total pagado (marcados)</span><span class="rrow-val g" id="r-pagado">RD$0</span></div>
+    <div class="rrow"><span class="rrow-lbl">Pendiente por pagar</span><span class="rrow-val a" id="r-pendiente">RD$31,050</span></div>
     <div class="rrow"><span class="rrow-lbl">Gastos diarios</span><span class="rrow-val r" id="r-gastos">RD$0</span></div>
     <div class="rrow"><span class="rrow-lbl">Comprometido fijo</span><span class="rrow-val a">RD$31,050</span></div>
     <div class="rrow" style="border-top:2px solid var(--border2)"><span class="rrow-lbl" style="font-weight:600">Margen real estimado</span><span class="rrow-val g" id="r-margen">—</span></div>
@@ -606,10 +610,15 @@ function updateStats() {
   var pct = COMPROMETIDO > 0 ? Math.round(totalPagado/COMPROMETIDO*100) : 0;
   document.getElementById('s-pct-pagado').textContent = pct + '%';
   document.getElementById('prog-pagado').style.width = Math.min(pct,100) + '%';
-  document.getElementById('s-total-pagado-sub').textContent = 'de ' + fmt(COMPROMETIDO) + ' comprometidos';
+  var pendiente = COMPROMETIDO - totalPagado;
+  document.getElementById('s-pendiente-pagar').textContent = fmt(Math.max(0,pendiente)) + ' pendiente';
+  document.getElementById('s-pendiente-pagar').className = pendiente <= 0 ? 'g' : '';
+  document.getElementById('s-pendiente-pagar').style.color = pendiente <= 0 ? 'var(--green)' : 'var(--amber)';
 
   document.getElementById('r-entradas').textContent = fmt(entradasTotal);
   document.getElementById('r-pagado').textContent = fmt(totalPagado);
+  document.getElementById('r-pendiente').textContent = fmt(Math.max(0,pendiente));
+  document.getElementById('r-pendiente').style.color = pendiente <= 0 ? 'var(--green)' : 'var(--amber)';
   document.getElementById('r-gastos').textContent = fmt(gastosTotal);
   var margen = entradasTotal - gastosTotal - COMPROMETIDO;
   var mEl = document.getElementById('r-margen');
