@@ -26,74 +26,58 @@ html{font-size:16px;background:var(--bg)}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   min-height:100dvh;padding-bottom:calc(80px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased}
-
-/* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:200;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   transition:opacity .4s}
 .loading-screen.hidden{opacity:0;pointer-events:none}
-.loading-logo{width:60px;height:60px;border-radius:18px;
-  background:linear-gradient(135deg,var(--green),#00b8ff);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:800;color:#0a0a0f}
+.loading-logo{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--green),#00b8ff);
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0a0a0f}
 .loading-text{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
 .loading-dots span{animation:dot 1.4s infinite;display:inline-block}
 .loading-dots span:nth-child(2){animation-delay:.2s}
 .loading-dots span:nth-child(3){animation-delay:.4s}
 @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
 .topbar{background:rgba(10,10,15,.9);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);padding:14px 20px;
   padding-top:calc(14px + env(safe-area-inset-top));
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:50}
-.logo{width:36px;height:36px;border-radius:12px;
-  background:linear-gradient(135deg,var(--green),#00b8ff);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:800;color:#0a0a0f}
+.logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--green),#00b8ff);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0a0a0f}
 .topbar-title{font-size:16px;font-weight:700}
 .topbar-sub{font-size:10px;color:var(--muted);margin-top:1px;font-family:'DM Mono',monospace}
 .sync-wrap{display:flex;align-items:center;gap:6px;cursor:pointer}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);
-  box-shadow:0 0 8px var(--green);transition:all .3s}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);transition:all .3s}
 .sync-dot.err{background:var(--red);box-shadow:0 0 8px var(--red);animation:none}
 .sync-dot.loading{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:pulse 1s infinite}
 .sync-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
 .tabs{display:flex;gap:5px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;
-  background:var(--surface);border-bottom:1px solid var(--border);
-  position:sticky;top:64px;z-index:40}
+  background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:40}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;
   font-family:'Syne',sans-serif;border:1px solid var(--border2);
   background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
 .tab.active{background:var(--green);color:#0a0a0f;border-color:var(--green);font-weight:700}
-
 .page{display:none;padding:14px;flex-direction:column;gap:11px}
 .page.active{display:flex}
 .sec{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--faint);padding:0 2px;margin-top:2px;font-family:'DM Mono',monospace}
-
 .hero{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);
   padding:20px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-50px;right:-50px;
-  width:140px;height:140px;border-radius:50%;background:var(--gdim);filter:blur(35px)}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:140px;height:140px;
+  border-radius:50%;background:var(--gdim);filter:blur(35px)}
 .hero-label{font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace}
 .hero-value{font-size:38px;font-weight:800;color:var(--green);line-height:1;letter-spacing:-1px}
 .hero-sub{font-size:11px;color:var(--muted);margin-top:5px}
-
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .stat{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 12px}
 .stat-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'DM Mono',monospace;letter-spacing:.04em}
 .stat-value{font-size:20px;font-weight:700}
 .g{color:var(--green)}.a{color:var(--amber)}.r{color:var(--red)}.b{color:var(--blue)}.p{color:var(--purple)}.m{color:var(--muted)}
-
 .total-pagado-bar{background:var(--raised);border:1px solid var(--gb);border-radius:var(--rsm);padding:12px 14px}
 .prog-track{height:4px;background:var(--card);border-radius:3px;overflow:hidden;margin:6px 0 3px}
 .prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .6s}
-
 .cuenta{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
   padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
 .cuenta:active{opacity:.8}
@@ -105,7 +89,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .cuenta-saldo{text-align:right}
 .cuenta-monto{font-size:16px;font-weight:800;font-family:'DM Mono',monospace}
 .cuenta-edit{font-size:10px;color:var(--faint);margin-top:2px;font-family:'DM Mono',monospace}
-
 .card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px}
 .form-title{font-size:15px;font-weight:700;margin-bottom:14px}
 .field{margin-bottom:12px}
@@ -124,7 +107,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .btn:disabled{opacity:.5}
 .btn-g{background:var(--green);color:#0a0a0f}
 .btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border2)}
-
 .mes-selector{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);
   padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
 .mes-btn{background:var(--card);border:1px solid var(--border2);color:var(--muted);
@@ -133,16 +115,15 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .mes-btn:active{background:var(--green);color:#0a0a0f;border-color:var(--green)}
 .mes-nombre{font-size:15px;font-weight:700;text-align:center}
 .mes-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;margin-top:2px}
-
 .pay-section{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .pay-section-hdr{padding:13px 15px 9px;display:flex;align-items:center;justify-content:space-between}
 .pay-section-title{font-size:13px;font-weight:700}
 .pay-section-amt{font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Mono',monospace}
 .pay-item{display:flex;align-items:center;gap:11px;padding:11px 15px;
-  border-top:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative}
+  border-top:1px solid var(--border);cursor:pointer;transition:background .15s}
 .pay-item:active{background:var(--card)}
 .pay-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
-  justify-content:center;font-size:14px;flex-shrink:0}
+  justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 .pay-info{flex:1;min-width:0}
 .pay-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pay-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
@@ -156,7 +137,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .pay-check.done svg{opacity:1}
 .pay-item.done .pay-name{color:var(--muted);text-decoration:line-through}
 .pay-item.done .pay-amount{color:var(--muted)}
-
 .hecho-item{display:flex;align-items:center;gap:10px;padding:9px 14px;
   border-top:1px solid var(--border);background:rgba(0,229,160,.03)}
 .hecho-check{width:20px;height:20px;border-radius:6px;background:var(--green);
@@ -167,7 +147,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .hecho-ts{font-size:9px;color:var(--faint);font-family:'DM Mono',monospace;margin-top:1px}
 .hecho-cuenta{font-size:9px;color:var(--blue);font-family:'DM Mono',monospace;margin-top:1px}
 .hecho-amount{font-size:13px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace}
-
 .gasto-item{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
   padding:11px 13px;display:flex;align-items:center;gap:11px}
 .gasto-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
@@ -175,31 +154,25 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .gasto-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gasto-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
 .gasto-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
-
 .deuda{background:var(--raised);border:1px solid var(--ab);border-radius:var(--r);padding:18px}
-.deuda-row{display:flex;justify-content:space-between;padding:8px 0;
-  border-bottom:1px solid var(--border);font-size:13px}
+.deuda-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .deuda-row:last-child{border-bottom:none;padding-bottom:0}
 .deuda-lbl{color:var(--muted)}
 .deuda-val{font-weight:700;font-family:'DM Mono',monospace}
-
 .tabla-cuotas{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.tabla-hdr{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0;background:var(--card);
+.tabla-hdr{display:grid;grid-template-columns:2fr 1fr 1fr;background:var(--card);
   padding:8px 14px;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace;
   letter-spacing:.06em;text-transform:uppercase}
-.tabla-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0;padding:10px 14px;
+.tabla-row{display:grid;grid-template-columns:2fr 1fr 1fr;padding:10px 14px;
   border-top:1px solid var(--border);font-size:12px;align-items:center}
-.tabla-row.pagada{background:rgba(0,229,160,.04)}
 .tabla-row.proxima{background:rgba(255,184,48,.06);border-left:3px solid var(--amber)}
 .tabla-row.pendiente{opacity:.6}
-
 .score-track{height:6px;border-radius:3px;
   background:linear-gradient(to right,var(--red),var(--amber),var(--green));
   margin:12px 0 4px;position:relative}
 .score-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;
   background:var(--text);border:2px solid var(--bg);transform:translateX(-50%)}
 .score-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);font-family:'DM Mono',monospace}
-
 .tl-item{display:flex;gap:13px;padding-bottom:18px}
 .tl-item:last-child{padding-bottom:0}
 .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
@@ -209,24 +182,18 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .tl-body{flex:1}
 .tl-month{font-size:13px;font-weight:700}
 .tl-detail{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
-
 .rrow{display:flex;align-items:center;justify-content:space-between;
   padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
 .rrow:last-child{border-bottom:none}
 .rrow-lbl{color:var(--muted)}
 .rrow-val{font-weight:700;font-family:'DM Mono',monospace}
-
 .alert{border-radius:var(--rsm);padding:11px 13px;font-size:12px;line-height:1.6}
 .alert.a{background:var(--adim);border:1px solid var(--ab);color:var(--amber)}
 .alert.g{background:var(--gdim);border:1px solid var(--gb);color:var(--green)}
-.alert.r{background:var(--rdim);border:1px solid var(--rb);color:var(--red)}
 .pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
   font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
 .pg{background:var(--gdim);color:var(--green);border:1px solid var(--gb)}
 .pa{background:var(--adim);color:var(--amber);border:1px solid var(--ab)}
-.pr{background:var(--rdim);color:var(--red);border:1px solid var(--rb)}
-.pb{background:var(--bdim);color:var(--blue);border:1px solid var(--bb)}
-
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:90;
   display:none;align-items:flex-end;justify-content:center}
 .modal-bg.open{display:flex}
@@ -238,7 +205,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .modal-close{position:absolute;top:16px;right:16px;background:var(--card);
   border:none;color:var(--muted);width:28px;height:28px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
-
 .cuenta-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .cuenta-opt{background:var(--card);border:2px solid var(--border2);border-radius:var(--rsm);
   padding:12px;text-align:center;cursor:pointer;transition:all .2s}
@@ -246,7 +212,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .cuenta-opt-name{font-size:13px;font-weight:700;margin-bottom:2px}
 .cuenta-opt-saldo{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
 .cuenta-opt.selected .cuenta-opt-name{color:var(--green)}
-
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(16px);
   background:var(--raised);border:1px solid var(--border2);border-radius:12px;
   padding:11px 18px;font-size:13px;font-weight:600;
@@ -287,6 +252,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <button class="tab" onclick="showPage('score',this)">Score</button>
 </div>
 
+<!-- INICIO -->
 <div class="page active" id="page-inicio">
   <div class="hero">
     <div class="hero-label">Balance neto total</div>
@@ -306,8 +272,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div style="font-size:26px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px" id="s-total-pagado">RD$0</div>
     <div class="prog-track"><div class="prog-fill" id="prog-pagado" style="width:0%"></div></div>
     <div style="display:flex;justify-content:space-between;margin-top:3px">
-      <div style="font-size:11px;color:var(--muted)" id="s-comprometido-label">de RD$0 comprometidos</div>
-      <div style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;font-weight:700" id="s-pendiente-pagar"></div>
+      <div style="font-size:11px;color:var(--muted)" id="s-comp-label">de RD$0 comprometidos</div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700" id="s-pendiente-pagar"></div>
     </div>
   </div>
   <div class="sec">Cuentas</div>
@@ -329,11 +295,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="cuenta" onclick="openModalSaldo('ademi')">
     <div class="cuenta-dot" style="background:var(--pdim);color:var(--purple)">A</div>
     <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Cobro automatico dia 14 · No tocar</div></div>
-    <div class="cuenta-saldo"><div class="cuenta-monto p" id="saldo-ademi">RD$4,600</div><div class="cuenta-edit">tocar para editar</div></div>
+    <div class="cuenta-saldo"><div class="cuenta-monto p" id="saldo-ademi">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Mayo y junio cubiertos con sobrante. Desde julio depositar RD$2,139 antes del dia 13.</div>
 </div>
 
+<!-- BALANCE -->
 <div class="page" id="page-balance">
   <div class="card">
     <div class="form-title">Registrar entrada</div>
@@ -369,6 +336,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div id="entradas-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas este mes</div></div>
 </div>
 
+<!-- PAGOS -->
 <div class="page" id="page-pagos">
   <div class="mes-selector">
     <div class="mes-btn" onclick="cambiarMes(-1)">&#8249;</div>
@@ -378,6 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
     <div class="mes-btn" onclick="cambiarMes(1)">&#8250;</div>
   </div>
+  <!-- Hechos del mes actual -->
   <div class="pay-section" style="border-color:var(--gb)">
     <div class="pay-section-hdr">
       <div class="pay-section-title" style="color:var(--green)">Pagados este mes</div>
@@ -385,9 +354,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
     <div id="hechos-lista"><div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:'DM Mono',monospace">Ninguno marcado aun</div></div>
   </div>
+  <!-- Pagos del mes actual (dinamico) -->
   <div id="pagos-container"></div>
 </div>
 
+<!-- GASTOS -->
 <div class="page" id="page-gastos">
   <div class="card">
     <div class="form-title">Registrar gasto</div>
@@ -418,6 +389,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin gastos hoy</div></div>
 </div>
 
+<!-- DEUDAS -->
 <div class="page" id="page-deudas">
   <div class="sec">SAM — ahorro interno</div>
   <div class="deuda" style="border-color:var(--gb)">
@@ -472,6 +444,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
 </div>
 
+<!-- SCORE -->
 <div class="page" id="page-score">
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:20px">
     <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace">Score crediticio · Credicefi</div>
@@ -492,23 +465,25 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
 </div>
 
+<!-- MODAL SALDO -->
 <div class="modal-bg" id="modal-saldo-bg" onclick="closeModalSaldo(event)">
   <div class="modal">
     <div class="modal-title" id="modal-saldo-title">Actualizar saldo</div>
     <div class="modal-sub" id="modal-saldo-sub"></div>
-    <button class="modal-close" onclick="closeModalSaldo(null)">x</button>
+    <button class="modal-close" onclick="closeModalSaldo(null)">&#10005;</button>
     <div class="field"><label>Saldo actual (RD$)</label><input type="number" id="modal-saldo-input" inputmode="decimal" placeholder="0.00"/></div>
     <button class="btn btn-g" onclick="guardarSaldo()">Actualizar saldo</button>
   </div>
 </div>
 
+<!-- MODAL PAGO -->
 <div class="modal-bg" id="modal-pago-bg" onclick="closeModalPago(event)">
   <div class="modal">
     <div class="modal-title" id="modal-pago-title">Marcar como pagado</div>
     <div class="modal-sub" id="modal-pago-sub">Selecciona desde que cuenta pagaste</div>
-    <button class="modal-close" onclick="closeModalPago(null)">x</button>
+    <button class="modal-close" onclick="closeModalPago(null)">&#10005;</button>
     <div class="cuenta-options" id="modal-cuenta-opts"></div>
-    <button class="btn btn-g" id="btn-confirmar-pago" onclick="confirmarPago()">Confirmar pago</button>
+    <button class="btn btn-g" onclick="confirmarPago()">Confirmar pago</button>
     <button class="btn btn-outline" style="margin-top:8px" onclick="closeModalPago(null)">Cancelar</button>
   </div>
 </div>
@@ -519,85 +494,156 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 const WEBHOOK='https://script.google.com/macros/s/AKfycbw1OYUg2ZTPhMnXZXYBTkOh9ERM7sO23vqVlmwO7xT4nqoRzvtnlhDs20WIl8J4LhAkHA/exec';
 const CAT_COLORS={'Comida':'#ff4f6a','Transporte':'#4f9eff','Gasolina':'#ffb830','Salud':'#00e5a0','Entretenimiento':'#a78bfa','Ropa':'#f472b6','Hogar':'#fb923c','General':'#8888a0'};
 
-const MESES={
-0:{nombre:'Abril 2026',comprometido:31050,quincenas:[
-  {titulo:'Quincena 1 · 1-20 abril',total:15850,pagos:[
-    {id:'py-q1-qik1',nombre:'Qik ahorro Q1',monto:2500,cuenta:'Qik',icon:'QIK',color:'var(--bdim)',textColor:'var(--blue)'},
-    {id:'py-q1-ban1',nombre:'Banreservas Q1',monto:2000,cuenta:'Banreservas',icon:'R',color:'var(--adim)',textColor:'var(--amber)'},
-    {id:'py-q1-gym',nombre:'Gimnasio',monto:1500,cuenta:'BHD',icon:'G',color:'rgba(99,102,241,.12)',textColor:''},
-    {id:'py-q1-net',nombre:'Internet',monto:900,cuenta:'BHD',icon:'W',color:'var(--rdim)',textColor:''},
-    {id:'py-q1-crun',nombre:'Crunchyroll',monto:250,cuenta:'BHD',icon:'C',color:'rgba(249,115,22,.1)',textColor:''},
-    {id:'py-q1-sam1',nombre:'SAM parte 1',monto:2000,cuenta:'BHD',icon:'S',color:'var(--gdim)',textColor:'var(--green)'},
-    {id:'py-q1-res1',nombre:'Residencial adelanto',monto:1500,cuenta:'BHD',icon:'H',color:'rgba(148,163,184,.08)',textColor:''},
-    {id:'py-q1-gas1',nombre:'Gasolina Q1',monto:2200,cuenta:'BHD',icon:'E',color:'rgba(234,179,8,.1)',textColor:''},
-    {id:'py-q1-carro',nombre:'Pago carro completo',monto:5000,cuenta:'BHD',icon:'V',color:'rgba(99,102,241,.1)',textColor:''},
-    {id:'py-q1-barb1',nombre:'Barberia parte 1',monto:500,cuenta:'BHD',icon:'B',color:'rgba(20,184,166,.1)',textColor:''}
-  ]},
-  {titulo:'Quincena 2 · 20 abr-5 mayo',total:15200,pagos:[
-    {id:'py-q2-qik2',nombre:'Qik ahorro Q2',monto:2500,cuenta:'Qik',icon:'QIK',color:'var(--bdim)',textColor:'var(--blue)'},
-    {id:'py-q2-ban2',nombre:'Banreservas Q2',monto:2000,cuenta:'Banreservas',icon:'R',color:'var(--adim)',textColor:'var(--amber)'},
-    {id:'py-q2-sam2',nombre:'SAM parte 2',monto:2000,cuenta:'BHD',icon:'S',color:'var(--gdim)',textColor:'var(--green)'},
-    {id:'py-q2-res2',nombre:'Residencial restante',monto:1500,cuenta:'BHD',icon:'H',color:'rgba(148,163,184,.08)',textColor:''},
-    {id:'py-q2-mant',nombre:'Mantenimiento vehiculo',monto:2000,cuenta:'BHD',icon:'M',color:'var(--rdim)',textColor:''},
-    {id:'py-q2-barb2',nombre:'Barberia parte 2',monto:500,cuenta:'BHD',icon:'B',color:'rgba(20,184,166,.1)',textColor:''},
-    {id:'py-q2-gas2',nombre:'Gasolina Q2',monto:2200,cuenta:'BHD',icon:'E',color:'rgba(234,179,8,.1)',textColor:''}
-  ]}
-]},
-1:{nombre:'Mayo 2026',comprometido:29050,quincenas:[
-  {titulo:'Quincena 1 · cobras dia 5',total:15850,pagos:[
-    {id:'py-m1-ban1',nombre:'Banreservas Q1',monto:2000,cuenta:'Banreservas',icon:'R',color:'var(--adim)',textColor:'var(--amber)'},
-    {id:'py-m1-gym',nombre:'Gimnasio',monto:1500,cuenta:'BHD',icon:'G',color:'rgba(99,102,241,.12)',textColor:''},
-    {id:'py-m1-net',nombre:'Internet',monto:900,cuenta:'BHD',icon:'W',color:'var(--rdim)',textColor:''},
-    {id:'py-m1-crun',nombre:'Crunchyroll',monto:250,cuenta:'BHD',icon:'C',color:'rgba(249,115,22,.1)',textColor:''},
-    {id:'py-m1-sam1',nombre:'SAM parte 1',monto:2000,cuenta:'BHD',icon:'S',color:'var(--gdim)',textColor:'var(--green)'},
-    {id:'py-m1-res1',nombre:'Residencial adelanto',monto:1500,cuenta:'BHD',icon:'H',color:'rgba(148,163,184,.08)',textColor:''},
-    {id:'py-m1-gas1',nombre:'Gasolina Q1',monto:2200,cuenta:'BHD',icon:'E',color:'rgba(234,179,8,.1)',textColor:''},
-    {id:'py-m1-barb1',nombre:'Barberia parte 1',monto:500,cuenta:'BHD',icon:'B',color:'rgba(20,184,166,.1)',textColor:''},
-    {id:'py-m1-carro',nombre:'Pago carro completo',monto:5000,cuenta:'BHD',icon:'V',color:'rgba(99,102,241,.1)',textColor:''}
-  ]},
-  {titulo:'Quincena 2 · cobras dia 20',total:13200,pagos:[
-    {id:'py-m2-qik',nombre:'Qik ahorro (completo)',monto:5000,cuenta:'Qik',icon:'QIK',color:'var(--bdim)',textColor:'var(--blue)'},
-    {id:'py-m2-ban2',nombre:'Banreservas Q2',monto:2000,cuenta:'Banreservas',icon:'R',color:'var(--adim)',textColor:'var(--amber)'},
-    {id:'py-m2-sam2',nombre:'SAM parte 2 (ULTIMO)',monto:2000,cuenta:'BHD',icon:'S',color:'var(--gdim)',textColor:'var(--green)'},
-    {id:'py-m2-res2',nombre:'Residencial restante',monto:1500,cuenta:'BHD',icon:'H',color:'rgba(148,163,184,.08)',textColor:''},
-    {id:'py-m2-gas2',nombre:'Gasolina Q2',monto:2200,cuenta:'BHD',icon:'E',color:'rgba(234,179,8,.1)',textColor:''},
-    {id:'py-m2-barb2',nombre:'Barberia parte 2',monto:500,cuenta:'BHD',icon:'B',color:'rgba(20,184,166,.1)',textColor:''},
-    {id:'py-m2-ademi',nombre:'Ademi cuota 1 · dia 14',monto:0,cuenta:'Ademi',icon:'A',color:'var(--pdim)',textColor:'var(--purple)',nota:'Del sobrante cuenta'}
-  ]}
-]}
+// ═══════════════════════════════════════════════════
+// PRESUPUESTOS — IDs deben coincidir con Sheet
+// Los pagos se guardan por clave: "mes_id"
+// Ejemplo: "0_py-qik1" para Abril, "1_py-m1-ban1" para Mayo
+// ═══════════════════════════════════════════════════
+const MESES = {
+  0: {
+    nombre: 'Abril 2026',
+    comprometido: 31050,
+    hoja: 'Presupuesto Abril',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · 1-20 abril',
+        total: 15850,
+        pagos: [
+          {id:'py-qik1',    nombre:'Qik ahorro Q1',        monto:2500,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'py-ban1',    nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'py-gym',     nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'py-net',     nombre:'Internet',             monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'py-crun',    nombre:'Crunchyroll',          monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'py-sam1',    nombre:'SAM parte 1',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
+          {id:'py-res1',    nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'py-gas1',    nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'py-carro',   nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+          {id:'py-barb1',   nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'}
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · 20 abr-5 mayo',
+        total: 15200,
+        pagos: [
+          {id:'py-qik2',    nombre:'Qik ahorro Q2',        monto:2500,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'py-ban2',    nombre:'Banreservas Q2',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'py-sam2',    nombre:'SAM parte 2',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
+          {id:'py-res2',    nombre:'Residencial restante', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'py-mant',    nombre:'Mantenimiento vehiculo',monto:2000, cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'MNT'},
+          {id:'py-barb2',   nombre:'Barberia parte 2',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'py-gas2',    nombre:'Gasolina Q2',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'}
+        ]
+      }
+    ]
+  },
+  1: {
+    nombre: 'Mayo 2026',
+    comprometido: 29050,
+    hoja: 'Presupuesto Mayo',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        total: 15850,
+        pagos: [
+          {id:'pm-ban1',   nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pm-gym',    nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'pm-net',    nombre:'Internet',             monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'pm-crun',   nombre:'Crunchyroll',          monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'pm-sam1',   nombre:'SAM parte 1',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
+          {id:'pm-res1',   nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'pm-gas1',   nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pm-barb1',  nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'}
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        total: 13200,
+        pagos: [
+          {id:'pm-qik',    nombre:'Qik ahorro (completo)',monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'pm-ban2',   nombre:'Banreservas Q2',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pm-sam2',   nombre:'SAM parte 2 (ULTIMO)', monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
+          {id:'pm-res2',   nombre:'Residencial restante', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'pm-gas2',   nombre:'Gasolina Q2',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pm-barb2',  nombre:'Barberia parte 2',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pm-ademi',  nombre:'Ademi cuota 1 · dia 14',monto:0,    cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Del sobrante'}
+        ]
+      }
+    ]
+  }
 };
 
-var state={saldos:{bhd:0,qik:0,banreservas:0,ademi:4600},pagos:{},gastosHoy:[],entradasMes:[]};
-var mesActual=0;
+// ═══════════════════════════════════════════════════
+// ESTADO
+// state.pagos = { "0_py-qik1": {done,ts,nombre,monto,cuenta}, ... }
+// La clave incluye el mes para que sean totalmente independientes
+// ═══════════════════════════════════════════════════
+var state = {
+  saldos: {bhd:0, qik:0, banreservas:0, ademi:4600},
+  pagos: {},        // clave: mesIdx + "_" + id
+  gastosHoy: [],
+  entradasMes: []
+};
+var mesActual = 0;
 
-var now=new Date();
-document.getElementById('topbar-date').textContent=now.toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
-window.addEventListener('load',cargarDesdeNube);
+// Init
+var now = new Date();
+document.getElementById('topbar-date').textContent = now.toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
+window.addEventListener('load', cargarDesdeNube);
 
-function cargarDesdeNube(){
+function cargarDesdeNube() {
   setSyncLoading();
   fetch(WEBHOOK)
     .then(function(r){return r.json();})
     .then(function(data){
-      state.saldos=data.saldos||{bhd:0,qik:0,banreservas:0,ademi:4600};
-      if(!state.saldos.ademi)state.saldos.ademi=4600;
-      state.pagos=data.pagos||{};
-      state.gastosHoy=data.gastosHoy||[];
-      state.entradasMes=data.entradasMes||[];
-      aplicarEstado();setSyncOk();
+      state.saldos = data.saldos || {bhd:0,qik:0,banreservas:0,ademi:4600};
+      if (!state.saldos.ademi) state.saldos.ademi = 4600;
+      // El Sheet devuelve pagos con clave como "0_py-qik1" o legacy "py-qik1"
+      // Normalizar: si la clave no tiene "_", asumirla de Abril (mes 0)
+      var rawPagos = data.pagos || {};
+      state.pagos = {};
+      Object.keys(rawPagos).forEach(function(k){
+        if (k.indexOf('_') === -1) {
+          // legacy: era de abril
+          state.pagos['0_' + k] = rawPagos[k];
+        } else {
+          state.pagos[k] = rawPagos[k];
+        }
+      });
+      state.gastosHoy = data.gastosHoy || [];
+      state.entradasMes = data.entradasMes || [];
+      aplicarEstado();
+      setSyncOk();
       document.getElementById('loading').classList.add('hidden');
       showToast('Sincronizado con Drive','ok');
     })
     .catch(function(){
-      aplicarEstado();setSyncErr();
+      aplicarEstado();
+      setSyncErr();
       document.getElementById('loading').classList.add('hidden');
       showToast('Sin conexion · datos locales','err');
     });
 }
 
-function aplicarEstado(){renderMes();initSaldos();renderHechos();renderGastosHoy();renderEntradas();updateStats();}
+function aplicarEstado() {
+  renderMes();
+  initSaldos();
+  renderHechos();
+  renderGastosHoy();
+  renderEntradas();
+  updateStats();
+}
+
 function fmt(n){return 'RD$'+Math.round(n||0).toLocaleString('es-DO');}
 
+// Clave compuesta: mesIdx_pagoId
+function pKey(mesIdx, id){return mesIdx+'_'+id;}
+
+function getPagoState(mesIdx, id){
+  return state.pagos[pKey(mesIdx,id)] || {};
+}
+
+// ─── Saldos ───
 function initSaldos(){
   var total=(state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0);
   document.getElementById('h-neto').textContent=total?fmt(total):'—';
@@ -608,14 +654,29 @@ function initSaldos(){
   document.getElementById('saldo-ademi').textContent=fmt(state.saldos.ademi);
 }
 
+// ─── Stats: solo del mes activo ───
+function calcTotalPagadoMes(mesIdx){
+  var total=0;
+  var mes=MESES[mesIdx];
+  if(!mes)return 0;
+  mes.quincenas.forEach(function(q){
+    q.pagos.forEach(function(p){
+      var ps=getPagoState(mesIdx,p.id);
+      if(ps.done)total+=p.monto||0;
+    });
+  });
+  return total;
+}
+
 function updateStats(){
   var mes=MESES[mesActual];
   var comp=mes?mes.comprometido:0;
   var gT=state.gastosHoy.reduce(function(s,g){return s+(g.monto||0);},0);
   var eT=state.entradasMes.reduce(function(s,e){return s+(e.monto||0);},0);
-  var pT=calcTotalPagado();
+  var pT=calcTotalPagadoMes(mesActual);
   var pend=Math.max(0,comp-pT);
   var pct=comp>0?Math.min(100,Math.round(pT/comp*100)):0;
+  // Contar items del mes actual renderizado
   var tot=document.querySelectorAll('.pay-item').length;
   var dn=document.querySelectorAll('.pay-item.done').length;
   document.getElementById('s-pagos').textContent=dn+'/'+tot;
@@ -624,9 +685,9 @@ function updateStats(){
   document.getElementById('s-total-pagado').textContent=fmt(pT);
   document.getElementById('s-pct-pagado').textContent=pct+'%';
   document.getElementById('prog-pagado').style.width=pct+'%';
-  document.getElementById('s-comprometido-label').textContent='de '+fmt(comp)+' comprometidos';
+  document.getElementById('s-comp-label').textContent='de '+fmt(comp)+' comprometidos';
   var pEl=document.getElementById('s-pendiente-pagar');
-  pEl.textContent=pend>0?fmt(pend)+' pendiente':'Al dia!';
+  pEl.textContent=pend>0?fmt(pend)+' pendiente':'¡Al dia!';
   pEl.style.color=pend>0?'var(--amber)':'var(--green)';
   document.getElementById('r-entradas').textContent=fmt(eT);
   document.getElementById('r-pagado').textContent=fmt(pT);
@@ -638,61 +699,98 @@ function updateStats(){
   mEl.textContent=fmt(mg);mEl.className='rrow-val '+(mg>=0?'g':'r');
 }
 
-function calcTotalPagado(){
-  var t=0;
-  Object.keys(state.pagos).forEach(function(id){if(state.pagos[id].done)t+=state.pagos[id].monto||0;});
-  return t;
-}
-
+// ─── Selector de mes ───
 function cambiarMes(dir){
   var keys=Object.keys(MESES).map(Number);
   var idx=keys.indexOf(mesActual);
   var ni=idx+dir;
   if(ni<0||ni>=keys.length)return;
-  mesActual=keys[ni];renderMes();updateStats();
+  mesActual=keys[ni];
+  renderMes();
+  renderHechos();
+  updateStats();
 }
 
+// ─── Render mes — completamente independiente ───
 function renderMes(){
   var mes=MESES[mesActual];
   if(!mes)return;
   document.getElementById('mes-nombre').textContent=mes.nombre;
   var tot=0,dn=0,mt=0;
-  mes.quincenas.forEach(function(q){q.pagos.forEach(function(p){
-    tot++;mt+=p.monto;
-    if(state.pagos[p.id]&&state.pagos[p.id].done)dn++;
-  });});
+  mes.quincenas.forEach(function(q){
+    q.pagos.forEach(function(p){
+      tot++;mt+=p.monto;
+      var ps=getPagoState(mesActual,p.id);
+      if(ps.done)dn++;
+    });
+  });
   document.getElementById('mes-sub').textContent=dn+' de '+tot+' pagos · '+fmt(mt);
   var container=document.getElementById('pagos-container');
   container.innerHTML='';
   mes.quincenas.forEach(function(q){
-    var sec=document.createElement('div');sec.className='pay-section';sec.style.marginBottom='0';
+    var sec=document.createElement('div');
+    sec.className='pay-section';
     var hdr='<div class="pay-section-hdr"><div class="pay-section-title">'+q.titulo+'</div><div class="pay-section-amt">'+fmt(q.total)+'</div></div>';
     var items='';
     q.pagos.forEach(function(p){
-      var ps=state.pagos[p.id]||{};
+      var ps=getPagoState(mesActual,p.id);
       var isDone=ps.done;
-      var nota=p.nota?'<div style="font-size:9px;color:var(--purple);font-family:\'DM Mono\',monospace">'+p.nota+'</div>':'';
-      var tsH=ps.ts?'<div class="pay-ts">'+ps.ts+'</div>':'';
-      var cH=ps.cuenta?'<div style="font-size:9px;color:var(--blue);font-family:\'DM Mono\',monospace">'+ps.cuenta+'</div>':'';
-      var iS=p.textColor?'font-size:10px;font-weight:800;color:'+p.textColor:'font-size:13px';
-      items+='<div class="pay-item'+(isDone?' done':'')+'" id="'+p.id+'" onclick="abrirModalPago(\''+p.id+'\','+p.monto+',\''+p.nombre+'\')">';
-      items+='<div class="pay-icon" style="background:'+p.color+'"><span style="'+iS+'">'+p.icon+'</span></div>';
+      var nota=p.nota?'<div style="font-size:9px;color:var(--purple);font-family:\'DM Mono\',monospace;margin-top:1px">'+p.nota+'</div>':'';
+      var tsHtml=ps.ts?'<div class="pay-ts">'+ps.ts+'</div>':'';
+      var cuentaHtml=ps.cuenta?'<div style="font-size:9px;color:var(--blue);font-family:\'DM Mono\',monospace">'+ps.cuenta+'</div>':'';
+      var iStyle=p.tc?'color:'+p.tc+';font-size:10px;font-weight:800':'font-size:10px;font-weight:800;color:var(--muted)';
+      // El onclick pasa el mesActual para que el pago quede vinculado al mes correcto
+      items+='<div class="pay-item'+(isDone?' done':'')+'" id="item-'+p.id+'" onclick="abrirModalPago('+mesActual+',\''+p.id+'\','+p.monto+',\''+p.nombre+'\')">';
+      items+='<div class="pay-icon" style="background:'+p.color+'"><span style="'+iStyle+'">'+p.icon+'</span></div>';
       items+='<div class="pay-info"><div class="pay-name">'+p.nombre+'</div>';
       items+='<div class="pay-meta">'+p.cuenta+(p.monto===0?' · sin costo esta cuota':'')+'</div>';
-      items+=nota+tsH+cH+'</div>';
+      items+=nota+tsHtml+cuentaHtml+'</div>';
       items+='<div class="pay-right"><div class="pay-amount'+(p.monto===0?' p':'')+'">'+( p.monto===0?'RD$0':fmt(p.monto))+'</div>';
-      items+='<div class="pay-check'+(isDone?' done':'')+'" ><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
+      items+='<div class="pay-check'+(isDone?' done':'')+'"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
     });
-    sec.innerHTML=hdr+items;container.appendChild(sec);
+    sec.innerHTML=hdr+items;
+    container.appendChild(sec);
   });
 }
 
+// ─── Hechos — solo del mes activo ───
+function renderHechos(){
+  var lista=document.getElementById('hechos-lista');
+  var mes=MESES[mesActual];
+  if(!mes){lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';document.getElementById('total-hechos-amt').textContent='RD$0';return;}
+  // Recopilar solo los pagos del mes activo que esten done
+  var hechos=[];
+  mes.quincenas.forEach(function(q){
+    q.pagos.forEach(function(p){
+      var ps=getPagoState(mesActual,p.id);
+      if(ps.done)hechos.push({nombre:p.nombre,monto:p.monto,ts:ps.ts,cuenta:ps.cuenta});
+    });
+  });
+  if(!hechos.length){
+    lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';
+    document.getElementById('total-hechos-amt').textContent='RD$0';
+    return;
+  }
+  var tH=0,html='';
+  hechos.forEach(function(h){
+    tH+=h.monto||0;
+    html+='<div class="hecho-item"><div class="hecho-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>';
+    html+='<div class="hecho-info"><div class="hecho-name">'+h.nombre+'</div>';
+    if(h.cuenta)html+='<div class="hecho-cuenta">via '+h.cuenta+'</div>';
+    if(h.ts)html+='<div class="hecho-ts">'+h.ts+'</div>';
+    html+='</div><div class="hecho-amount">'+fmt(h.monto)+'</div></div>';
+  });
+  lista.innerHTML=html;
+  document.getElementById('total-hechos-amt').textContent=fmt(tH);
+}
+
+// ─── Modal Pago ───
 var pagoActual=null;
-function abrirModalPago(id,monto,nombre){
-  var el=document.getElementById(id);
+function abrirModalPago(mesIdx, id, monto, nombre){
+  var el=document.getElementById('item-'+id);
   if(!el)return;
-  if(el.classList.contains('done')){desmarcarPago(id,monto,nombre);return;}
-  pagoActual={id:id,monto:monto,nombre:nombre};
+  if(el.classList.contains('done')){desmarcarPago(mesIdx,id,monto,nombre);return;}
+  pagoActual={mesIdx:mesIdx,id:id,monto:monto,nombre:nombre};
   document.getElementById('modal-pago-title').textContent=nombre;
   document.getElementById('modal-pago-sub').textContent=monto>0?'Selecciona desde que cuenta pagaste · '+fmt(monto):'Marcar como gestionado';
   var cuentas=[
@@ -705,7 +803,7 @@ function abrirModalPago(id,monto,nombre){
   var opts='';
   cuentas.forEach(function(c){
     var s=state.saldos[c.key.toLowerCase()]||0;
-    opts+='<div class="cuenta-opt" onclick="seleccionarCuentaPago(\''+c.key+'\')" id="copt-'+c.key+'">';
+    opts+='<div class="cuenta-opt" onclick="selCuenta(\''+c.key+'\')" id="copt-'+c.key+'">';
     opts+='<div class="cuenta-opt-name" style="color:'+c.color+'">'+c.label+'</div>';
     opts+='<div class="cuenta-opt-saldo">'+fmt(s)+'</div></div>';
   });
@@ -713,66 +811,56 @@ function abrirModalPago(id,monto,nombre){
   document.getElementById('modal-pago-bg').classList.add('open');
 }
 
-var cuentaSeleccionada=null;
-function seleccionarCuentaPago(cuenta){
-  cuentaSeleccionada=cuenta;
+var cuentaSel=null;
+function selCuenta(c){
+  cuentaSel=c;
   document.querySelectorAll('.cuenta-opt').forEach(function(el){el.classList.remove('selected');});
-  var opt=document.getElementById('copt-'+cuenta);
-  if(opt)opt.classList.add('selected');
+  var o=document.getElementById('copt-'+c);
+  if(o)o.classList.add('selected');
 }
 
 function confirmarPago(){
-  if(!cuentaSeleccionada){showToast('Selecciona una cuenta','err');return;}
+  if(!cuentaSel){showToast('Selecciona una cuenta','err');return;}
   if(!pagoActual)return;
-  var id=pagoActual.id,monto=pagoActual.monto,nombre=pagoActual.nombre,cuenta=cuentaSeleccionada;
+  var mi=pagoActual.mesIdx,id=pagoActual.id,monto=pagoActual.monto,nombre=pagoActual.nombre,cuenta=cuentaSel;
   var ts=new Date().toLocaleString('es-DO',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
-  var el=document.getElementById(id);
+  var el=document.getElementById('item-'+id);
   if(el){el.classList.add('done');el.querySelector('.pay-check').classList.add('done');}
   if(monto>0){
-    var cKey=cuenta.toLowerCase();
-    if(state.saldos[cKey]!==undefined)state.saldos[cKey]=Math.max(0,(state.saldos[cKey]||0)-monto);
+    var ck=cuenta.toLowerCase();
+    if(state.saldos[ck]!==undefined)state.saldos[ck]=Math.max(0,(state.saldos[ck]||0)-monto);
   }
-  state.pagos[id]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:cuenta};
+  state.pagos[pKey(mi,id)]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:cuenta};
   initSaldos();renderHechos();updateStats();closeModalPago(null);
-  showToast(nombre+' · '+cuenta,'ok');cuentaSeleccionada=null;
-  enviar({tipo:'pago',concepto:nombre,hoja:'Presupuesto Abril',estado:'Hecho',cuenta:cuenta,timestamp:new Date().toISOString()});
+  showToast(nombre+' · '+cuenta,'ok');cuentaSel=null;
+  var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
+  enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Hecho',cuenta:cuenta,timestamp:new Date().toISOString()});
   enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[cuenta.toLowerCase()]||0});
 }
 
-function desmarcarPago(id,monto,nombre){
-  var el=document.getElementById(id);
+function desmarcarPago(mi,id,monto,nombre){
+  var el=document.getElementById('item-'+id);
   if(!el)return;
-  var ps=state.pagos[id];
+  var ps=state.pagos[pKey(mi,id)];
   var cA=ps?ps.cuenta:null;
   el.classList.remove('done');el.querySelector('.pay-check').classList.remove('done');
-  if(monto>0&&cA){var cKey=cA.toLowerCase();if(state.saldos[cKey]!==undefined)state.saldos[cKey]+=monto;}
-  state.pagos[id]={done:false,nombre:nombre,monto:monto};
+  if(monto>0&&cA){
+    var ck=cA.toLowerCase();
+    if(state.saldos[ck]!==undefined)state.saldos[ck]+=monto;
+  }
+  state.pagos[pKey(mi,id)]={done:false,nombre:nombre,monto:monto};
   initSaldos();renderHechos();updateStats();
   showToast(nombre+' desmarcado','info');
-  enviar({tipo:'pago',concepto:nombre,hoja:'Presupuesto Abril',estado:'Pendiente',timestamp:new Date().toISOString()});
+  var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
+  enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Pendiente',timestamp:new Date().toISOString()});
 }
 
 function closeModalPago(e){
   if(e&&e.target!==document.getElementById('modal-pago-bg'))return;
-  document.getElementById('modal-pago-bg').classList.remove('open');cuentaSeleccionada=null;
+  document.getElementById('modal-pago-bg').classList.remove('open');cuentaSel=null;
 }
 
-function renderHechos(){
-  var lista=document.getElementById('hechos-lista');
-  var hechos=Object.keys(state.pagos).filter(function(k){return state.pagos[k].done;});
-  if(!hechos.length){lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';document.getElementById('total-hechos-amt').textContent='RD$0';return;}
-  var tH=0,html='';
-  hechos.forEach(function(id){
-    var p=state.pagos[id];tH+=p.monto||0;
-    html+='<div class="hecho-item"><div class="hecho-check"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div>';
-    html+='<div class="hecho-info"><div class="hecho-name">'+(p.nombre||id)+'</div>';
-    if(p.cuenta)html+='<div class="hecho-cuenta">via '+p.cuenta+'</div>';
-    if(p.ts)html+='<div class="hecho-ts">'+p.ts+'</div>';
-    html+='</div><div class="hecho-amount">'+fmt(p.monto)+'</div></div>';
-  });
-  lista.innerHTML=html;document.getElementById('total-hechos-amt').textContent=fmt(tH);
-}
-
+// ─── Modal Saldo ───
 var modalSaldoCuenta='';
 function openModalSaldo(c){
   modalSaldoCuenta=c;
@@ -795,6 +883,7 @@ function guardarSaldo(){
   enviar({tipo:'saldo',cuenta:modalSaldoCuenta,monto:val});
 }
 
+// ─── Entradas ───
 function guardarEntrada(){
   var monto=parseFloat(document.getElementById('e-monto').value)||0;
   var desc=document.getElementById('e-desc').value.trim();
@@ -806,8 +895,8 @@ function guardarEntrada(){
   btn.disabled=true;btn.textContent='Guardando...';
   var entrada={monto:monto,desc:desc,cuenta:cuenta,tipo:tipo,timestamp:Date.now()};
   state.entradasMes.push(entrada);
-  var cKey=cuenta.toLowerCase();
-  if(state.saldos[cKey]!==undefined)state.saldos[cKey]+=monto;
+  var ck=cuenta.toLowerCase();
+  if(state.saldos[ck]!==undefined)state.saldos[ck]+=monto;
   initSaldos();renderEntradas();updateStats();
   document.getElementById('e-monto').value='';
   document.getElementById('e-desc').value='';
@@ -828,6 +917,7 @@ function renderEntradas(){
   }).join('');
 }
 
+// ─── Gastos ───
 function guardarGasto(){
   var desc=document.getElementById('g-desc').value.trim();
   var monto=parseFloat(document.getElementById('g-monto').value)||0;
@@ -840,8 +930,8 @@ function guardarGasto(){
   btn.disabled=true;btn.textContent='Guardando...';
   var gasto={desc:desc,monto:monto,cuenta:cuenta,categoria:cat,notas:notas,timestamp:Date.now()};
   state.gastosHoy.push(gasto);
-  var cKey=cuenta.toLowerCase();
-  if(state.saldos[cKey]!==undefined)state.saldos[cKey]=Math.max(0,(state.saldos[cKey]||0)-monto);
+  var ck=cuenta.toLowerCase();
+  if(state.saldos[ck]!==undefined)state.saldos[ck]=Math.max(0,(state.saldos[ck]||0)-monto);
   initSaldos();renderGastosHoy();updateStats();
   document.getElementById('g-desc').value='';
   document.getElementById('g-monto').value='';
@@ -849,7 +939,7 @@ function guardarGasto(){
   btn.disabled=false;btn.textContent='Guardar · fecha/hora automatica';
   var hora=new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
   enviar({tipo:'gasto',descripcion:desc,monto:monto,cuenta:cuenta,categoria:cat,notas:notas,timestamp:new Date().toISOString()});
-  enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[cKey]||0}).then(function(ok){
+  enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[ck]||0}).then(function(ok){
     showToast(ok?cuenta+' -'+fmt(monto)+' · '+hora:'Guardado local',ok?'ok':'info');
   });
 }
@@ -864,6 +954,7 @@ function renderGastosHoy(){
   }).join('');
 }
 
+// ─── Webhook ───
 function enviar(payload){
   return fetch(WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(){setSyncOk();return true;})
@@ -879,7 +970,7 @@ function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('page-'+id).classList.add('active');btn.classList.add('active');
-  if(id==='pagos'){renderMes();updateStats();}
+  if(id==='pagos'){renderMes();renderHechos();updateStats();}
 }
 
 function showToast(msg,type){
