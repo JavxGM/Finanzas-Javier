@@ -227,6 +227,41 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .toast.ok{border-color:var(--gb);color:var(--green)}
 .toast.err{border-color:var(--rb);color:var(--red)}
 .toast.info{border-color:var(--bb);color:var(--blue)}
+/* ── Analytics ───────────────────────────────────────────── */
+.an-hero{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px}
+.an-hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.an-hero-label{font-size:11px;color:var(--muted);margin-bottom:3px;font-family:'DM Mono',monospace}
+.an-hero-val{font-size:30px;font-weight:800;font-family:'DM Mono',monospace}
+.an-hero-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.an-free{text-align:right}
+.an-free-label{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px}
+.an-free-val{font-size:18px;font-weight:700;font-family:'DM Mono',monospace}
+.an-prog-wrap{margin-top:4px}
+.an-prog-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px}
+.an-bar-row{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:11px 13px;display:flex;align-items:center;gap:10px}
+.an-bar-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:#0a0a0f}
+.an-bar-info{flex:1;min-width:0}
+.an-bar-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an-bar-track{height:4px;background:var(--card);border-radius:3px;overflow:hidden;margin:5px 0 2px}
+.an-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.an-bar-stats{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.an-bar-right{text-align:right;flex-shrink:0}
+.an-bar-monto{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)}
+.an-bar-pct{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.hist-item{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:11px 13px;display:flex;align-items:center;gap:10px}
+.hist-item.auto{border-left:3px solid var(--blue)}
+.hist-auto-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:10px;
+  font-size:9px;font-weight:700;font-family:'DM Mono',monospace;
+  background:var(--bdim);color:var(--blue);border:1px solid var(--bb);margin-left:5px}
+.hist-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.hist-info{flex:1;min-width:0}
+.hist-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+.hist-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
+.an-empty{text-align:center;padding:28px 16px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace}
+.realtime-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 6px var(--blue);animation:pulse 2s infinite;display:inline-block;margin-right:4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -255,6 +290,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <button class="tab" onclick="showPage('balance',this)">Balance</button>
   <button class="tab" onclick="showPage('pagos',this)">Pagos</button>
   <button class="tab" onclick="showPage('gastos',this)">Gastos</button>
+  <button class="tab" onclick="showPage('analytics',this)">Analytics</button>
   <button class="tab" onclick="showPage('deudas',this)">Deudas</button>
   <button class="tab" onclick="showPage('score',this)">Score</button>
 </div>
@@ -394,6 +430,40 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="sec">Hoy</div>
   <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin gastos hoy</div></div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+  <!-- Hero: gasto del mes vs presupuesto libre -->
+  <div class="an-hero">
+    <div class="an-hero-top">
+      <div>
+        <div class="an-hero-label">Gastado este mes</div>
+        <div class="an-hero-val r" id="an-gastado">RD$0</div>
+        <div class="an-hero-sub" id="an-gastado-sub">0 transacciones</div>
+      </div>
+      <div class="an-free">
+        <div class="an-free-label">Margen libre</div>
+        <div class="an-free-val g" id="an-libre">RD$0</div>
+      </div>
+    </div>
+    <div class="an-prog-wrap">
+      <div class="an-prog-label">
+        <span id="an-prog-label-left">0% del presupuesto libre</span>
+        <span id="an-prog-label-right">RD$0 disponible</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="an-prog" style="width:0%"></div></div>
+    </div>
+  </div>
+  <!-- Breakdown por categoría -->
+  <div class="sec">Categorias · mes actual</div>
+  <div id="an-categorias"><div class="an-empty">Sin datos de gastos este mes</div></div>
+  <!-- Historial completo -->
+  <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
+    <span>Historial · desde mayo 2026</span>
+    <span id="an-realtime-indicator" style="display:none"><span class="realtime-dot"></span><span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">en vivo</span></span>
+  </div>
+  <div id="an-historial"><div class="an-empty">Sin historial registrado</div></div>
 </div>
 
 <!-- DEUDAS -->
@@ -557,12 +627,12 @@ const MESES = {
   },
   1: {
     nombre: 'Mayo 2026',
-    comprometido: 28050,
+    comprometido: 30350,
     hoja: 'Presupuesto Mayo',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 16350,
+        total: 17150,
         pagos: [
           {id:'pm-ban1',   nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-gym',    nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
@@ -572,16 +642,18 @@ const MESES = {
           {id:'pm-gas1',   nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb1',  nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
-          {id:'pm-lentes', nombre:'Montura de lentes',    monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT'}
+          {id:'pm-lentes', nombre:'Montura de lentes',    monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT'},
+          {id:'pm-uber',   nombre:'Uber / Transport',     monto:800,   cuenta:'BHD',        color:'rgba(79,158,255,.1)',tc:'',icon:'TRP', nota:'Ref historica abr: RD$800 en 5 viajes'}
         ]
       },
       {
         titulo: 'Quincena 2 · cobras dia 20',
-        total: 11700,
+        total: 13200,
         pagos: [
           {id:'pm-qik',    nombre:'Qik ahorro (completo)',monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
           {id:'pm-ban2',   nombre:'Banreservas Q2',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-sam2',   nombre:'SAM parte 2 (ULTIMO)', monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
+          {id:'pm-res2',   nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pm-gas2',   nombre:'Gasolina Q2',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb2',  nombre:'Barberia parte 2',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-ademi',  nombre:'Ademi cuota 1 · dia 14',monto:0,    cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Del sobrante'}
@@ -600,14 +672,27 @@ var state = {
   saldos: {bhd:0, qik:0, banreservas:0, ademi:4600},
   pagos: {},        // clave: mesIdx + "_" + id
   gastosHoy: [],
-  entradasMes: []
+  entradasMes: [],
+  historialMes: [], // todos los gastos desde mayo 2026
+  gastosMes: []     // breakdown por categoría del mes actual
 };
 var mesActual = 0;
+var _lastSyncTs = 0; // timestamp de la última sincronización exitosa
 
 // Init
 var now = new Date();
 document.getElementById('topbar-date').textContent = now.toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
 window.addEventListener('load', cargarDesdeNube);
+
+// Sync al volver al foco si estuvo ausente más de 5 min
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    var ahora = Date.now();
+    if(ahora - _lastSyncTs > 5 * 60 * 1000){
+      cargarDesdeNube();
+    }
+  }
+});
 
 function cargarDesdeNube() {
   setSyncLoading();
@@ -628,8 +713,11 @@ function cargarDesdeNube() {
           state.pagos[k] = rawPagos[k];
         }
       });
-      state.gastosHoy = data.gastosHoy || [];
+      state.gastosHoy   = data.gastosHoy   || [];
       state.entradasMes = data.entradasMes || [];
+      state.historialMes = data.historialMes || [];
+      state.gastosMes    = data.gastosMes    || [];
+      _lastSyncTs = Date.now();
       aplicarEstado();
       setSyncOk();
       document.getElementById('loading').classList.add('hidden');
@@ -650,6 +738,7 @@ function aplicarEstado() {
   renderGastosHoy();
   renderEntradas();
   updateStats();
+  renderAnalytics();
 }
 
 function fmt(n){return 'RD$'+Math.round(n||0).toLocaleString('es-DO');}
@@ -1075,6 +1164,248 @@ function renderGastosHoy(){
   }).join('');
 }
 
+// ─── Analytics ───
+var AN_CAT_COLORS = {
+  'Comida':          '#ff4f6a',
+  'Transporte':      '#4f9eff',
+  'Gasolina':        '#ffb830',
+  'Salud':           '#00e5a0',
+  'Entretenimiento': '#a78bfa',
+  'Ropa':            '#f472b6',
+  'Hogar':           '#fb923c',
+  'Auto-email':      '#4f9eff',
+  'General':         '#8888a0',
+};
+
+function anCatColor(cat){
+  return AN_CAT_COLORS[cat] || '#8888a0';
+}
+
+function anCatIcon(cat){
+  var icons = {
+    'Comida':'COM','Transporte':'TRP','Gasolina':'GAS','Salud':'SAL',
+    'Entretenimiento':'ENT','Ropa':'ROP','Hogar':'HSE','Auto-email':'BOT','General':'GEN'
+  };
+  return icons[cat] || cat.slice(0,3).toUpperCase();
+}
+
+function renderAnalytics(){
+  var mes = MESES[mesActual];
+  var comprometido = mes ? mes.comprometido : 31050;
+  var ingresos = 37200; // ingreso mensual fijo
+
+  // Presupuesto libre = ingresos - comprometidos fijos
+  var presupuestoLibre = ingresos - comprometido;
+
+  // Total gastado del historial del mes actual (sumamos gastosMes totals)
+  var totalGastado = state.gastosMes.reduce(function(s,c){ return s + (c.total||0); }, 0);
+  var numTx = state.gastosMes.reduce(function(s,c){ return s + (c.cantidad||0); }, 0);
+  var margen = presupuestoLibre - totalGastado;
+  var pctGastado = presupuestoLibre > 0 ? Math.min(100, Math.round(totalGastado / presupuestoLibre * 100)) : 0;
+
+  // Hero
+  document.getElementById('an-gastado').textContent = fmt(totalGastado);
+  document.getElementById('an-gastado-sub').textContent = numTx + ' transaccione' + (numTx === 1 ? '' : 's') + ' · mes actual';
+  var libreEl = document.getElementById('an-libre');
+  libreEl.textContent = fmt(margen);
+  libreEl.className = 'an-free-val ' + (margen >= 0 ? 'g' : 'r');
+  document.getElementById('an-prog-label-left').textContent = pctGastado + '% del presupuesto libre usado';
+  document.getElementById('an-prog-label-right').textContent = fmt(Math.max(0, margen)) + ' disponible';
+  var progEl = document.getElementById('an-prog');
+  progEl.style.width = pctGastado + '%';
+  progEl.style.background = pctGastado >= 90 ? 'var(--red)' : pctGastado >= 70 ? 'var(--amber)' : 'var(--green)';
+
+  // Breakdown categorías
+  var catContainer = document.getElementById('an-categorias');
+  if (!state.gastosMes.length) {
+    catContainer.innerHTML = '<div class="an-empty">Sin gastos este mes</div>';
+  } else {
+    catContainer.innerHTML = state.gastosMes.map(function(c){
+      var color = anCatColor(c.categoria);
+      var icon  = anCatIcon(c.categoria);
+      return '<div class="an-bar-row">'
+        + '<div class="an-bar-icon" style="background:' + color + '22;color:' + color + '">' + icon + '</div>'
+        + '<div class="an-bar-info">'
+        +   '<div class="an-bar-name">' + c.categoria + '</div>'
+        +   '<div class="an-bar-track"><div class="an-bar-fill" style="width:' + c.pct + '%;background:' + color + '"></div></div>'
+        +   '<div class="an-bar-stats">' + c.cantidad + ' tx · ' + c.pct + '%</div>'
+        + '</div>'
+        + '<div class="an-bar-right">'
+        +   '<div class="an-bar-monto">-' + fmt(c.total) + '</div>'
+        +   '<div class="an-bar-pct">' + c.pct + '%</div>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Historial completo
+  renderHistorial();
+}
+
+function renderHistorial(){
+  var container = document.getElementById('an-historial');
+  if (!state.historialMes.length) {
+    container.innerHTML = '<div class="an-empty">Sin historial registrado</div>';
+    return;
+  }
+  container.innerHTML = state.historialMes.map(function(g){
+    var esAuto = (g.notas || '').indexOf('gmail:') === 0;
+    var d = new Date(g.timestamp);
+    var fecha = d.toLocaleDateString('es-DO', {day:'numeric', month:'short', timeZone:'America/Santo_Domingo'});
+    var hora  = d.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit', timeZone:'America/Santo_Domingo'});
+    var color = anCatColor(g.categoria);
+    var autoBadge = esAuto ? '<span class="hist-auto-badge">auto</span>' : '';
+    return '<div class="hist-item' + (esAuto ? ' auto' : '') + '">'
+      + '<div class="hist-dot" style="background:' + color + '"></div>'
+      + '<div class="hist-info">'
+      +   '<div class="hist-desc">' + g.desc + autoBadge + '</div>'
+      +   '<div class="hist-meta">' + g.categoria + ' · ' + g.cuenta + ' · ' + fecha + ' ' + hora + '</div>'
+      + '</div>'
+      + '<div class="hist-monto">-' + fmt(g.monto) + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ─── Supabase Realtime: escucha INSERT en tabla gastos ───
+// Usa la anon key (público) y el canal de Realtime de Supabase.
+// Cuando el cron de emails inserta un gasto nuevo, la UI se actualiza sin reload.
+(function initRealtime(){
+  var SUPABASE_URL = 'https://lsfimaqcyeizuzxurqau.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzZmltYXFjeWVpenV6eHVycWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MTAxNjUsImV4cCI6MjA5MjI4NjE2NX0.DeLyCADXXM4ypOzQrwjR2Ozt_t0QC7FMPPpaRMCuwuE';
+
+  // Solo intentar si el navegador soporta WebSocket
+  if (typeof WebSocket === 'undefined') return;
+
+  var wsUrl = SUPABASE_URL.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + SUPABASE_ANON_KEY + '&vsn=1.0.0';
+  var ws;
+  var heartbeatInterval;
+  var reconnectTimeout;
+  var joined = false;
+  var ref = 0;
+
+  function nextRef(){ return String(++ref); }
+
+  function connect(){
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch(e){ return; }
+
+    ws.onopen = function(){
+      // Unirse al canal de cambios en la tabla gastos (INSERT)
+      var joinMsg = JSON.stringify({
+        topic: 'realtime:public:gastos',
+        event: 'phx_join',
+        payload: {
+          config: {
+            broadcast: { self: false },
+            presence:  { key: '' },
+            postgres_changes: [{ event: 'INSERT', schema: 'public', table: 'gastos' }]
+          }
+        },
+        ref: nextRef()
+      });
+      ws.send(joinMsg);
+
+      // Heartbeat cada 25 seg
+      heartbeatInterval = setInterval(function(){
+        if(ws && ws.readyState === WebSocket.OPEN){
+          ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:nextRef()}));
+        }
+      }, 25000);
+    };
+
+    ws.onmessage = function(evt){
+      var msg;
+      try { msg = JSON.parse(evt.data); } catch(e){ return; }
+
+      if (msg.event === 'phx_reply' && msg.payload && msg.payload.status === 'ok') {
+        joined = true;
+        // Mostrar indicador "en vivo"
+        var ind = document.getElementById('an-realtime-indicator');
+        if (ind) ind.style.display = 'inline-flex';
+        return;
+      }
+
+      // Evento de cambio en la tabla gastos
+      if (msg.event === 'postgres_changes' && msg.payload && msg.payload.data) {
+        var record = msg.payload.data.record;
+        if (!record) return;
+        var nuevo = {
+          id:        record.id,
+          desc:      record.descripcion,
+          categoria: record.categoria,
+          monto:     Number(record.monto),
+          cuenta:    record.cuenta,
+          notas:     record.notas || '',
+          timestamp: new Date(record.timestamp).getTime(),
+        };
+        // Insertar al frente del historial y gastos de hoy si corresponde
+        state.historialMes.unshift(nuevo);
+        // ¿Es de hoy en RD?
+        var hoyRD = new Date().toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'});
+        var txRD  = new Date(record.timestamp).toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'});
+        if (txRD === hoyRD) {
+          state.gastosHoy.unshift(nuevo);
+          renderGastosHoy();
+          updateStats();
+        }
+        // Re-renderizar analytics si está en esa página
+        var activePage = document.querySelector('.page.active');
+        if (activePage && activePage.id === 'page-analytics') {
+          // Recalcular gastosMes desde el historial (aproximación local sin llamar al servidor)
+          _recalcGastosMes();
+          renderAnalytics();
+        }
+        var esAuto = (nuevo.notas || '').indexOf('gmail:') === 0;
+        var cuentaDisplay = nuevo.cuenta.charAt(0).toUpperCase() + nuevo.cuenta.slice(1);
+        showToast((esAuto ? 'Auto: ' : '') + nuevo.desc + ' · ' + cuentaDisplay + ' -' + fmt(nuevo.monto), esAuto ? 'info' : 'ok');
+      }
+    };
+
+    ws.onclose = function(){
+      joined = false;
+      clearInterval(heartbeatInterval);
+      var ind = document.getElementById('an-realtime-indicator');
+      if (ind) ind.style.display = 'none';
+      // Reintentar en 10 seg
+      reconnectTimeout = setTimeout(connect, 10000);
+    };
+
+    ws.onerror = function(){ ws.close(); };
+  }
+
+  connect();
+})();
+
+// Recalcula state.gastosMes localmente desde state.historialMes
+// (solo se usa para actualización optimista tras un INSERT via Realtime,
+//  el siguiente sync completo reemplazará con datos del servidor)
+function _recalcGastosMes(){
+  var ahora = new Date();
+  var mesInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+  // Filtrar el mes actual en RD
+  var mesRD = ahora.toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'}).slice(0,7);
+  var porCat = {};
+  state.historialMes.forEach(function(g){
+    var gMes = new Date(g.timestamp).toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'}).slice(0,7);
+    if(gMes !== mesRD) return;
+    var cat = g.categoria || 'General';
+    if(!porCat[cat]) porCat[cat] = {total:0, cantidad:0};
+    porCat[cat].total    += g.monto;
+    porCat[cat].cantidad += 1;
+  });
+  var totalGlobal = Object.values(porCat).reduce(function(s,c){ return s + c.total; }, 0);
+  state.gastosMes = Object.keys(porCat).map(function(cat){
+    var c = porCat[cat];
+    return {
+      categoria: cat,
+      total:     c.total,
+      cantidad:  c.cantidad,
+      pct:       totalGlobal > 0 ? Math.round(c.total / totalGlobal * 100 * 10) / 10 : 0
+    };
+  }).sort(function(a,b){ return b.total - a.total; });
+}
+
 // ─── Webhook ───
 function enviar(payload){
   return fetch(WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
@@ -1092,6 +1423,7 @@ function showPage(id,btn){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('page-'+id).classList.add('active');btn.classList.add('active');
   if(id==='pagos'){renderMes();renderHechos();updateStats();}
+  if(id==='analytics'){renderAnalytics();}
 }
 
 function showToast(msg,type){

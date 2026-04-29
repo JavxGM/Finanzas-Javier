@@ -19,16 +19,33 @@ export async function GET() {
     const now = new Date()
     const lastUpdate = now.toLocaleString('es-DO', { timeZone: 'America/Santo_Domingo' })
 
-    const [pagosRes, saldosRes, gastosRes, entradasRes] = await Promise.all([
+    // Inicio del historial: 1 de mayo 2026 (primer mes registrado en la app)
+    const historialDesde = '2026-05-01T04:00:00.000Z'
+    // Inicio del mes actual para la RPC de analytics
+    const mesActualDesde = monthStartRD()
+    // Fin = mañana para incluir todo el día de hoy
+    const mesActualHasta = tomorrowStartRD()
+
+    const [pagosRes, saldosRes, gastosRes, entradasRes, historialRes, analyticsRes] = await Promise.all([
       sb.from('pagos').select('mes_idx, pago_id, done, ts, nombre, monto, cuenta'),
       sb.from('saldos_actuales').select('cuenta, monto'),
-      sb.from('gastos').select('*')
+      sb.from('gastos').select('id, descripcion, categoria, monto, cuenta, notas, timestamp')
         .gte('timestamp', todayStartRD())
         .lt('timestamp', tomorrowStartRD())
         .order('timestamp', { ascending: false }),
       sb.from('entradas').select('*')
         .gte('timestamp', monthStartRD())
         .order('timestamp', { ascending: false }),
+      // Historial completo desde mayo 2026 (para Analytics)
+      sb.from('gastos').select('id, descripcion, categoria, monto, cuenta, notas, timestamp')
+        .gte('timestamp', historialDesde)
+        .order('timestamp', { ascending: false })
+        .limit(500),
+      // Breakdown por categoría del mes actual via RPC
+      sb.rpc('gastos_por_categoria', {
+        p_desde: mesActualDesde,
+        p_hasta: mesActualHasta,
+      }),
     ])
 
     const pagos: Record<string, unknown> = {}
@@ -47,24 +64,37 @@ export async function GET() {
       saldos[s.cuenta] = Number(s.monto)
     }
 
-    const gastosHoy = (gastosRes.data ?? []).map(g => ({
-      desc: g.descripcion,
+    const mapGasto = (g: Record<string, unknown>) => ({
+      id:        g.id,
+      desc:      g.descripcion,
       categoria: g.categoria,
-      monto: Number(g.monto),
-      cuenta: g.cuenta,
-      timestamp: new Date(g.timestamp).getTime(),
-    }))
+      monto:     Number(g.monto),
+      cuenta:    g.cuenta,
+      notas:     g.notas ?? '',
+      timestamp: new Date(g.timestamp as string).getTime(),
+    })
+
+    const gastosHoy    = (gastosRes.data    ?? []).map(mapGasto)
+    const historialMes = (historialRes.data ?? []).map(mapGasto)
 
     const entradasMes = (entradasRes.data ?? []).map(e => ({
-      desc: e.descripcion,
-      tipo: e.tipo,
-      monto: Number(e.monto),
-      cuenta: e.cuenta,
+      desc:      e.descripcion,
+      tipo:      e.tipo,
+      monto:     Number(e.monto),
+      cuenta:    e.cuenta,
       timestamp: new Date(e.timestamp).getTime(),
     }))
 
+    // analytics: array de { categoria, total, cantidad, pct }
+    const gastosMes = (analyticsRes.data ?? []).map((r: Record<string, unknown>) => ({
+      categoria: r.categoria,
+      total:     Number(r.total),
+      cantidad:  Number(r.cantidad),
+      pct:       Number(r.pct),
+    }))
+
     return NextResponse.json(
-      { pagos, saldos, gastosHoy, entradasMes, lastUpdate },
+      { pagos, saldos, gastosHoy, entradasMes, historialMes, gastosMes, lastUpdate },
       { headers: CORS }
     )
   } catch (err) {
