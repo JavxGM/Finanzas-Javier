@@ -488,6 +488,18 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
 </div>
 
+<!-- MODAL DUPLICADO -->
+<div class="modal-bg" id="modal-dup-bg" onclick="if(event.target===this)closeDupModal()">
+  <div class="modal">
+    <div style="font-size:22px;margin-bottom:8px">&#9888;&#65039;</div>
+    <div class="modal-title" id="modal-dup-title">Posible duplicado</div>
+    <div class="modal-sub" id="modal-dup-sub"></div>
+    <div id="modal-dup-detalle" style="background:var(--card);border:1px solid var(--ab);border-radius:var(--rsm);padding:11px 13px;margin-bottom:16px;font-size:12px;line-height:1.6;color:var(--amber)"></div>
+    <button class="btn btn-outline" style="margin-bottom:8px" onclick="closeDupModal()">Cancelar — ya estaba registrado</button>
+    <button class="btn" style="background:var(--rdim);color:var(--red);border:1px solid var(--rb)" id="modal-dup-forzar">Registrar de todas formas</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -538,22 +550,23 @@ const MESES = {
   },
   1: {
     nombre: 'Mayo 2026',
-    comprometido: 29050,
+    comprometido: 31050,
     hoja: 'Presupuesto Mayo',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 15850,
+        total: 17850,
         pagos: [
           {id:'pm-ban1',   nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-gym',    nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
-          {id:'pm-net',    nombre:'Internet',             monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'pm-net',    nombre:'Internet',             monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET', nota:'Balance a favor'},
           {id:'pm-crun',   nombre:'Crunchyroll',          monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pm-sam1',   nombre:'SAM parte 1',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
           {id:'pm-res1',   nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pm-gas1',   nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb1',  nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'}
+          {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+          {id:'pm-lentes', nombre:'Montura de lentes',    monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT'}
         ]
       },
       {
@@ -819,23 +832,52 @@ function selCuenta(c){
   if(o)o.classList.add('selected');
 }
 
-function confirmarPago(){
-  if(!cuentaSel){showToast('Selecciona una cuenta','err');return;}
-  if(!pagoActual)return;
+// descontarSaldo: si es false, solo marca el pago como hecho sin tocar el balance
+// (usado cuando el banco ya desconto via email-cron)
+function _ejecutarConfirmarPago(descontarSaldo){
+  if(descontarSaldo===undefined)descontarSaldo=true;
+  if(!cuentaSel||!pagoActual)return;
   var mi=pagoActual.mesIdx,id=pagoActual.id,monto=pagoActual.monto,nombre=pagoActual.nombre,cuenta=cuentaSel;
   var ts=new Date().toLocaleString('es-DO',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
   var el=document.getElementById('item-'+id);
   if(el){el.classList.add('done');el.querySelector('.pay-check').classList.add('done');}
-  if(monto>0){
+  if(monto>0&&descontarSaldo){
     var ck=cuenta.toLowerCase();
     if(state.saldos[ck]!==undefined)state.saldos[ck]=Math.max(0,(state.saldos[ck]||0)-monto);
   }
   state.pagos[pKey(mi,id)]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:cuenta};
   initSaldos();renderHechos();updateStats();closeModalPago(null);
-  showToast(nombre+' · '+cuenta,'ok');cuentaSel=null;
+  showToast(nombre+' · '+cuenta+(descontarSaldo?'':' (saldo ya descontado)'), 'ok');
+  cuentaSel=null;
   var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
   enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Hecho',cuenta:cuenta,timestamp:new Date().toISOString()});
-  enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[cuenta.toLowerCase()]||0});
+  // Solo sincronizar saldo si hubo descuento local (si no lo hizo el email-cron lo ya sincronizo)
+  if(descontarSaldo){
+    enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[cuenta.toLowerCase()]||0});
+  }
+}
+
+function confirmarPago(){
+  if(!cuentaSel){showToast('Selecciona una cuenta','err');return;}
+  if(!pagoActual)return;
+
+  // Verificar si hay un gasto-email del dia con el mismo monto y cuenta
+  // (el usuario va a marcar mantenimiento que el banco ya dedujo automaticamente)
+  if(pagoActual.monto>0){
+    var dup=detectarDuplicado(pagoActual.nombre,pagoActual.monto,cuentaSel);
+    if(dup){
+      var hora=new Date(dup.timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
+      showDupModal(
+        'El banco ya lo registro',
+        'Este monto ya fue detectado automaticamente desde tu correo bancario y el saldo ya se actualizo. Puedes marcarlo como hecho en el presupuesto sin descontar de nuevo.',
+        '<b>Gasto auto-detectado:</b> '+dup.desc+'<br><b>Monto:</b> '+fmt(dup.monto)+'<br><b>Cuenta:</b> '+dup.cuenta+'<br><b>Hora:</b> '+hora+'<br><br><i style="color:var(--muted)">El boton "Registrar de todas formas" marcara el pago como hecho SIN descontar el saldo de nuevo.</i>',
+        function(){_ejecutarConfirmarPago(false);}  // false = no descontar saldo
+      );
+      return;
+    }
+  }
+
+  _ejecutarConfirmarPago(true);
 }
 
 function desmarcarPago(mi,id,monto,nombre){
@@ -917,15 +959,52 @@ function renderEntradas(){
   }).join('');
 }
 
+// ─── Deteccion de duplicados ───
+// Compara palabras clave entre dos strings; devuelve true si hay solapamiento significativo.
+function textosSimilares(a, b){
+  var stop=['de','en','el','la','los','las','un','una','por','para'];
+  function tokens(s){
+    return s.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(function(w){return w.length>2&&!stop.includes(w);});
+  }
+  var ta=tokens(a),tb=tokens(b);
+  if(!ta.length||!tb.length)return false;
+  var matches=ta.filter(function(w){return tb.includes(w);});
+  return matches.length>=Math.min(1,Math.floor(Math.min(ta.length,tb.length)*0.5));
+}
+
+// Busca en gastosHoy si existe un gasto-email con el mismo monto o descripcion similar.
+// Devuelve el gasto coincidente o null.
+function detectarDuplicado(desc, monto, cuenta){
+  var ck=cuenta.toLowerCase();
+  for(var i=0;i<state.gastosHoy.length;i++){
+    var g=state.gastosHoy[i];
+    var esEmail=(g.notas||'').indexOf('gmail:')===0;
+    if(!esEmail)continue;
+    var mismaCuenta=(g.cuenta||'').toLowerCase()===ck;
+    var mismoMonto=Math.abs((g.monto||0)-monto)<0.01;
+    var descSimilar=textosSimilares(desc,g.desc||'');
+    // Duplicado si: misma cuenta + (mismo monto O descripcion similar)
+    if(mismaCuenta&&(mismoMonto||descSimilar))return g;
+  }
+  return null;
+}
+
+var _dupCallback=null;
+function showDupModal(titulo, sub, detalle, onForzar){
+  _dupCallback=onForzar;
+  document.getElementById('modal-dup-title').textContent=titulo;
+  document.getElementById('modal-dup-sub').textContent=sub;
+  document.getElementById('modal-dup-detalle').innerHTML=detalle;
+  document.getElementById('modal-dup-forzar').onclick=function(){closeDupModal();if(_dupCallback)_dupCallback();};
+  document.getElementById('modal-dup-bg').classList.add('open');
+}
+function closeDupModal(){
+  document.getElementById('modal-dup-bg').classList.remove('open');
+  _dupCallback=null;
+}
+
 // ─── Gastos ───
-function guardarGasto(){
-  var desc=document.getElementById('g-desc').value.trim();
-  var monto=parseFloat(document.getElementById('g-monto').value)||0;
-  var cuenta=document.getElementById('g-cuenta').value;
-  var cat=document.getElementById('g-cat').value;
-  var notas=document.getElementById('g-notas').value.trim();
-  if(!desc){showToast('Escribe una descripcion','err');return;}
-  if(!monto){showToast('Ingresa un monto','err');return;}
+function _ejecutarGuardarGasto(desc, monto, cuenta, cat, notas){
   var btn=document.getElementById('btn-gasto');
   btn.disabled=true;btn.textContent='Guardando...';
   var gasto={desc:desc,monto:monto,cuenta:cuenta,categoria:cat,notas:notas,timestamp:Date.now()};
@@ -942,6 +1021,31 @@ function guardarGasto(){
   enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[ck]||0}).then(function(ok){
     showToast(ok?cuenta+' -'+fmt(monto)+' · '+hora:'Guardado local',ok?'ok':'info');
   });
+}
+
+function guardarGasto(){
+  var desc=document.getElementById('g-desc').value.trim();
+  var monto=parseFloat(document.getElementById('g-monto').value)||0;
+  var cuenta=document.getElementById('g-cuenta').value;
+  var cat=document.getElementById('g-cat').value;
+  var notas=document.getElementById('g-notas').value.trim();
+  if(!desc){showToast('Escribe una descripcion','err');return;}
+  if(!monto){showToast('Ingresa un monto','err');return;}
+
+  // Verificar si ya existe un gasto detectado por email con datos similares
+  var dup=detectarDuplicado(desc,monto,cuenta);
+  if(dup){
+    var hora=new Date(dup.timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
+    showDupModal(
+      'Posible duplicado',
+      'Ya se detecto un gasto similar desde tu correo bancario hoy.',
+      '<b>Gasto auto-detectado:</b> '+dup.desc+'<br><b>Monto:</b> '+fmt(dup.monto)+'<br><b>Cuenta:</b> '+dup.cuenta+'<br><b>Hora:</b> '+hora,
+      function(){_ejecutarGuardarGasto(desc,monto,cuenta,cat,notas);}
+    );
+    return;
+  }
+
+  _ejecutarGuardarGasto(desc,monto,cuenta,cat,notas);
 }
 
 function renderGastosHoy(){
