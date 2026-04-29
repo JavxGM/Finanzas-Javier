@@ -116,9 +116,16 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .mes-nombre{font-size:15px;font-weight:700;text-align:center}
 .mes-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;margin-top:2px}
 .pay-section{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.pay-section-hdr{padding:13px 15px 9px;display:flex;align-items:center;justify-content:space-between}
+.pay-section-hdr{padding:13px 15px 9px;display:flex;flex-direction:column;gap:6px}
+.pay-section-hdr-top{display:flex;align-items:center;justify-content:space-between}
 .pay-section-title{font-size:13px;font-weight:700}
 .pay-section-amt{font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Mono',monospace}
+.pay-section-progress{display:flex;align-items:center;gap:8px}
+.pay-section-prog-track{flex:1;height:3px;background:var(--card);border-radius:2px;overflow:hidden}
+.pay-section-prog-fill{height:100%;border-radius:2px;background:var(--green);transition:width .5s}
+.pay-section-stats{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;display:flex;justify-content:space-between}
+.pay-section-stats .pagado{color:var(--green);font-weight:600}
+.pay-section-stats .falta{color:var(--amber)}
 .pay-item{display:flex;align-items:center;gap:11px;padding:11px 15px;
   border-top:1px solid var(--border);cursor:pointer;transition:background .15s}
 .pay-item:active{background:var(--card)}
@@ -550,19 +557,18 @@ const MESES = {
   },
   1: {
     nombre: 'Mayo 2026',
-    comprometido: 31050,
+    comprometido: 28050,
     hoja: 'Presupuesto Mayo',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 17850,
+        total: 16350,
         pagos: [
           {id:'pm-ban1',   nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-gym',    nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
-          {id:'pm-net',    nombre:'Internet',             monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET', nota:'Balance a favor'},
+          {id:'pm-net',    nombre:'Internet · Claro',     monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET', nota:'Factura Claro · ciclo mayo'},
           {id:'pm-crun',   nombre:'Crunchyroll',          monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pm-sam1',   nombre:'SAM parte 1',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
-          {id:'pm-res1',   nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pm-gas1',   nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb1',  nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
@@ -571,12 +577,11 @@ const MESES = {
       },
       {
         titulo: 'Quincena 2 · cobras dia 20',
-        total: 13200,
+        total: 11700,
         pagos: [
           {id:'pm-qik',    nombre:'Qik ahorro (completo)',monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
           {id:'pm-ban2',   nombre:'Banreservas Q2',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-sam2',   nombre:'SAM parte 2 (ULTIMO)', monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
-          {id:'pm-res2',   nombre:'Residencial restante', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pm-gas2',   nombre:'Gasolina Q2',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb2',  nombre:'Barberia parte 2',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-ademi',  nombre:'Ademi cuota 1 · dia 14',monto:0,    cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Del sobrante'}
@@ -743,7 +748,19 @@ function renderMes(){
   mes.quincenas.forEach(function(q){
     var sec=document.createElement('div');
     sec.className='pay-section';
-    var hdr='<div class="pay-section-hdr"><div class="pay-section-title">'+q.titulo+'</div><div class="pay-section-amt">'+fmt(q.total)+'</div></div>';
+    // calcular pagado vs falta en esta quincena
+    var qPagado=0, qTotal=q.total;
+    q.pagos.forEach(function(p){
+      var ps=getPagoState(mesActual,p.id);
+      if(ps.done) qPagado+=p.monto||0;
+    });
+    var qFalta=Math.max(0,qTotal-qPagado);
+    var qPct=qTotal>0?Math.min(100,Math.round(qPagado/qTotal*100)):0;
+    var hdr='<div class="pay-section-hdr">'
+      +'<div class="pay-section-hdr-top"><div class="pay-section-title">'+q.titulo+'</div><div class="pay-section-amt">'+fmt(qTotal)+'</div></div>'
+      +'<div class="pay-section-progress"><div class="pay-section-prog-track"><div class="pay-section-prog-fill" style="width:'+qPct+'%"></div></div></div>'
+      +'<div class="pay-section-stats"><span class="pagado">Pagado: '+fmt(qPagado)+'</span><span class="falta">'+(qFalta>0?'Falta: '+fmt(qFalta):'Completo')+'</span></div>'
+      +'</div>';
     var items='';
     q.pagos.forEach(function(p){
       var ps=getPagoState(mesActual,p.id);
@@ -846,7 +863,7 @@ function _ejecutarConfirmarPago(descontarSaldo){
     if(state.saldos[ck]!==undefined)state.saldos[ck]=Math.max(0,(state.saldos[ck]||0)-monto);
   }
   state.pagos[pKey(mi,id)]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:cuenta};
-  initSaldos();renderHechos();updateStats();closeModalPago(null);
+  initSaldos();renderMes();renderHechos();updateStats();closeModalPago(null);
   showToast(nombre+' · '+cuenta+(descontarSaldo?'':' (saldo ya descontado)'), 'ok');
   cuentaSel=null;
   var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
@@ -891,7 +908,7 @@ function desmarcarPago(mi,id,monto,nombre){
     if(state.saldos[ck]!==undefined)state.saldos[ck]+=monto;
   }
   state.pagos[pKey(mi,id)]={done:false,nombre:nombre,monto:monto};
-  initSaldos();renderHechos();updateStats();
+  initSaldos();renderMes();renderHechos();updateStats();
   showToast(nombre+' desmarcado','info');
   var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
   enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Pendiente',timestamp:new Date().toISOString()});
