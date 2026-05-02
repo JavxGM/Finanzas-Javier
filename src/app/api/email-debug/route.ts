@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
       attachmentText:       strippedAtt.slice(0, 2000),
       allHtmlBodiesCount:   allHtmlBodies.length,
       allHtmlBodiesSizes:   allHtmlBodies.map((h) => h.length),
-      firstEmbeddedHtmlRaw: allHtmlBodies[0]?.slice(0, 3000) ?? '',
+      firstEmbeddedHtmlRaw: allHtmlBodies[0]?.slice(0, 8000) ?? '',
       // Test de los patrones del parser actual
       parserTest: {
         montoOnAtt:   strippedAtt.match(/RD\s*\$\s*([\d,]+\.?\d*)/)?.[1]   ?? 'NO MATCH',
