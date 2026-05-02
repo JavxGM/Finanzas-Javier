@@ -12,6 +12,12 @@ interface ParsedTx {
   categoria: string
 }
 
+// Sentinela para transacciones ignoradas a propósito (moneda extranjera, reversadas, etc.)
+// El handler las salta silenciosamente sin agregar un error al output.
+const SKIPPED = Symbol('SKIPPED')
+
+type ParseResult = Omit<ParsedTx, 'categoria'> | null | typeof SKIPPED
+
 // ── Helpers de saldo ─────────────────────────────────────────────────────────
 
 const VALID_CUENTAS = ['bhd', 'qik', 'banreservas', 'ademi', 'efectivo'] as const
@@ -63,10 +69,14 @@ function stripHtml(html: string): string {
 // ── Parsers ──────────────────────────────────────────────────────────────────
 //
 // Cada parser recibe el texto plano (ya sin HTML) y la cuenta.
+// Retorna ParseResult:
+//   - Omit<ParsedTx, 'categoria'>  → transacción válida, insertar en DB
+//   - null                         → no se pudo parsear (error real, se loguea)
+//   - SKIPPED                      → ignorado a propósito, sin error en el output
 //
 // Estructura real del email BHD (multipart/related):
-//   - part[0]: text/html  — contiene el cuerpo completo con la tabla de transacción
-//   - part[1]: application/octet-stream — logo JPEG adjunto (NO contiene datos de transacción)
+//   - part[0]: text/html  — cuerpo completo con tabla de transacción
+//   - part[1]: application/octet-stream — logo JPEG (NO contiene datos de transacción)
 //
 // El parser trabaja exclusivamente sobre bodyText (el HTML stripeado del body).
 // El "attachment" es ignorado — es una imagen binaria, no HTML de transacciones.
@@ -75,46 +85,42 @@ function stripHtml(html: string): string {
 //   "... 01/05/2026 05:35 pm RD $1,850.00 Smart Fit Rep Dom Aprobada ..."
 // Columnas de la tabla: Fecha | Moneda | Monto | Comercio | Estado | Tipo
 
-function parseBHD(bodyText: string, _attachmentText: string, cuenta: string): Omit<ParsedTx, 'categoria'> | null {
-  // El body siempre tiene el HTML con la tabla de transacciones.
-  // El attachment es el logo JPEG — se ignora.
+function parseBHD(bodyText: string, _attachmentText: string, cuenta: string): ParseResult {
   const text = bodyText
   if (!text) return null
 
-  // Monto: la moneda (RD) y el valor ($X,XXX.XX) están en celdas separadas.
+  // Ignorar transacciones rechazadas o reversadas — no representan un gasto real.
+  if (/Rechazada|Reversada/i.test(text)) return SKIPPED
+
+  // Ignorar transacciones en moneda extranjera (US, EUR, etc.) — la app trabaja en RD$.
+  // La celda de moneda contiene "US" cuando es dólares y "RD" cuando es pesos dominicanos.
+  if (/\bUS\s+\$[\d,]+\.\d{2}/.test(text) && !/\bRD\s+\$[\d,]+\.\d{2}/.test(text)) return SKIPPED
+
+  // Monto: moneda (RD) y valor ($X,XXX.XX) están en celdas HTML separadas.
   // Tras stripHtml quedan como "RD $1,850.00" con un espacio entre ellos.
   const montoMatch = text.match(/RD\s+\$([\d,]+\.?\d*)/)
     ?? text.match(/RD\s*\$\s*([\d,]+\.?\d*)/)  // fallback: sin espacio
   if (!montoMatch) return null
   const monto = parseAmount(montoMatch[1])
 
-  // Ignorar transacciones rechazadas — no representan un gasto real.
-  if (/Rechazada/i.test(text)) return null
-
-  // Comercio: aparece justo después del monto y antes de "Aprobada"/"Pendiente"
-  // Patrón completo en texto plano:
-  //   DD/MM/YYYY HH:MM [ap]m RD $X,XXX.XX  COMERCIO  Aprobada
-  // Anclamos la búsqueda del comercio al $ del monto.
-  const rowMatch = text.match(
-    /\$[\d,]+\.?\d*\s+(.+?)\s+(?:Aprobada|Pendiente)/i,
-  )
+  // Comercio: aparece entre el monto ($X,XXX.XX) y la palabra "Aprobada"/"Pendiente"
+  const rowMatch = text.match(/\$[\d,]+\.?\d*\s+(.+?)\s+(?:Aprobada|Pendiente)/i)
   const comercio = rowMatch ? rowMatch[1].trim().slice(0, 60) : 'BHD Transacción'
 
   return { monto, comercio, cuenta }
 }
 
-function parseAdemi(text: string, cuenta: string): Omit<ParsedTx, 'categoria'> | null {
+function parseAdemi(text: string, cuenta: string): ParseResult {
   const m = text.match(/RD\$\s*([\d,]+\.?\d*)/)
   if (!m) return null
   const monto = parseAmount(m[1])
-  // Merchant appears before the date in the table row
   const row = text.match(/([A-Z][A-Z\s&]+?)\s+\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}:\d{2}/)
   const comercio = row ? row[1].trim().slice(0, 60) : 'Ademi Transacción'
   return { monto, comercio, cuenta }
 }
 
-function parseQik(text: string, cuenta: string): Omit<ParsedTx, 'categoria'> | null {
-  // Formato Qik (visible en snippet): "RD$ 896.50 en CLARO DOMINICANA 0235"
+function parseQik(text: string, cuenta: string): ParseResult {
+  // Formato Qik: "RD$ 896.50 en CLARO DOMINICANA 0235"
   const m = text.match(/RD\$\s*([\d,]+\.?\d*)\s+en\s+(.+?)(?:\s{2}|[.!]|con\s+tu|$)/i)
   if (!m) return null
   return {
@@ -124,11 +130,10 @@ function parseQik(text: string, cuenta: string): Omit<ParsedTx, 'categoria'> | n
   }
 }
 
-function parseBanreservas(text: string, cuenta: string): Omit<ParsedTx, 'categoria'> | null {
+function parseBanreservas(text: string, cuenta: string): ParseResult {
   const m = text.match(/DOP\s+([\d,]+\.?\d*)/)
   if (!m) return null
   const monto = parseAmount(m[1])
-  // Merchant is after "DOP XX.XX" and before "Aprobada"
   const row = text.match(/DOP\s+[\d,.]+\s+(.+?)\s+Aprobada/i)
   const comercio = row ? row[1].trim().slice(0, 60) : 'Banreservas Transacción'
   return { monto, comercio, cuenta }
@@ -137,14 +142,10 @@ function parseBanreservas(text: string, cuenta: string): Omit<ParsedTx, 'categor
 // ── Configuracion de bancos ───────────────────────────────────────────────────
 
 type BankConfig = {
-  query:          string
-  cuenta:         string
+  query:           string
+  cuenta:          string
   needsAttachment: boolean
-  parse: (
-    bodyText: string,
-    attachmentText: string,
-    cuenta: string,
-  ) => Omit<ParsedTx, 'categoria'> | null
+  parse: (bodyText: string, attachmentText: string, cuenta: string) => ParseResult
 }
 
 const BANKS: BankConfig[] = [
@@ -193,8 +194,6 @@ export async function GET(req: NextRequest) {
   const errors:   string[]   = []
 
   for (const bank of BANKS) {
-    // El list() está fuera del try-catch interno — si falla por credenciales u otro
-    // motivo de red, capturamos aquí para no romper el handler completo con 500.
     let msgs: Array<{ id?: string | null }> = []
     try {
       const list = await gmail.users.messages.list({ userId: 'me', q: bank.query, maxResults: 20 })
@@ -212,7 +211,6 @@ export async function GET(req: NextRequest) {
         const internalDate = Number(full.data.internalDate ?? 0)
         const ts           = internalDate ? new Date(internalDate) : new Date()
 
-        // Para BHD, descargar el attachment HTML y convertirlo a texto plano
         let attachmentText = ''
         if (bank.needsAttachment) {
           const raw = await extractAttachmentText(gmail, msg.id!, payload)
@@ -220,12 +218,16 @@ export async function GET(req: NextRequest) {
         }
 
         const partial = bank.parse(bodyText, attachmentText, bank.cuenta)
+
+        // SKIPPED: transacción ignorada a propósito (divisa extranjera, reversada, etc.)
+        if (partial === SKIPPED) continue
+
+        // null: fallo de parseo real — loguear para diagnóstico
         if (!partial) {
           errors.push(`${bank.cuenta}: no parse — ${msg.id}`)
           continue
         }
 
-        // Categorización local: reglas ordenadas por especificidad, síncrona
         const categoria = categorizarGasto(partial.comercio)
         const tx: ParsedTx = { ...partial, categoria }
 
