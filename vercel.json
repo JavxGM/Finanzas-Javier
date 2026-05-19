@@ -2,6 +2,6 @@
   "crons": [
     { "path": "/api/cron/diario",  "schedule": "0 0 * * *"    },
     { "path": "/api/cron/semanal", "schedule": "0 11 * * 1"   },
-    { "path": "/api/cron/emails",  "schedule": "*/30 * * * *" }
+    { "path": "/api/cron/emails",  "schedule": "0 23 * * *"   }
   ]
 }

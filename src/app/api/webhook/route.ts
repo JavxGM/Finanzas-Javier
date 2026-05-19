@@ -26,7 +26,7 @@ export async function GET() {
     // Fin = mañana para incluir todo el día de hoy
     const mesActualHasta = tomorrowStartRD()
 
-    const [pagosRes, saldosRes, gastosRes, entradasRes, historialRes, analyticsRes] = await Promise.all([
+    const [pagosRes, saldosRes, gastosRes, entradasRes, historialRes, analyticsRes, uberRes] = await Promise.all([
       sb.from('pagos').select('mes_idx, pago_id, done, ts, nombre, monto, cuenta'),
       sb.from('saldos_actuales').select('cuenta, monto'),
       sb.from('gastos').select('id, descripcion, categoria, monto, cuenta, notas, timestamp')
@@ -42,11 +42,25 @@ export async function GET() {
         .order('timestamp', { ascending: false })
         .limit(500),
       // Breakdown por categoría del mes actual via RPC
+      // gastos_por_categoria puede no existir aún — usamos maybeSingle no aplica aquí,
+      // pero sí capturamos el error para que no rompa el resto del estado.
       sb.rpc('gastos_por_categoria', {
         p_desde: mesActualDesde,
         p_hasta: mesActualHasta,
       }),
+      // Uber week tracker — últimas 30 entradas ordenadas por fecha desc
+      sb.from('uber_semana').select('*').order('fecha', { ascending: false }).limit(30),
     ])
+
+    // Si la query de pagos falla (BD pausada, timeout, RLS mal configurado),
+    // devolvemos 503 con mensaje explícito en lugar de datos vacíos silenciosos.
+    if (pagosRes.error) {
+      console.error('[GET /api/webhook] pagos query failed:', pagosRes.error)
+      return NextResponse.json(
+        { error: 'db_unavailable', detail: pagosRes.error.message },
+        { status: 503, headers: CORS }
+      )
+    }
 
     const pagos: Record<string, unknown> = {}
     for (const p of pagosRes.data ?? []) {
@@ -59,7 +73,7 @@ export async function GET() {
       }
     }
 
-    const saldos: Record<string, number> = { bhd: 0, qik: 0, banreservas: 0, ademi: 4600 }
+    const saldos: Record<string, number> = { bhd: 0, qik: 0, banreservas: 0, ademi: 0, efectivo: 0 }
     for (const s of saldosRes.data ?? []) {
       saldos[s.cuenta] = Number(s.monto)
     }
@@ -93,8 +107,18 @@ export async function GET() {
       pct:       Number(r.pct),
     }))
 
+    const uberEntradas = (uberRes.data ?? []).map((u: Record<string, unknown>) => ({
+      id:          u.id,
+      tipo:        u.tipo,
+      monto:       Number(u.monto),
+      horas:       Number(u.horas),
+      minutos:     Number(u.minutos),
+      descripcion: u.descripcion,
+      fecha:       u.fecha,
+    }))
+
     return NextResponse.json(
-      { pagos, saldos, gastosHoy, entradasMes, historialMes, gastosMes, lastUpdate },
+      { pagos, saldos, gastosHoy, entradasMes, historialMes, gastosMes, uberEntradas, lastUpdate },
       { headers: CORS }
     )
   } catch (err) {
@@ -110,6 +134,7 @@ export async function POST(req: Request) {
     if (tipo === 'gasto')   return registrarGasto(data)
     if (tipo === 'entrada') return registrarEntrada(data)
     if (tipo === 'saldo')   return registrarSaldo(data)
+    if (tipo === 'uber')    return registrarUber(data)
     return registrarPago(data)
   } catch (err) {
     console.error('[POST /api/webhook]', err)
@@ -181,6 +206,19 @@ async function registrarSaldo(data: Record<string, unknown>) {
     timestamp: new Date(),
   })
   if (error) console.error('[registrarSaldo]', error)
+  return NextResponse.json({ ok: !error }, { headers: CORS })
+}
+
+async function registrarUber(data: Record<string, unknown>) {
+  const { error } = await getSupabase().from('uber_semana').insert({
+    tipo:        String(data.uber_tipo ?? 'ganancia'),
+    monto:       Number(data.monto ?? 0),
+    horas:       Number(data.horas ?? 0),
+    minutos:     Number(data.minutos ?? 0),
+    descripcion: String(data.descripcion ?? ''),
+    fecha:       String(data.fecha ?? new Date().toISOString().slice(0, 10)),
+  })
+  if (error) console.error('[registrarUber]', error)
   return NextResponse.json({ ok: !error }, { headers: CORS })
 }
 

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Madres — Mayo 2026</title>
+<style>
+  :root {
+    --bg: #0e0e0f; --card: #18181b; --border: #27272a;
+    --green: #4ade80; --gdim: #14532d;
+    --blue: #60a5fa;  --bdim: #1e3a5f;
+    --amber: #fbbf24; --adim: #451a03;
+    --purple: #c084fc; --pdim: #3b0764;
+    --red: #f87171;   --rdim: #450a0a;
+    --muted: #71717a; --text: #f4f4f5;
+    --mono: 'DM Mono', 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; padding: 16px; max-width: 480px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 12px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .row:last-child { border-bottom: none; }
+  .row-label { color: var(--text); }
+  .row-sub { font-size: 11px; color: var(--muted); }
+  .amt { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .g { color: var(--green); }
+  .a { color: var(--amber); }
+  .r { color: var(--red); }
+  .b { color: var(--blue); }
+  .p { color: var(--purple); }
+  .big { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .big-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .hero { text-align: center; padding: 20px 0 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+  .badge-g { background: var(--gdim); color: var(--green); }
+  .badge-a { background: var(--adim); color: var(--amber); }
+  .badge-r { background: var(--rdim); color: var(--red); }
+  .divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 0; }
+  .total-row .amt { font-size: 15px; }
+
+  /* Slider */
+  .slider-wrap { margin: 12px 0 4px; }
+  .slider-wrap label { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 6px; }
+  input[type=range] { width: 100%; accent-color: var(--green); cursor: pointer; }
+  .proj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .proj-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .proj-box .val { font-family: var(--mono); font-size: 16px; font-weight: 700; }
+  .proj-box .lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* Progress bar */
+  .progress-wrap { margin-top: 12px; }
+  .progress-bar-bg { background: var(--border); border-radius: 999px; height: 8px; overflow: hidden; margin: 6px 0; }
+  .progress-bar { height: 8px; border-radius: 999px; transition: width .3s; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+  /* Alert */
+  .alert { border-radius: 10px; padding: 12px 14px; font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+  .alert-g { background: var(--gdim); border: 1px solid var(--green); color: var(--green); }
+  .alert-a { background: var(--adim); border: 1px solid var(--amber); color: var(--amber); }
+  .alert-r { background: var(--rdim); border: 1px solid var(--red); color: var(--red); }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* Steps */
+  .steps { list-style: none; padding: 0; }
+  .steps li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .steps li:last-child { border-bottom: none; }
+  .step-num { min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .sn-g { background: var(--gdim); color: var(--green); }
+  .sn-b { background: var(--bdim); color: var(--blue); }
+  .sn-a { background: var(--adim); color: var(--amber); }
+  .sn-p { background: var(--pdim); color: var(--purple); }
+  .step-body { flex: 1; }
+  .step-body strong { display: block; margin-bottom: 1px; }
+  .step-body span { font-size: 11px; color: var(--muted); }
+
+  .saldo-final-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .sf-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .sf-box .cuenta { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .sf-box .monto { font-family: var(--mono); font-size: 14px; font-weight: 700; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>Plan Día de las Madres 💐</h1>
+<p class="sub">Mayo 19–25, 2026 · 6 días de Uber · Cobro lun/mar</p>
+
+<!-- BALANCE ACTUAL -->
+<div class="card">
+  <div class="card-title">Balance actual</div>
+  <div class="row">
+    <div><div class="row-label">BHD <span class="badge badge-g">NÓMINA</span></div></div>
+    <div class="amt g">RD$18,417.41</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Ademi</div></div>
+    <div class="amt p">RD$58.52</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Efectivo</div></div>
+    <div class="amt a">RD$1,150.00</div>
+  </div>
+  <div class="divider"></div>
+  <div class="total-row">
+    <div style="font-size:12px;color:var(--muted)">Total disponible</div>
+    <div class="amt g" style="font-size:16px">RD$19,625.93</div>
+  </div>
+</div>
+
+<!-- COMPROMISOS MAYO PENDIENTES -->
+<div class="card">
+  <div class="card-title">Compromisos Mayo pendientes</div>
+  <div class="row">
+    <div><div class="row-label">Qik ahorro <span class="badge badge-a">SEED UBER</span></div><div class="row-sub">Lo usaremos como capital para gasolina</div></div>
+    <div class="amt a">RD$5,000</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Gasolina Q1 + Q2</div><div class="row-sub">Ya incluida en plan Uber</div></div>
+    <div class="amt" style="color:var(--muted)">RD$4,400</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Banreservas Q1 + Q2</div></div>
+    <div class="amt r">RD$4,000</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">SAM parte 2 (último)</div></div>
+    <div class="amt r">RD$2,000</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Residencial adelanto</div></div>
+    <div class="amt r">RD$1,500</div>
+  </div>
+  <div class="row">
+    <div><div class="row-label">Barbería parte 2</div></div>
+    <div class="amt r">RD$500</div>
+  </div>
+  <div class="divider"></div>
+  <div class="total-row">
+    <div style="font-size:12px;color:var(--muted)">Total comprometido</div>
+    <div class="amt r" style="font-size:16px">RD$17,400</div>
+  </div>
+  <div class="total-row" style="padding-top:6px">
+    <div style="font-size:12px;color:var(--muted)">Libre después de Mayo</div>
+    <div class="amt a" style="font-size:15px">RD$1,017.41</div>
+  </div>
+</div>
+
+<!-- META DÍA DE LAS MADRES -->
+<div class="card">
+  <div class="card-title">Meta Día de las Madres</div>
+  <div class="row">
+    <div>
+      <div class="row-label">Extractor Teka TMX76 76cm</div>
+      <div class="row-sub">Innova Centro · 15% dcto aplicado</div>
+    </div>
+    <div class="amt a">RD$6,795.75</div>
+  </div>
+  <div class="row">
+    <div>
+      <div class="row-label">Proteína + Creatina</div>
+      <div class="row-sub">Estimado suplementos</div>
+    </div>
+    <div class="amt a">RD$3,500.00</div>
+  </div>
+  <div class="row">
+    <div>
+      <div class="row-label">Gasolina Uber (6 días)</div>
+      <div class="row-sub">Estimado ~2 llenos · sale del Qik</div>
+    </div>
+    <div class="amt a">RD$2,000.00</div>
+  </div>
+  <div class="divider"></div>
+  <div class="total-row">
+    <div style="font-size:12px;color:var(--muted)">Total a conseguir</div>
+    <div class="amt a" style="font-size:16px">RD$12,295.75</div>
+  </div>
+</div>
+
+<!-- CALCULADORA UBER -->
+<div class="card">
+  <div class="card-title">Calculadora Uber 📱</div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Basado en tu historial: ~RD$400/hora promedio (4h→$1,726 · 9h→$3,422)</p>
+
+  <div class="slider-wrap">
+    <label><span>Horas por día</span><span id="horas-lbl" style="color:var(--green);font-weight:700">6 horas</span></label>
+    <input type="range" id="horas-slider" min="2" max="10" step="0.5" value="6" oninput="calcular()">
+  </div>
+  <div class="slider-wrap">
+    <label><span>Días conectado</span><span id="dias-lbl" style="color:var(--blue);font-weight:700">6 días</span></label>
+    <input type="range" id="dias-slider" min="1" max="7" step="1" value="6" oninput="calcular()">
+  </div>
+
+  <div class="proj-grid">
+    <div class="proj-box">
+      <div class="val g" id="proj-total">—</div>
+      <div class="lbl">Ingreso bruto estimado</div>
+    </div>
+    <div class="proj-box">
+      <div class="val a" id="proj-neto">—</div>
+      <div class="lbl">Neto tras gas (RD$2,000)</div>
+    </div>
+    <div class="proj-box">
+      <div class="val b" id="proj-dia">—</div>
+      <div class="lbl">Por día promedio</div>
+    </div>
+    <div class="proj-box">
+      <div class="val" id="proj-estado" style="font-size:13px">—</div>
+      <div class="lbl">Estado vs meta</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>0</span>
+      <span id="prog-pct">0%</span>
+      <span>RD$12,296</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar" id="prog-bar" style="width:0%;background:var(--green)"></div>
+    </div>
+    <div id="prog-msg" style="font-size:11px;color:var(--muted);margin-top:4px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- PLAN DE ACCIÓN -->
+<div class="card">
+  <div class="card-title">Plan de acción — paso a paso</div>
+  <ul class="steps">
+    <li>
+      <div class="step-num sn-g">1</div>
+      <div class="step-body">
+        <strong>Separar RD$5,000 de Qik → Banreservas</strong>
+        <span>Capital de operación Uber. De ahí sale la gasolina (~RD$2,000). Lo que sobre queda como colchón.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num sn-b">2</div>
+      <div class="step-body">
+        <strong>Pagar compromisos fijos de Mayo desde BHD</strong>
+        <span>Banreservas Q1+Q2 (RD$4,000) · SAM final (RD$2,000) · Residencial (RD$1,500) · Barbería (RD$500)</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num sn-a">3</div>
+      <div class="step-body">
+        <strong>Conectarte Uber 5–9h/día por 6 días</strong>
+        <span>Miércoles–lunes es lo más eficiente. Sábado y domingo son los mejores días (más demanda y surge).</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num sn-p">4</div>
+      <div class="step-body">
+        <strong>Con el cobro del lunes/martes: comprar extractor + suplementos</strong>
+        <span>Innova Centro para el extractor. Tienda de suplementos para proteína y creatina.</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- PROYECCIÓN DE SALDOS FINALES -->
+<div class="card">
+  <div class="card-title">Proyección saldos al final del plan</div>
+  <div class="saldo-final-grid">
+    <div class="sf-box">
+      <div class="cuenta">BHD</div>
+      <div class="monto g" id="sf-bhd">RD$1,017</div>
+    </div>
+    <div class="sf-box">
+      <div class="cuenta">Banreservas</div>
+      <div class="monto b" id="sf-ban">RD$3,000</div>
+    </div>
+    <div class="sf-box">
+      <div class="cuenta">Qik</div>
+      <div class="monto" style="color:var(--muted)">RD$0</div>
+    </div>
+    <div class="sf-box">
+      <div class="cuenta">Efectivo</div>
+      <div class="monto a">RD$1,150</div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px">* Banreservas incluye sobrante del seed (RD$3,000 estimado) que queda como fondo de emergencia.</p>
+</div>
+
+<div class="alert alert-g">
+  <strong>✅ La meta es alcanzable</strong>
+  Con 5 horas diarias durante 6 días generas ~RD$12,000 — cubre el extractor, los suplementos y la gasolina invertida. No necesitas tocar ningún otro fondo.
+</div>
+
+<div class="alert alert-a">
+  <strong>⚠️ Clave del plan</strong>
+  El Qik (RD$5,000) funciona como capital de trabajo, no como gasto. Lo inviertes en gasolina, generas x3–x4 en Uber, recuperas la gasolina y ganas la diferencia.
+</div>
+
+<p style="text-align:center;color:var(--muted);font-size:11px;padding:16px 0">Generado el 19 mayo 2026 · Finanzas Javier</p>
+
+<script>
+const META = 12295.75;
+const RATE = 400; // RD$/hora promedio
+
+function fmt(n) {
+  return 'RD$' + Math.round(n).toLocaleString('en-US');
+}
+
+function calcular() {
+  const horas = parseFloat(document.getElementById('horas-slider').value);
+  const dias  = parseInt(document.getElementById('dias-slider').value);
+
+  document.getElementById('horas-lbl').textContent = horas + ' horas';
+  document.getElementById('dias-lbl').textContent  = dias + ' días';
+
+  // Ajuste de tasa: horas largas bajan la eficiencia levemente
+  const tasaAjustada = horas <= 5 ? 420 : horas <= 7 ? 400 : 375;
+  const bruto = tasaAjustada * horas * dias;
+  const neto  = bruto - 2000; // descontar gasolina estimada
+  const porDia = bruto / dias;
+  const pct = Math.min((neto / META) * 100, 100);
+
+  document.getElementById('proj-total').textContent = fmt(bruto);
+  document.getElementById('proj-neto').textContent  = fmt(Math.max(neto, 0));
+  document.getElementById('proj-dia').textContent   = fmt(porDia);
+
+  const bar  = document.getElementById('prog-bar');
+  const pctEl = document.getElementById('prog-pct');
+  bar.style.width = pct + '%';
+  pctEl.textContent = Math.round(pct) + '%';
+
+  if (neto >= META) {
+    bar.style.background = 'var(--green)';
+    document.getElementById('proj-estado').textContent = '✅ Meta cubierta';
+    document.getElementById('proj-estado').style.color = 'var(--green)';
+    const sobrante = neto - META;
+    document.getElementById('prog-msg').textContent = 'Sobrante: ' + fmt(sobrante) + ' para reforzar Qik';
+    document.getElementById('sf-ban').textContent = fmt(3000 + sobrante);
+  } else {
+    const falta = META - neto;
+    bar.style.background = falta > 5000 ? 'var(--red)' : 'var(--amber)';
+    document.getElementById('proj-estado').textContent = '⚠️ Faltan ' + fmt(falta);
+    document.getElementById('proj-estado').style.color = falta > 5000 ? 'var(--red)' : 'var(--amber)';
+    document.getElementById('prog-msg').textContent = 'Necesitas ' + fmt(falta) + ' más — ajusta horas o días';
+    document.getElementById('sf-ban').textContent = fmt(Math.max(3000, 0));
+  }
+}
+
+calcular();
+</script>
+</body>
+</html>

@@ -139,6 +139,57 @@ function parseBanreservas(text: string, cuenta: string): ParseResult {
   return { monto, comercio, cuenta }
 }
 
+/**
+ * Parser para emails de transferencia BHD.
+ * From:    Alertas@bhd.com.do
+ * Subject: Transacciones entre productos BHD y a otros Bancos
+ *
+ * Formato del cuerpo (texto plano tras stripHtml):
+ *   Monto: RD$ 5,000.00
+ *   Beneficiario: MARTINEZ PERALTA, RUTH ESTHER
+ *
+ * El beneficiario viene en formato "APELLIDO1 [APELLIDO2], NOMBRE1 [NOMBRE2]".
+ * Lo invertimos a "Nombre Apellido" para la descripción:
+ *   "MARTINEZ PERALTA, RUTH ESTHER" → "Ruth Martinez"
+ */
+function parseBHDTransferencia(bodyText: string, _attachmentText: string, cuenta: string): ParseResult {
+  const text = bodyText
+  if (!text) return null
+
+  // Monto: "Monto: RD$ 5,000.00" — el símbolo puede estar pegado o con espacio
+  const montoMatch = text.match(/Monto\s*:\s*RD\$\s*([\d,]+\.?\d*)/)
+  if (!montoMatch) return null
+  const monto = parseAmount(montoMatch[1])
+
+  // Beneficiario: "Beneficiario: APELLIDOS, NOMBRES"
+  // El bodyText tiene entidades HTML sin decodificar (ej. "N&uacute;mero") por lo que
+  // no podemos usar el campo siguiente como lookahead. En su lugar capturamos el patrón
+  // "WORD(S), WORD(S)" directamente — la coma separa apellidos de nombres y el patrón
+  // termina con la primera secuencia que no sea letra mayúscula, espacio ni coma.
+  const beneficiarioMatch = text.match(/Beneficiario\s*:\s*([A-Z][A-Z\s]+,\s*[A-Z][A-Z\s]+?)(?=\s+[A-Z][a-z&]|\s{2,}|$)/)
+
+  let comercio = 'BHD Transferencia'
+  if (beneficiarioMatch) {
+    const raw = beneficiarioMatch[1].trim() // "MARTINEZ PERALTA, RUTH ESTHER"
+    const [apellidosPart, nombresPart] = raw.split(',').map(s => s.trim())
+
+    // Tomar solo el primer token de cada parte y capitalizar
+    const capitalize = (s: string) =>
+      s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+
+    const primerNombre   = capitalize(nombresPart?.split(/\s+/)[0]  ?? '')
+    const primerApellido = capitalize(apellidosPart?.split(/\s+/)[0] ?? '')
+
+    if (primerNombre && primerApellido) {
+      comercio = `Transferencia · ${primerNombre} ${primerApellido}`
+    } else if (primerApellido) {
+      comercio = `Transferencia · ${primerApellido}`
+    }
+  }
+
+  return { monto, comercio, cuenta }
+}
+
 // ── Configuracion de bancos ───────────────────────────────────────────────────
 
 type BankConfig = {
@@ -176,30 +227,45 @@ const BANKS: BankConfig[] = [
     needsAttachment: false,
     parse:           (body, _att, cuenta) => parseBanreservas(body, cuenta),
   },
+  {
+    query:           'from:Alertas@bhd.com.do subject:"Transacciones entre productos BHD y a otros Bancos" newer_than:2d',
+    cuenta:          'bhd',
+    needsAttachment: false,
+    parse:           (body, att, cuenta) => parseBHDTransferencia(body, att, cuenta),
+  },
 ]
 
 // ── Handler principal ─────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  // Vercel Cron envía CRON_SECRET como header x-cron-secret automáticamente.
-  // También aceptamos ?secret=... para invocación manual con el mismo valor.
-  const secret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
+  // Vercel Cron envía el secret como: Authorization: Bearer <CRON_SECRET>
+  // También aceptamos x-cron-secret y ?secret=... para invocación manual.
+  const authHeader = req.headers.get('authorization') ?? ''
+  const bearerSecret = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const secret = bearerSecret ?? req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // ?debug=1 expone bodyText (primeros 300 chars) y razón de SKIPPED/null por mensaje.
+  const debugMode = req.nextUrl.searchParams.get('debug') === '1'
 
   const gmail = getGmail()
   const sb    = getSupabase()
   const inserted: ParsedTx[] = []
   const errors:   string[]   = []
+  const skipped:  Array<{ id: string; cuenta: string; reason: string; bodySnippet?: string }> = []
 
   for (const bank of BANKS) {
     let msgs: Array<{ id?: string | null }> = []
     try {
       const list = await gmail.users.messages.list({ userId: 'me', q: bank.query, maxResults: 20 })
       msgs = list.data.messages ?? []
+      console.log(`[cron/emails] ${bank.cuenta}: ${msgs.length} msgs encontrados`)
     } catch (e) {
-      errors.push(`${bank.cuenta}: list error — ${String(e)}`)
+      const errMsg = `${bank.cuenta}: list error — ${String(e)}`
+      errors.push(errMsg)
+      console.error(`[cron/emails] ${errMsg}`)
       continue
     }
 
@@ -220,11 +286,31 @@ export async function GET(req: NextRequest) {
         const partial = bank.parse(bodyText, attachmentText, bank.cuenta)
 
         // SKIPPED: transacción ignorada a propósito (divisa extranjera, reversada, etc.)
-        if (partial === SKIPPED) continue
+        if (partial === SKIPPED) {
+          // Determinar razón específica para diagnóstico
+          let reason = 'unknown'
+          if (/Rechazada|Reversada/i.test(bodyText)) reason = 'reversada/rechazada'
+          else if (/\bUS\s+\$[\d,]+\.\d{2}/.test(bodyText)) reason = 'moneda USD'
+          skipped.push({
+            id:     msg.id!,
+            cuenta: bank.cuenta,
+            reason,
+            ...(debugMode ? { bodySnippet: bodyText.slice(0, 300) } : {}),
+          })
+          continue
+        }
 
         // null: fallo de parseo real — loguear para diagnóstico
         if (!partial) {
           errors.push(`${bank.cuenta}: no parse — ${msg.id}`)
+          if (debugMode) {
+            skipped.push({
+              id:          msg.id!,
+              cuenta:      bank.cuenta,
+              reason:      'parse_failed',
+              bodySnippet: bodyText.slice(0, 300),
+            })
+          }
           continue
         }
 
@@ -237,7 +323,10 @@ export async function GET(req: NextRequest) {
           .select('id')
           .eq('notas', `gmail:${msg.id}`)
           .maybeSingle()
-        if (dup) continue
+        if (dup) {
+          skipped.push({ id: msg.id!, cuenta: bank.cuenta, reason: 'duplicate' })
+          continue
+        }
 
         const { error } = await sb.from('gastos').insert({
           descripcion: tx.comercio,
@@ -253,7 +342,10 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        await descontarSaldo(sb, tx.cuenta, tx.monto)
+        // Solo descontar saldo si la transacción es reciente (menos de 48h).
+        // Para backfills históricos el saldo ya refleja esos gastos — no volver a restar.
+        const esReciente = (Date.now() - ts.getTime()) < 48 * 60 * 60 * 1000
+        if (esReciente) await descontarSaldo(sb, tx.cuenta, tx.monto)
         inserted.push(tx)
       } catch (e) {
         errors.push(`${bank.cuenta}: ${String(e)}`)
@@ -261,5 +353,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, inserted: inserted.length, errors, detail: inserted })
+  console.log(`[cron/emails] DONE — inserted:${inserted.length} errors:${errors.length} skipped:${skipped.length}`)
+  if (errors.length) console.error('[cron/emails] errors:', errors)
+
+  return NextResponse.json({
+    ok:       true,
+    inserted: inserted.length,
+    errors,
+    detail:   inserted,
+    skipped,
+  })
 }

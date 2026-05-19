@@ -46,15 +46,16 @@ INSERT INTO pagos (mes_idx, pago_id, nombre, monto, done) VALUES
 -- Quincena 1 · cobras dia 5
 
 INSERT INTO pagos (mes_idx, pago_id, nombre, monto, done) VALUES
-  (1, 'pm-ban1',  'Banreservas Q1',         2000.00, false),
-  (1, 'pm-gym',   'Gimnasio',               1500.00, false),
-  (1, 'pm-net',   'Internet',                900.00, false),
-  (1, 'pm-crun',  'Crunchyroll',             250.00, false),
-  (1, 'pm-sam1',  'SAM parte 1',            2000.00, false),
-  (1, 'pm-res1',  'Residencial adelanto',   1500.00, false),
-  (1, 'pm-gas1',  'Gasolina Q1',            2200.00, false),
-  (1, 'pm-barb1', 'Barberia parte 1',        500.00, false),
-  (1, 'pm-carro', 'Pago carro completo',    5000.00, false),
+  (1, 'pm-ban1',   'Banreservas Q1',         2000.00, false),
+  (1, 'pm-gym',    'Gimnasio',               1850.00, false),  -- subió de precio mayo 2026
+  (1, 'pm-net',    'Internet · Claro',        900.00, false),
+  (1, 'pm-crun',   'Crunchyroll',             250.00, false),
+  (1, 'pm-sam1',   'SAM parte 1',            2003.00, false),  -- monto real mayo 2026
+  (1, 'pm-lentes', 'Montura de lentes',      2000.00, false),  -- agregado mayo 2026
+  (1, 'pm-res1',   'Residencial adelanto',   1500.00, false),
+  (1, 'pm-gas1',   'Gasolina Q1',            2200.00, false),
+  (1, 'pm-barb1',  'Barberia parte 1',        500.00, false),
+  (1, 'pm-carro',  'Pago carro completo',    5007.00, false),  -- monto real mayo 2026
 
 -- Quincena 2 · cobras dia 20
   (1, 'pm-qik',   'Qik ahorro (completo)',  5000.00, false),

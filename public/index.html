@@ -291,6 +291,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <button class="tab" onclick="showPage('pagos',this)">Pagos</button>
   <button class="tab" onclick="showPage('gastos',this)">Gastos</button>
   <button class="tab" onclick="showPage('analytics',this)">Analytics</button>
+  <button class="tab" onclick="showPage('uber',this)">🚗 Uber</button>
   <button class="tab" onclick="showPage('deudas',this)">Deudas</button>
   <button class="tab" onclick="showPage('score',this)">Score</button>
 </div>
@@ -340,7 +341,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Cobro automatico dia 14 · No tocar</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto p" id="saldo-ademi">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
-  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Mayo y junio cubiertos con sobrante. Desde julio depositar RD$2,139 antes del dia 13.</div>
+  <div class="cuenta" onclick="openModalSaldo('efectivo')">
+    <div class="cuenta-dot" style="background:var(--gdim);color:var(--green)">E</div>
+    <div class="cuenta-info"><div class="cuenta-name">Efectivo</div><div class="cuenta-desc">Dinero en mano · efectivo disponible</div></div>
+    <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-efectivo">—</div><div class="cuenta-edit">tocar para editar</div></div>
+  </div>
+  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Préstamo pendiente: RD$8,448.38. Depositar RD$2,139 antes del dia 13 de cada mes.</div>
 </div>
 
 <!-- BALANCE -->
@@ -464,6 +470,114 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <span id="an-realtime-indicator" style="display:none"><span class="realtime-dot"></span><span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">en vivo</span></span>
   </div>
   <div id="an-historial"><div class="an-empty">Sin historial registrado</div></div>
+</div>
+
+<!-- UBER WEEK TRACKER -->
+<div class="page" id="page-uber">
+
+  <!-- Hero: progreso hacia meta -->
+  <div class="hero" id="uber-hero">
+    <div class="hero-label">Ganancia neta esta semana</div>
+    <div class="hero-value" id="uber-neto" style="font-size:32px">RD$0</div>
+    <div class="hero-sub" id="uber-meta-sub">Meta: RD$12,296 · Madres 2026</div>
+    <div style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px">
+        <span id="uber-pct-label">0%</span>
+        <span id="uber-restante">Faltan RD$12,296</span>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:99px;height:7px;overflow:hidden">
+        <div id="uber-prog-bar" style="height:7px;border-radius:99px;background:var(--green);width:0%;transition:width .4s"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metas desglosadas -->
+  <div class="sec">Metas de la semana</div>
+  <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:600">Extractor Teka TMX76</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Innova Centro · con 15% dcto</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$6,796</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:600">Proteína + Creatina</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Suplementos</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$3,500</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px">
+      <div>
+        <div style="font-size:13px;font-weight:600">Gasolina invertida</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Recuperar inversión de combustible</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$2,000</div>
+    </div>
+  </div>
+
+  <!-- Formulario de registro -->
+  <div class="sec">Registrar</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <button id="uber-btn-ganancia" onclick="uberSetTipo('ganancia')"
+        style="padding:10px;border-radius:10px;border:2px solid var(--green);background:var(--gdim);color:var(--green);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        Ganancia
+      </button>
+      <button id="uber-btn-gasto" onclick="uberSetTipo('gasto')"
+        style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        Gasto
+      </button>
+    </div>
+    <div class="field">
+      <label>Monto (RD$)</label>
+      <input type="number" id="uber-monto" inputmode="decimal" placeholder="0.00"/>
+    </div>
+    <div class="frow" id="uber-horas-field">
+      <div class="field" style="flex:1">
+        <label>Horas</label>
+        <input type="number" id="uber-horas" inputmode="numeric" min="0" placeholder="0"/>
+      </div>
+      <div class="field" style="flex:1">
+        <label>Minutos</label>
+        <input type="number" id="uber-minutos" inputmode="numeric" min="0" max="59" placeholder="0"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <input type="text" id="uber-desc" placeholder="Sábado mañana..." autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" id="uber-fecha"/>
+    </div>
+    <button class="btn btn-g" id="uber-btn-guardar" onclick="uberGuardar()">Guardar entrada</button>
+  </div>
+
+  <!-- Resumen -->
+  <div class="sec">Resumen</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <div class="stat">
+      <div class="stat-label">Ganado</div>
+      <div class="stat-value g" id="uber-sum-ganado" style="font-size:15px">RD$0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Gastado</div>
+      <div class="stat-value r" id="uber-sum-gastado" style="font-size:15px">RD$0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Horas</div>
+      <div class="stat-value b" id="uber-sum-horas" style="font-size:15px">0h</div>
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="sec">Historial (últimas 30 entradas)</div>
+  <div id="uber-historial" style="display:flex;flex-direction:column;gap:6px">
+    <div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas aún</div>
+  </div>
+
 </div>
 
 <!-- DEUDAS -->
@@ -627,36 +741,141 @@ const MESES = {
   },
   1: {
     nombre: 'Mayo 2026',
-    comprometido: 30350,
+    comprometido: 23510,
     hoja: 'Presupuesto Mayo',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 17150,
+        total: 12510,
         pagos: [
           {id:'pm-ban1',   nombre:'Banreservas Q1',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
-          {id:'pm-gym',    nombre:'Gimnasio',             monto:1500,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'pm-gym',    nombre:'Gimnasio',             monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
           {id:'pm-net',    nombre:'Internet · Claro',     monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET', nota:'Factura Claro · ciclo mayo'},
           {id:'pm-crun',   nombre:'Crunchyroll',          monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
-          {id:'pm-sam1',   nombre:'SAM parte 1',          monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
-          {id:'pm-gas1',   nombre:'Gasolina Q1',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pm-sam1',   nombre:'SAM parte 1',          monto:2003,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
           {id:'pm-barb1',  nombre:'Barberia parte 1',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-carro',  nombre:'Pago carro completo',  monto:5000,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
-          {id:'pm-lentes', nombre:'Montura de lentes',    monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT'},
-          {id:'pm-uber',   nombre:'Uber / Transport',     monto:800,   cuenta:'BHD',        color:'rgba(79,158,255,.1)',tc:'',icon:'TRP', nota:'Ref historica abr: RD$800 en 5 viajes'}
+          {id:'pm-carro',  nombre:'Pago carro completo',  monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
         ]
       },
       {
         titulo: 'Quincena 2 · cobras dia 20',
-        total: 13200,
+        total: 11000,
         pagos: [
           {id:'pm-qik',    nombre:'Qik ahorro (completo)',monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
           {id:'pm-ban2',   nombre:'Banreservas Q2',       monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pm-sam2',   nombre:'SAM parte 2 (ULTIMO)', monto:2000,  cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM'},
           {id:'pm-res2',   nombre:'Residencial adelanto', monto:1500,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
-          {id:'pm-gas2',   nombre:'Gasolina Q2',          monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pm-barb2',  nombre:'Barberia parte 2',     monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-ademi',  nombre:'Ademi cuota 1 · dia 14',monto:0,    cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Del sobrante'}
+          {id:'pm-ademi',  nombre:'Ademi cuota 1 · dia 14',monto:0,   cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Del sobrante'}
+        ]
+      }
+    ]
+  },
+  2: {
+    nombre: 'Junio 2026',
+    comprometido: 31496,
+    hoja: 'Presupuesto Junio',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        total: 13496,
+        pagos: [
+          {id:'pj-ban1',    nombre:'Banreservas Q1',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pj-gym',     nombre:'Gimnasio',                    monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'pj-net',     nombre:'Internet · Claro',            monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'pj-crun',    nombre:'Crunchyroll',                 monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'pj-barb1',   nombre:'Barberia parte 1',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pj-carro',   nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+          {id:'pm-lentes-1',nombre:'Lentes cuota 1/6 · Q1 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pj-gas1',    nombre:'Gasolina Q1',                 monto:1989,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        total: 18000,
+        pagos: [
+          {id:'pj-qik',     nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'pj-uber',    nombre:'Reserva UberDriver',          monto:0,     cuenta:'Qik',        color:'rgba(6,182,212,.12)',tc:'var(--blue)',icon:'UBR', nota:'Monto por definir'},
+          {id:'pj-trading', nombre:'Reserva Trading',             monto:0,     cuenta:'Qik',        color:'rgba(167,139,250,.1)',tc:'var(--purple)',icon:'TRD', nota:'Monto por definir'},
+          {id:'pj-ban2',    nombre:'Banreservas Q2',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pj-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'pj-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pm-lentes-2',nombre:'Lentes cuota 2/6 · Q2 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pj-ademi1',  nombre:'Ademi cuota 3 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
+          {id:'pj-gas2',    nombre:'Gasolina Q2',                 monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pj-sam-fin', nombre:'SAM liquidado',               monto:0,     cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM', nota:'Pagado en mayo · sin costo'}
+        ]
+      }
+    ]
+  },
+  3: {
+    nombre: 'Julio 2026',
+    comprometido: 30989,
+    hoja: 'Presupuesto Julio',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        total: 13489,
+        pagos: [
+          {id:'pjl-ban1',    nombre:'Banreservas Q1',             monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pjl-gym',     nombre:'Gimnasio',                   monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'pjl-net',     nombre:'Internet · Claro',           monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'pjl-crun',    nombre:'Crunchyroll',                monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'pjl-barb1',   nombre:'Barberia parte 1',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pjl-carro',   nombre:'Pago carro completo',        monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+          {id:'pm-lentes-3', nombre:'Lentes cuota 3/6 · Q1 jul', monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pjl-gas1',    nombre:'Gasolina Q1',                monto:1982,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        total: 17500,
+        pagos: [
+          {id:'pjl-qik',     nombre:'Qik ahorro',                 monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'pjl-uber',    nombre:'Reserva UberDriver',         monto:0,     cuenta:'Qik',        color:'rgba(6,182,212,.12)',tc:'var(--blue)',icon:'UBR', nota:'Monto por definir'},
+          {id:'pjl-trading', nombre:'Reserva Trading',            monto:0,     cuenta:'Qik',        color:'rgba(167,139,250,.1)',tc:'var(--purple)',icon:'TRD', nota:'Monto por definir'},
+          {id:'pjl-ban2',    nombre:'Banreservas Q2',             monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pjl-res',     nombre:'Residencial',                monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'pjl-barb2',   nombre:'Barberia parte 2',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pm-lentes-4', nombre:'Lentes cuota 4/6 · Q2 jul', monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pjl-ademi',   nombre:'Ademi cuota 3 · dia 14',     monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
+          {id:'pjl-gas2',    nombre:'Gasolina Q2',                monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+        ]
+      }
+    ]
+  },
+  4: {
+    nombre: 'Agosto 2026',
+    comprometido: 30989,
+    hoja: 'Presupuesto Agosto',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        total: 13489,
+        pagos: [
+          {id:'pa-ban1',    nombre:'Banreservas Q1',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pa-gym',     nombre:'Gimnasio',                    monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'pa-net',     nombre:'Internet · Claro',            monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'pa-crun',    nombre:'Crunchyroll',                 monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'pa-barb1',   nombre:'Barberia parte 1',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pa-carro',   nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+          {id:'pm-lentes-5',nombre:'Lentes cuota 5/6 · Q1 ago',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pa-gas1',    nombre:'Gasolina Q1',                 monto:1982,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        total: 17500,
+        pagos: [
+          {id:'pa-qik',     nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'pa-uber',    nombre:'Reserva UberDriver',          monto:0,     cuenta:'Qik',        color:'rgba(6,182,212,.12)',tc:'var(--blue)',icon:'UBR', nota:'Monto por definir'},
+          {id:'pa-trading', nombre:'Reserva Trading',             monto:0,     cuenta:'Qik',        color:'rgba(167,139,250,.1)',tc:'var(--purple)',icon:'TRD', nota:'Monto por definir'},
+          {id:'pa-ban2',    nombre:'Banreservas Q2',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
+          {id:'pa-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'pa-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'pm-lentes-6',nombre:'Lentes cuota 6/6 · Q2 ago',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD · ULTIMA'},
+          {id:'pa-ademi',   nombre:'Ademi cuota 4 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
+          {id:'pa-gas2',    nombre:'Gasolina Q2',                 monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
       }
     ]
@@ -669,12 +888,13 @@ const MESES = {
 // La clave incluye el mes para que sean totalmente independientes
 // ═══════════════════════════════════════════════════
 var state = {
-  saldos: {bhd:0, qik:0, banreservas:0, ademi:4600},
+  saldos: {bhd:0, qik:0, banreservas:0, ademi:0, efectivo:0},
   pagos: {},        // clave: mesIdx + "_" + id
   gastosHoy: [],
   entradasMes: [],
   historialMes: [], // todos los gastos desde mayo 2026
-  gastosMes: []     // breakdown por categoría del mes actual
+  gastosMes: [],    // breakdown por categoría del mes actual
+  uberEntradas: []  // entradas de uber_semana (últimas 30)
 };
 // Calcular mesActual dinámico: offset desde abril 2026 (índice 0)
 // Clampado al rango válido de MESES para que no explote si el objeto no cubre ese mes
@@ -707,37 +927,48 @@ document.addEventListener('visibilitychange', function(){
 function cargarDesdeNube() {
   setSyncLoading();
   fetch(WEBHOOK)
-    .then(function(r){return r.json();})
+    .then(function(r){
+      if (!r.ok) {
+        // 503 = BD pausada o no disponible; 500 = error de servidor
+        return r.json().then(function(body){
+          var msg = (r.status === 503)
+            ? 'BD no disponible · restaura Supabase'
+            : ('Error del servidor (' + r.status + ')');
+          throw new Error(body.detail || msg);
+        });
+      }
+      return r.json();
+    })
     .then(function(data){
-      state.saldos = data.saldos || {bhd:0,qik:0,banreservas:0,ademi:4600};
-      if (!state.saldos.ademi) state.saldos.ademi = 4600;
-      // El Sheet devuelve pagos con clave como "0_py-qik1" o legacy "py-qik1"
-      // Normalizar: si la clave no tiene "_", asumirla de Abril (mes 0)
+      state.saldos = data.saldos || {bhd:0,qik:0,banreservas:0,ademi:0,efectivo:0};
+      if (state.saldos.efectivo === undefined) state.saldos.efectivo = 0;
+      // Normalizar claves: si la clave no tiene "_", asumirla de Abril (mes 0)
       var rawPagos = data.pagos || {};
       state.pagos = {};
       Object.keys(rawPagos).forEach(function(k){
         if (k.indexOf('_') === -1) {
-          // legacy: era de abril
           state.pagos['0_' + k] = rawPagos[k];
         } else {
           state.pagos[k] = rawPagos[k];
         }
       });
-      state.gastosHoy   = data.gastosHoy   || [];
-      state.entradasMes = data.entradasMes || [];
+      state.gastosHoy    = data.gastosHoy    || [];
+      state.entradasMes  = data.entradasMes  || [];
       state.historialMes = data.historialMes || [];
       state.gastosMes    = data.gastosMes    || [];
+      state.uberEntradas = data.uberEntradas || [];
       _lastSyncTs = Date.now();
       aplicarEstado();
       setSyncOk();
       document.getElementById('loading').classList.add('hidden');
-      showToast('Sincronizado con Drive','ok');
+      showToast('Sincronizado','ok');
     })
-    .catch(function(){
+    .catch(function(err){
       aplicarEstado();
       setSyncErr();
       document.getElementById('loading').classList.add('hidden');
-      showToast('Sin conexion · datos locales','err');
+      var msg = (err && err.message) ? err.message : 'Sin conexion · datos locales';
+      showToast(msg, 'err');
     });
 }
 
@@ -749,6 +980,7 @@ function aplicarEstado() {
   renderEntradas();
   updateStats();
   renderAnalytics();
+  uberRender();
 }
 
 function fmt(n){return 'RD$'+Math.round(n||0).toLocaleString('es-DO');}
@@ -762,13 +994,14 @@ function getPagoState(mesIdx, id){
 
 // ─── Saldos ───
 function initSaldos(){
-  var total=(state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0);
+  var total=(state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0)+(state.saldos.efectivo||0);
   document.getElementById('h-neto').textContent=total?fmt(total):'—';
-  document.getElementById('h-sub').textContent=total?'BHD + Qik + Banreservas · excluye Ademi':'Toca cada cuenta para configurar';
+  document.getElementById('h-sub').textContent=total?'BHD + Qik + Banreservas + Efectivo · excluye Ademi':'Toca cada cuenta para configurar';
   document.getElementById('saldo-bhd').textContent=fmt(state.saldos.bhd);
   document.getElementById('saldo-qik').textContent=fmt(state.saldos.qik);
   document.getElementById('saldo-banreservas').textContent=fmt(state.saldos.banreservas);
   document.getElementById('saldo-ademi').textContent=fmt(state.saldos.ademi);
+  document.getElementById('saldo-efectivo').textContent=fmt(state.saldos.efectivo);
 }
 
 // ─── Stats: solo del mes activo ───
@@ -1022,8 +1255,8 @@ function closeModalPago(e){
 var modalSaldoCuenta='';
 function openModalSaldo(c){
   modalSaldoCuenta=c;
-  var names={bhd:'BHD',qik:'Qik',banreservas:'Banreservas',ademi:'Ademi'};
-  var descs={bhd:'Nomina y pagos fijos',qik:'Ahorro intocable',banreservas:'Salidas y comida',ademi:'Cobro automatico dia 14'};
+  var names={bhd:'BHD',qik:'Qik',banreservas:'Banreservas',ademi:'Ademi',efectivo:'Efectivo'};
+  var descs={bhd:'Nomina y pagos fijos',qik:'Ahorro intocable',banreservas:'Salidas y comida',ademi:'Cobro automatico dia 14',efectivo:'Dinero en mano'};
   document.getElementById('modal-saldo-title').textContent='Saldo · '+names[c];
   document.getElementById('modal-saldo-sub').textContent=descs[c]||'';
   document.getElementById('modal-saldo-input').value=state.saldos[c]||'';
@@ -1434,6 +1667,123 @@ function showPage(id,btn){
   document.getElementById('page-'+id).classList.add('active');btn.classList.add('active');
   if(id==='pagos'){renderMes();renderHechos();updateStats();}
   if(id==='analytics'){renderAnalytics();}
+  if(id==='uber'){uberRender();}
+}
+
+// ─── UBER WEEK TRACKER ───────────────────────────────────────────────────────
+var UBER_META = 12295.75;
+var currentUberTipo = 'ganancia';
+
+// Inicializar la fecha con hoy en zona RD
+(function(){
+  var fechaEl = document.getElementById('uber-fecha');
+  if(fechaEl) fechaEl.value = new Date().toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'});
+})();
+
+function uberSetTipo(t){
+  currentUberTipo = t;
+  var bg = document.getElementById('uber-btn-ganancia');
+  var rb = document.getElementById('uber-btn-gasto');
+  var hf = document.getElementById('uber-horas-field');
+  if(t==='ganancia'){
+    bg.style.borderColor='var(--green)';bg.style.background='var(--gdim)';bg.style.color='var(--green)';bg.style.borderWidth='2px';
+    rb.style.borderColor='var(--border2)';rb.style.background='transparent';rb.style.color='var(--muted)';rb.style.borderWidth='1px';
+    hf.style.display='';
+  } else {
+    rb.style.borderColor='var(--red)';rb.style.background='var(--rdim)';rb.style.color='var(--red)';rb.style.borderWidth='2px';
+    bg.style.borderColor='var(--border2)';bg.style.background='transparent';bg.style.color='var(--muted)';bg.style.borderWidth='1px';
+    hf.style.display='none';
+  }
+}
+
+function uberGuardar(){
+  var monto   = parseFloat(document.getElementById('uber-monto').value)||0;
+  if(!monto){ showToast('Ingresa un monto','err'); return; }
+  var horas   = parseInt(document.getElementById('uber-horas').value,10)||0;
+  var minutos = parseInt(document.getElementById('uber-minutos').value,10)||0;
+  var desc    = document.getElementById('uber-desc').value.trim()||(currentUberTipo==='ganancia'?'Viajes Uber':'Gasto operación');
+  var fecha   = document.getElementById('uber-fecha').value ||
+                new Date().toLocaleDateString('en-CA',{timeZone:'America/Santo_Domingo'});
+
+  var btn = document.getElementById('uber-btn-guardar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  enviar({tipo:'uber', uber_tipo:currentUberTipo, monto:monto, horas:horas, minutos:minutos, descripcion:desc, fecha:fecha})
+    .then(function(ok){
+      if(!ok){ showToast('Error al guardar','err'); return; }
+      document.getElementById('uber-monto').value='';
+      document.getElementById('uber-horas').value='';
+      document.getElementById('uber-minutos').value='';
+      document.getElementById('uber-desc').value='';
+      // Resetear fecha a hoy
+      document.getElementById('uber-fecha').value = new Date().toLocaleDateString('en-CA',{timeZone:'America/Santo_Domingo'});
+      showToast(currentUberTipo==='ganancia'?'Ganancia registrada':'Gasto registrado','ok');
+      cargarDesdeNube();
+    })
+    .catch(function(){ showToast('Error de red','err'); })
+    .finally(function(){ btn.disabled=false; btn.textContent='Guardar entrada'; });
+}
+
+function uberRender(){
+  var data = state.uberEntradas || [];
+  var ganado=0, gastado=0, horasTotales=0, minutosTotales=0;
+  data.forEach(function(e){
+    if(e.tipo==='ganancia'){
+      ganado += e.monto;
+      horasTotales   += e.horas   || 0;
+      minutosTotales += e.minutos || 0;
+    } else {
+      gastado += e.monto;
+    }
+  });
+  // Consolidar minutos en horas
+  horasTotales   += Math.floor(minutosTotales / 60);
+  minutosTotales  = minutosTotales % 60;
+
+  var neto = ganado - gastado;
+  var pct  = Math.min((neto/UBER_META)*100, 100);
+
+  document.getElementById('uber-neto').textContent = fmt(neto);
+  document.getElementById('uber-neto').style.color = neto>=UBER_META?'var(--green)': neto>0?'var(--amber)':'var(--red)';
+  document.getElementById('uber-pct-label').textContent = Math.round(pct)+'%';
+  document.getElementById('uber-prog-bar').style.width = pct+'%';
+  document.getElementById('uber-prog-bar').style.background = pct>=100?'var(--green)': pct>=60?'var(--amber)':'var(--blue)';
+  var restante = UBER_META - neto;
+  document.getElementById('uber-restante').textContent = restante>0 ? 'Faltan '+fmt(restante) : 'Meta alcanzada!';
+  document.getElementById('uber-sum-ganado').textContent  = fmt(ganado);
+  document.getElementById('uber-sum-gastado').textContent = fmt(gastado);
+  var horasLabel = horasTotales + 'h' + (minutosTotales > 0 ? ' ' + minutosTotales + 'm' : '');
+  document.getElementById('uber-sum-horas').textContent = horasLabel;
+
+  var lista = document.getElementById('uber-historial');
+  if(!data.length){
+    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'DM Mono\',monospace">Sin entradas aún</div>';
+    return;
+  }
+  lista.innerHTML = data.map(function(e){
+    var esG   = e.tipo==='ganancia';
+    var color = esG ? 'var(--green)' : 'var(--red)';
+    var signo = esG ? '+' : '-';
+    // Mostrar la fecha (campo date, formato YYYY-MM-DD) y horas/minutos
+    var fechaParts = String(e.fecha).split('-'); // [yyyy, mm, dd]
+    var fechaStr = fechaParts.length===3
+      ? fechaParts[2]+'/'+fechaParts[1]+'/'+fechaParts[0]
+      : String(e.fecha);
+    var tiempoStr = '';
+    if(esG && (e.horas||e.minutos)){
+      var h = e.horas||0, m = e.minutos||0;
+      tiempoStr = '<span style="font-size:10px;color:var(--blue);margin-left:6px;font-family:\'DM Mono\',monospace">' +
+        h+'h'+(m?(' '+m+'m'):'')+'</span>';
+    }
+    return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+String(e.descripcion||'')+tiempoStr+'</div>'+
+        '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px">'+fechaStr+'</div>'+
+      '</div>'+
+      '<div style="font-family:\'DM Mono\',monospace;font-size:15px;font-weight:700;color:'+color+';flex-shrink:0;margin-left:10px">'+signo+fmt(e.monto)+'</div>'+
+    '</div>';
+  }).join('');
 }
 
 function showToast(msg,type){
