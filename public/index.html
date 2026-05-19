@@ -1773,11 +1773,22 @@ function uberRender(){
   var rdPorMin    = totalRef / totalMin;
   var minPorViaje = totalMin / totalViajes;
   var falta       = Math.max(UBER_META - neto, 0);
-  var minNeeded   = falta / rdPorMin;
   function fmtH(m){ var h=Math.floor(m/60),mn=Math.round(m%60); return h+'h'+(mn?' '+mn+'m':''); }
-  var rec4h=Math.round(4*60*rdPorMin), rec6h=Math.round(6*60*rdPorMin), rec8h=Math.round(8*60*rdPorMin);
-  var dias4h=Math.ceil(falta/rec4h), dias6h=Math.ceil(falta/rec6h), dias8h=Math.ceil(falta/rec8h);
-  var v4h=Math.round(4*60/minPorViaje), v6h=Math.round(6*60/minPorViaje), v8h=Math.round(8*60/minPorViaje);
+
+  // Deadline: 25 mayo 2026 4:00 AM hora RD (UTC-4) = 08:00 UTC
+  var DEADLINE = new Date('2026-05-25T08:00:00Z');
+  var ahora    = new Date();
+  var msLeft   = Math.max(DEADLINE - ahora, 0);
+  var diasExactos = msLeft / (1000*60*60*24);
+  // Días de manejo disponibles: días completos restantes (hoy cuenta parcial)
+  // Asumimos que puede manejar hoy + días completos hasta el 24 (el 25 no cuenta — deadline 4am)
+  var diasDisp = Math.max(Math.ceil(diasExactos - (4/24)), 0); // desconta las 4h del último día
+  diasDisp = Math.max(diasDisp, 1);
+  var necesarioPorDia = falta / diasDisp;
+  var horasNecDia     = necesarioPorDia / rdPorHora;
+  var viajesNecDia    = Math.round(horasNecDia * 60 / minPorViaje);
+  var semColor = horasNecDia <= 5 ? 'var(--green)' : horasNecDia <= 7 ? 'var(--amber)' : 'var(--red)';
+
   var refHTML = REF.map(function(r){
     var rph=r.monto/(r.horasMin/60);
     return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:10px 14px">'+
@@ -1789,21 +1800,33 @@ function uberRender(){
       '</div>'+
     '</div>';
   }).join('');
+
   var recEl = document.getElementById('uber-recomendaciones');
   if(recEl) recEl.innerHTML =
-    '<div class="sec">Sesiones de referencia</div>'+
+    '<div class="sec">Sesiones de referencia <span style="color:var(--faint);font-size:10px;font-family:\'DM Mono\',monospace">≈'+fmt(Math.round(rdPorHora))+'/h · '+fmt(Math.round(rdPorViaje))+'/viaje</span></div>'+
     '<div style="display:flex;flex-direction:column;gap:6px">'+refHTML+'</div>'+
-    '<div class="sec" style="margin-top:14px">Proyección diaria <span style="color:var(--faint);font-size:10px;font-family:\'DM Mono\',monospace">≈'+fmt(Math.round(rdPorHora))+'/h · '+fmt(Math.round(rdPorViaje))+'/viaje</span></div>'+
-    '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px">'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center">'+
-        _recRow('4h/día',fmt(rec4h),v4h+' viajes',dias4h+' días')+
-        _recRow('6h/día',fmt(rec6h),v6h+' viajes',dias6h+' días',true)+
-        _recRow('8h/día',fmt(rec8h),v8h+' viajes',dias8h+' días')+
+    '<div class="sec" style="margin-top:14px">Necesitas para el 25 mayo 4AM</div>'+
+    '<div style="background:var(--raised);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:12px;color:var(--muted)">Días disponibles</span>'+
+        '<span style="font-size:14px;font-weight:700;color:var(--fg);font-family:\'DM Mono\',monospace">'+diasDisp+' días</span>'+
       '</div>'+
-    '</div>'+
-    '<div style="background:var(--raised);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
-      '<span style="font-size:12px;color:var(--muted)">Para llegar a la meta</span>'+
-      '<span style="font-size:13px;font-weight:700;color:var(--amber);font-family:\'DM Mono\',monospace">'+fmtH(minNeeded)+' conectado</span>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:12px;color:var(--muted)">Ganancia necesaria/día</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">'+fmt(Math.round(necesarioPorDia))+'</span>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:12px;color:var(--muted)">Horas en app/día</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">~'+fmtH(horasNecDia*60)+'</span>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:12px;color:var(--muted)">Viajes aprox/día</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">~'+viajesNecDia+' viajes</span>'+
+      '</div>'+
+      '<div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:12px;color:var(--muted)">Pendiente total</span>'+
+        '<span style="font-size:15px;font-weight:700;color:var(--amber);font-family:\'DM Mono\',monospace">'+fmt(Math.round(falta))+'</span>'+
+      '</div>'+
     '</div>';
 
   var lista = document.getElementById('uber-historial');
