@@ -479,7 +479,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="hero" id="uber-hero">
     <div class="hero-label">Ganancia neta esta semana</div>
     <div class="hero-value" id="uber-neto" style="font-size:32px">RD$0</div>
-    <div class="hero-sub" id="uber-meta-sub">Meta: RD$12,296 · Madres 2026</div>
+    <div class="hero-sub" id="uber-meta-sub">Meta: RD$12,556 · Madres 2026</div>
     <div style="margin-top:14px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px">
         <span id="uber-pct-label">0%</span>
@@ -569,21 +569,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="stat">
       <div class="stat-label">Horas</div>
       <div class="stat-value b" id="uber-sum-horas" style="font-size:15px">0h</div>
-    </div>
-  </div>
-
-  <!-- Gastos fijos -->
-  <div class="sec">Gastos fijos semana <span style="color:var(--red);font-family:'DM Mono',monospace;font-size:11px;float:right">−RD$260</span></div>
-  <div style="display:flex;flex-direction:column;gap:6px">
-    <div class="gasto-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px">
-      <div class="gasto-dot" style="background:var(--red)"></div>
-      <div class="gasto-info"><div class="gasto-desc">Internet 5 días</div><div class="gasto-meta">Paquete semanal fijo</div></div>
-      <div class="gasto-monto">−RD$160</div>
-    </div>
-    <div class="gasto-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px">
-      <div class="gasto-dot" style="background:var(--red)"></div>
-      <div class="gasto-info"><div class="gasto-desc">Internet 3 días</div><div class="gasto-meta">Paquete semanal fijo</div></div>
-      <div class="gasto-monto">−RD$100</div>
     </div>
   </div>
 
@@ -1686,14 +1671,9 @@ function showPage(id,btn){
 }
 
 // ─── UBER WEEK TRACKER ───────────────────────────────────────────────────────
-var UBER_META = 12295.75;
+// Meta = objetivo Madres 2026 (12,295.75) + internet semanal (260)
+var UBER_META = 12555.75;
 var currentUberTipo = 'ganancia';
-
-// Gastos fijos semanales incluidos automáticamente en el cálculo
-var UBER_GASTOS_FIJOS = [
-  { desc: 'Internet 5 días', monto: 160 },
-  { desc: 'Internet 3 días', monto: 100 },
-];
 
 // Inicializar la fecha con hoy en zona RD
 (function(){
@@ -1762,8 +1742,7 @@ function uberRender(){
   horasTotales   += Math.floor(minutosTotales / 60);
   minutosTotales  = minutosTotales % 60;
 
-  var gastosFijos = UBER_GASTOS_FIJOS.reduce(function(s,g){return s+g.monto;},0);
-  var neto = ganado - gastado - gastosFijos;
+  var neto = ganado - gastado;
   var pct  = Math.min((neto/UBER_META)*100, 100);
 
   document.getElementById('uber-neto').textContent = fmt(neto);
@@ -1774,7 +1753,7 @@ function uberRender(){
   var restante = UBER_META - neto;
   document.getElementById('uber-restante').textContent = restante>0 ? 'Faltan '+fmt(restante) : 'Meta alcanzada!';
   document.getElementById('uber-sum-ganado').textContent  = fmt(ganado);
-  document.getElementById('uber-sum-gastado').textContent = fmt(gastado + gastosFijos);
+  document.getElementById('uber-sum-gastado').textContent = fmt(gastado);
   var horasLabel = horasTotales + 'h' + (minutosTotales > 0 ? ' ' + minutosTotales + 'm' : '');
   document.getElementById('uber-sum-horas').textContent = horasLabel;
 
