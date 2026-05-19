@@ -578,6 +578,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas aún</div>
   </div>
 
+  <!-- Recomendaciones -->
+  <div id="uber-recomendaciones" style="margin-top:4px"></div>
+
 </div>
 
 <!-- DEUDAS -->
@@ -1766,8 +1769,7 @@ function uberRender(){
     var esG   = e.tipo==='ganancia';
     var color = esG ? 'var(--green)' : 'var(--red)';
     var signo = esG ? '+' : '-';
-    // Mostrar la fecha (campo date, formato YYYY-MM-DD) y horas/minutos
-    var fechaParts = String(e.fecha).split('-'); // [yyyy, mm, dd]
+    var fechaParts = String(e.fecha).split('-');
     var fechaStr = fechaParts.length===3
       ? fechaParts[2]+'/'+fechaParts[1]+'/'+fechaParts[0]
       : String(e.fecha);
@@ -1785,6 +1787,81 @@ function uberRender(){
       '<div style="font-family:\'DM Mono\',monospace;font-size:15px;font-weight:700;color:'+color+';flex-shrink:0;margin-left:10px">'+signo+fmt(e.monto)+'</div>'+
     '</div>';
   }).join('');
+
+  // ── Recomendaciones al fondo ──────────────────────────────────────────────
+  var REF = [
+    { label:'Sesión corta (ref)',  monto:1722.5, horasMin: 4*60+33, viajes: 11   },
+    { label:'Sesión larga (ref)',  monto:3422,   horasMin: 8*60+53, viajes: 21   },
+  ];
+  // Promedio ponderado RD$/hora de ambas sesiones
+  var totalRef = REF.reduce(function(s,r){return s+r.monto;},0);
+  var totalMin  = REF.reduce(function(s,r){return s+r.horasMin;},0);
+  var rdPorHora = totalRef / (totalMin/60); // ~383 RD$/h
+  var totalViajes = REF.reduce(function(s,r){return s+(r.viajes||0);},0);
+  var rdPorViaje  = totalRef / totalViajes;
+  var rdPorMin  = totalRef / totalMin;
+
+  var restante = Math.max(UBER_META - neto, 0);
+  var minNeeded = restante / rdPorMin;
+  var hNeed = Math.floor(minNeeded/60), mNeed = Math.round(minNeeded%60);
+
+  function fmtH(min){ var h=Math.floor(min/60),m=Math.round(min%60); return h+'h'+(m?' '+m+'m':''); }
+
+  var rec4h  = Math.round(4*60*rdPorMin);
+  var rec6h  = Math.round(6*60*rdPorMin);
+  var rec8h  = Math.round(8*60*rdPorMin);
+  var dias4h = Math.ceil(restante / rec4h);
+  var dias6h = Math.ceil(restante / rec6h);
+  var dias8h = Math.ceil(restante / rec8h);
+
+  var minPorViaje = totalMin / totalViajes;
+  var viajes4h = Math.round((4*60) / minPorViaje);
+  var viajes6h = Math.round((6*60) / minPorViaje);
+  var viajes8h = Math.round((8*60) / minPorViaje);
+
+  var refHTML = REF.map(function(r){
+    var rph = r.monto/(r.horasMin/60);
+    var vStr = r.viajes ? ' · '+r.viajes+' viajes' : '';
+    return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:10px 14px">'+
+      '<div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-bottom:4px">'+r.label+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:13px;font-weight:700;color:var(--green);font-family:\'DM Mono\',monospace">'+fmt(r.monto)+'</span>'+
+        '<span style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace">'+fmtH(r.horasMin)+vStr+'</span>'+
+        '<span style="font-size:11px;color:var(--amber);font-family:\'DM Mono\',monospace">≈'+fmt(Math.round(rph))+'/h</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  var proyHTML =
+    '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;overflow:hidden">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center">'+
+        _recRow('4h/día', fmt(rec4h), viajes4h+' viajes', dias4h+' días')+
+        _recRow('6h/día', fmt(rec6h), viajes6h+' viajes', dias6h+' días', true)+
+        _recRow('8h/día', fmt(rec8h), viajes8h+' viajes', dias8h+' días')+
+      '</div>'+
+    '</div>'+
+    '<div style="background:var(--raised);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
+      '<span style="font-size:12px;color:var(--muted)">Para llegar a la meta</span>'+
+      '<span style="font-size:13px;font-weight:700;color:var(--amber);font-family:\'DM Mono\',monospace">'+fmtH(minNeeded)+' conectado</span>'+
+    '</div>';
+
+  var rec = document.getElementById('uber-recomendaciones');
+  if(rec) rec.innerHTML =
+    '<div class="sec">Sesiones de referencia</div>'+
+    '<div style="display:flex;flex-direction:column;gap:6px">'+refHTML+'</div>'+
+    '<div class="sec" style="margin-top:14px">Proyección diaria <span style="color:var(--faint);font-size:10px;font-family:\'DM Mono\',monospace">(≈'+fmt(Math.round(rdPorHora))+'/h · '+fmt(Math.round(rdPorViaje))+'/viaje)</span></div>'+
+    proyHTML;
+}
+
+function _recRow(label, monto, viajes, dias, highlight){
+  var bg = highlight ? 'background:rgba(6,182,212,.07);' : '';
+  var c  = highlight ? 'color:var(--blue)' : 'color:var(--fg)';
+  return '<div style="padding:12px 8px;'+bg+'border-right:1px solid var(--border)">'+
+    '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-bottom:4px">'+label+'</div>'+
+    '<div style="font-size:14px;font-weight:700;font-family:\'DM Mono\',monospace;'+c+'">'+monto+'</div>'+
+    '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px">'+viajes+'</div>'+
+    '<div style="font-size:10px;color:var(--faint);font-family:\'DM Mono\',monospace;margin-top:1px">'+dias+'</div>'+
+  '</div>';
 }
 
 function showToast(msg,type){
