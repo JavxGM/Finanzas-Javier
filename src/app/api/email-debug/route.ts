@@ -89,8 +89,8 @@ export async function GET(req: NextRequest) {
     // Modo listado: últimos 2 BHD con estructura y preview de attachment
     const list = await gmail.users.messages.list({
       userId:     'me',
-      q:          'from:Alertas@bhd.com.do subject:"Notificación de Transacciones" newer_than:3d',
-      maxResults: 2,
+      q:          'from:bhd.com.do newer_than:1d in:anywhere',
+      maxResults: 20,
     })
 
     for (const msg of list.data.messages ?? []) {

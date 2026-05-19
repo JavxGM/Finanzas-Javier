@@ -235,6 +235,81 @@ const BANKS: BankConfig[] = [
   },
 ]
 
+// ── Auto-match de pago por transferencia ─────────────────────────────────────
+//
+// Cuando el cron detecta un gasto cuya descripción empieza con "Transferencia · ",
+// intenta encontrar el pago pendiente correspondiente en la tabla `pagos` para
+// marcarlo como done=true automáticamente.
+//
+// Estrategia de búsqueda (en orden de precisión):
+//   1. ILIKE por nombre del beneficiario sobre transfer_match (fuzzy, case-insensitive)
+//   2. Si el paso 1 devuelve 0 resultados, fallback por monto exacto en pagos que
+//      tengan transfer_match IS NOT NULL (evita falsos positivos en pagos sin nombre)
+//
+// En ambos casos solo se marca si hay exactamente 1 candidato — 0 o >1 son ambiguos.
+
+async function autoMatchPago(
+  sb:       ReturnType<typeof getSupabase>,
+  comercio: string,
+  monto:    number,
+): Promise<void> {
+  const PREFIX = 'Transferencia · '
+  const beneficiario = comercio.slice(PREFIX.length).trim()
+  if (!beneficiario) return
+
+  // ── Paso 1: match por nombre del beneficiario (ILIKE) ────────────────────
+  const { data: byNombre, error: err1 } = await sb
+    .from('pagos')
+    .select('id')
+    .eq('done', false)
+    .ilike('transfer_match', `%${beneficiario}%`)
+
+  if (err1) {
+    console.error('[cron/emails] auto-match byNombre error:', err1.message)
+    return
+  }
+
+  let candidatos = byNombre ?? []
+
+  // ── Paso 2: fallback por monto exacto (solo si paso 1 no encontró nada) ──
+  if (candidatos.length === 0) {
+    const { data: byMonto, error: err2 } = await sb
+      .from('pagos')
+      .select('id')
+      .eq('done', false)
+      .eq('monto', monto)
+      .not('transfer_match', 'is', null)
+
+    if (err2) {
+      console.error('[cron/emails] auto-match byMonto error:', err2.message)
+      return
+    }
+    candidatos = byMonto ?? []
+  }
+
+  // ── Decisión final ────────────────────────────────────────────────────────
+  if (candidatos.length === 1) {
+    const { error: updateError } = await sb
+      .from('pagos')
+      .update({ done: true, updated_at: new Date() })
+      .eq('id', candidatos[0].id)
+
+    if (updateError) {
+      console.error('[cron/emails] auto-match update error:', updateError.message)
+    } else {
+      console.log(
+        `[cron/emails] auto-match: pago ${candidatos[0].id} done=true` +
+        ` — transferencia a "${beneficiario}" RD$${monto}`,
+      )
+    }
+  } else {
+    console.log(
+      `[cron/emails] auto-match: ${candidatos.length} candidatos` +
+      ` para "${beneficiario}" RD$${monto} — omitido (${candidatos.length === 0 ? 'sin match' : 'ambiguo'})`,
+    )
+  }
+}
+
 // ── Handler principal ─────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -347,6 +422,17 @@ export async function GET(req: NextRequest) {
         const esReciente = (Date.now() - ts.getTime()) < 48 * 60 * 60 * 1000
         if (esReciente) await descontarSaldo(sb, tx.cuenta, tx.monto)
         inserted.push(tx)
+
+        // ── Auto-match de pago por transferencia ────────────────────────────────
+        // Si la descripción empieza con "Transferencia · " buscamos en pagos si
+        // existe un registro pendiente cuyo transfer_match coincida con el
+        // beneficiario (ILIKE fuzzy) o cuyo monto coincida exactamente (y tenga
+        // transfer_match definido — evita falsos positivos en pagos sin nombre).
+        // Solo marcamos automáticamente si hay exactamente 1 candidato; 0 o >1
+        // son ambiguos y se ignoran para no marcar el pago incorrecto.
+        if (tx.comercio.startsWith('Transferencia · ')) {
+          await autoMatchPago(sb, tx.comercio, tx.monto)
+        }
       } catch (e) {
         errors.push(`${bank.cuenta}: ${String(e)}`)
       }
