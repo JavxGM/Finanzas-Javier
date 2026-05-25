@@ -262,6 +262,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .an-empty{text-align:center;padding:28px 16px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace}
 .realtime-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);
   box-shadow:0 0 6px var(--blue);animation:pulse 2s infinite;display:inline-block;margin-right:4px;vertical-align:middle}
+/* ── Resumen financiero por quincena ─────────────────────────── */
+.quinc-resumen{border-top:1px solid var(--border2);margin-top:4px;padding:10px 15px 13px}
+.quinc-resumen-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px}
+.quinc-resumen-lbl{color:var(--muted);font-family:'DM Mono',monospace}
+.quinc-resumen-val{font-weight:700;font-family:'DM Mono',monospace;font-size:13px}
+.quinc-resumen-sep{border:none;border-top:1px solid var(--border);margin:4px 0}
 </style>
 </head>
 <body>
@@ -776,12 +782,12 @@ const MESES = {
   },
   2: {
     nombre: 'Junio 2026',
-    comprometido: 31496,
+    comprometido: 31474,
     hoja: 'Presupuesto Junio',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 13496,
+        total: 15635,
         pagos: [
           {id:'pj-ban1',    nombre:'Banreservas Q1',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pj-gym',     nombre:'Gimnasio',                    monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
@@ -791,22 +797,20 @@ const MESES = {
           {id:'pj-carro',   nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
           {id:'pm-lentes-1',nombre:'Lentes cuota 1/6 · Q1 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pj-gas1',    nombre:'Gasolina Q1',                 monto:1989,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pj-ademi-q1',nombre:'Ademi cuota 2 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Cobro automatico · del sobrante'}
         ]
       },
       {
         titulo: 'Quincena 2 · cobras dia 20',
-        total: 18000,
+        total: 15839,
         pagos: [
           {id:'pj-qik',     nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
-          {id:'pj-uber',    nombre:'Reserva UberDriver',          monto:0,     cuenta:'Qik',        color:'rgba(6,182,212,.12)',tc:'var(--blue)',icon:'UBR', nota:'Monto por definir'},
-          {id:'pj-trading', nombre:'Reserva Trading',             monto:0,     cuenta:'Qik',        color:'rgba(167,139,250,.1)',tc:'var(--purple)',icon:'TRD', nota:'Monto por definir'},
           {id:'pj-ban2',    nombre:'Banreservas Q2',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pj-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pj-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-lentes-2',nombre:'Lentes cuota 2/6 · Q2 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pj-ademi1',  nombre:'Ademi cuota 3 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
           {id:'pj-gas2',    nombre:'Gasolina Q2',                 monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
-          {id:'pj-sam-fin', nombre:'SAM liquidado',               monto:0,     cuenta:'BHD',        color:'var(--gdim)', tc:'var(--green)', icon:'SAM', nota:'Pagado en mayo · sin costo'}
         ]
       }
     ]
@@ -891,7 +895,7 @@ const MESES = {
 // La clave incluye el mes para que sean totalmente independientes
 // ═══════════════════════════════════════════════════
 var state = {
-  saldos: {bhd:0, qik:0, banreservas:0, ademi:0, efectivo:0},
+  saldos: {bhd:9303, qik:0, banreservas:0, ademi:0, efectivo:4000},
   pagos: {},        // clave: mesIdx + "_" + id
   gastosHoy: [],
   entradasMes: [],
@@ -1113,7 +1117,30 @@ function renderMes(){
       items+='<div class="pay-right"><div class="pay-amount'+(p.monto===0?' p':'')+'">'+( p.monto===0?'RD$0':fmt(p.monto))+'</div>';
       items+='<div class="pay-check'+(isDone?' done':'')+'"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
     });
-    sec.innerHTML=hdr+items;
+    // ── Resumen financiero de la quincena ──────────────────────
+    var INGRESO_QUINC = 16596.68;
+    // Suma real de montos de esta quincena (no el total hardcodeado)
+    var qComprom = q.pagos.reduce(function(s,p){ return s + (p.monto||0); }, 0);
+    var qSobrante = INGRESO_QUINC - qComprom;
+    var sobraColor = qSobrante >= 0 ? 'var(--green)' : 'var(--red)';
+    var resumen = '<div class="quinc-resumen">'
+      + '<div class="quinc-resumen-row">'
+      +   '<span class="quinc-resumen-lbl">Ingreso quincena</span>'
+      +   '<span class="quinc-resumen-val" style="color:var(--green)">RD$16,596.68</span>'
+      + '</div>'
+      + '<div class="quinc-resumen-row">'
+      +   '<span class="quinc-resumen-lbl">Total compromisos</span>'
+      +   '<span class="quinc-resumen-val" style="color:var(--red)">-' + fmt(qComprom) + '</span>'
+      + '</div>'
+      + '<hr class="quinc-resumen-sep">'
+      + '<div class="quinc-resumen-row">'
+      +   '<span class="quinc-resumen-lbl" style="font-weight:700;color:var(--text)">Estimado disponible</span>'
+      +   '<span class="quinc-resumen-val" style="color:' + sobraColor + ';font-size:14px">'
+      +     (qSobrante >= 0 ? '' : '-') + fmt(Math.abs(qSobrante))
+      +   '</span>'
+      + '</div>'
+      + '</div>';
+    sec.innerHTML=hdr+items+resumen;
     container.appendChild(sec);
   });
 }
