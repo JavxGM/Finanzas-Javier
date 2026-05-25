@@ -679,11 +679,27 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 <!-- MODAL PAGO -->
 <div class="modal-bg" id="modal-pago-bg" onclick="closeModalPago(event)">
   <div class="modal">
-    <div class="modal-title" id="modal-pago-title">Marcar como pagado</div>
-    <div class="modal-sub" id="modal-pago-sub">Selecciona desde que cuenta pagaste</div>
+    <div class="modal-title">Registrar pago del plan</div>
+    <div class="modal-sub">Selecciona el pago del mes que ya fue realizado</div>
     <button class="modal-close" onclick="closeModalPago(null)">&#10005;</button>
-    <div class="cuenta-options" id="modal-cuenta-opts"></div>
-    <button class="btn btn-g" onclick="confirmarPago()">Confirmar pago</button>
+    <div class="field">
+      <label>Pago pendiente</label>
+      <select id="modal-pago-select" onchange="onModalPagoSelect()">
+        <option value="">-- Selecciona un pago --</option>
+      </select>
+    </div>
+    <div id="modal-pago-preview" style="display:none;background:var(--card);border:1px solid var(--border2);border-radius:var(--rsm);padding:11px 13px;margin-bottom:4px;font-size:12px;line-height:1.7">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--muted);font-family:'DM Mono',monospace">Monto</span>
+        <span id="modal-pago-preview-monto" style="font-weight:700;font-family:'DM Mono',monospace;color:var(--amber)"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
+        <span style="color:var(--muted);font-family:'DM Mono',monospace">Cuenta plan</span>
+        <span id="modal-pago-preview-cuenta" style="font-size:11px;color:var(--blue);font-family:'DM Mono',monospace"></span>
+      </div>
+      <div style="margin-top:6px;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace">El saldo NO se descuenta — el banco ya lo dedujo.</div>
+    </div>
+    <button class="btn btn-g" id="modal-pago-btn-confirmar" onclick="confirmarPago()" disabled>Marcar como pagado</button>
     <button class="btn btn-outline" style="margin-top:8px" onclick="closeModalPago(null)">Cancelar</button>
   </div>
 </div>
@@ -1176,109 +1192,121 @@ function renderHechos(){
   document.getElementById('total-hechos-amt').textContent=fmt(tH);
 }
 
-// ─── Modal Pago ───
+// ─── Modal Pago (nuevo flujo: selector de pago pendiente, sin descuento de saldo) ───
 var pagoActual=null;
+
+// Abre el modal con la lista de pagos pendientes del mes activo.
+// Si el item ya está done, lo desmarca directamente.
 function abrirModalPago(mesIdx, id, monto, nombre){
   var el=document.getElementById('item-'+id);
   if(!el)return;
   if(el.classList.contains('done')){desmarcarPago(mesIdx,id,monto,nombre);return;}
-  pagoActual={mesIdx:mesIdx,id:id,monto:monto,nombre:nombre};
-  document.getElementById('modal-pago-title').textContent=nombre;
-  document.getElementById('modal-pago-sub').textContent=monto>0?'Selecciona desde que cuenta pagaste · '+fmt(monto):'Marcar como gestionado';
-  var cuentas=[
-    {key:'BHD',label:'BHD',color:'var(--green)'},
-    {key:'Banreservas',label:'Banreservas',color:'var(--amber)'},
-    {key:'Qik',label:'Qik',color:'var(--blue)'},
-    {key:'Ademi',label:'Ademi',color:'var(--purple)'},
-    {key:'Efectivo',label:'Efectivo',color:'var(--muted)'}
-  ];
-  var opts='';
-  cuentas.forEach(function(c){
-    var s=state.saldos[c.key.toLowerCase()]||0;
-    opts+='<div class="cuenta-opt" onclick="selCuenta(\''+c.key+'\')" id="copt-'+c.key+'">';
-    opts+='<div class="cuenta-opt-name" style="color:'+c.color+'">'+c.label+'</div>';
-    opts+='<div class="cuenta-opt-saldo">'+fmt(s)+'</div></div>';
-  });
-  document.getElementById('modal-cuenta-opts').innerHTML=opts;
+
+  // Construir opciones: todos los pagos pendientes del mes activo
+  var mes=MESES[mesActual];
+  var sel=document.getElementById('modal-pago-select');
+  sel.innerHTML='<option value="">-- Selecciona un pago --</option>';
+  if(mes){
+    mes.quincenas.forEach(function(q){
+      q.pagos.forEach(function(p){
+        var ps=getPagoState(mesActual,p.id);
+        if(!ps.done){
+          var opt=document.createElement('option');
+          opt.value=mesActual+'_'+p.id;
+          // Guardar los datos en atributos data para recuperarlos al seleccionar
+          opt.dataset.mesIdx=mesActual;
+          opt.dataset.id=p.id;
+          opt.dataset.monto=p.monto;
+          opt.dataset.nombre=p.nombre;
+          opt.dataset.cuenta=p.cuenta||'';
+          opt.textContent=p.nombre+(p.monto>0?' · '+fmt(p.monto):'');
+          // Pre-seleccionar el pago que el usuario tocó
+          if(p.id===id) opt.selected=true;
+          sel.appendChild(opt);
+        }
+      });
+    });
+  }
+
+  // Activar la preview con el pago pre-seleccionado (el que tocó el usuario)
+  onModalPagoSelect();
+
   document.getElementById('modal-pago-bg').classList.add('open');
 }
 
-var cuentaSel=null;
-function selCuenta(c){
-  cuentaSel=c;
-  document.querySelectorAll('.cuenta-opt').forEach(function(el){el.classList.remove('selected');});
-  var o=document.getElementById('copt-'+c);
-  if(o)o.classList.add('selected');
+// Actualiza la preview cuando el usuario cambia la selección del <select>
+function onModalPagoSelect(){
+  var sel=document.getElementById('modal-pago-select');
+  var opt=sel.options[sel.selectedIndex];
+  var preview=document.getElementById('modal-pago-preview');
+  var btn=document.getElementById('modal-pago-btn-confirmar');
+  if(!opt||!opt.value){
+    preview.style.display='none';
+    btn.disabled=true;
+    pagoActual=null;
+    return;
+  }
+  var mesIdx=parseInt(opt.dataset.mesIdx,10);
+  var id=opt.dataset.id;
+  var monto=parseFloat(opt.dataset.monto)||0;
+  var nombre=opt.dataset.nombre;
+  var cuenta=opt.dataset.cuenta||'';
+  pagoActual={mesIdx:mesIdx,id:id,monto:monto,nombre:nombre,cuenta:cuenta};
+  document.getElementById('modal-pago-preview-monto').textContent=monto>0?fmt(monto):'Sin costo esta cuota';
+  document.getElementById('modal-pago-preview-cuenta').textContent=cuenta||'—';
+  preview.style.display='';
+  btn.disabled=false;
 }
 
-// descontarSaldo: si es false, solo marca el pago como hecho sin tocar el balance
-// (usado cuando el banco ya desconto via email-cron)
-function _ejecutarConfirmarPago(descontarSaldo){
-  if(descontarSaldo===undefined)descontarSaldo=true;
-  if(!cuentaSel||!pagoActual)return;
-  var mi=pagoActual.mesIdx,id=pagoActual.id,monto=pagoActual.monto,nombre=pagoActual.nombre,cuenta=cuentaSel;
+// Confirma el pago seleccionado: marca como done sin descontar saldo
+function confirmarPago(){
+  if(!pagoActual){showToast('Selecciona un pago','err');return;}
+  var mi=pagoActual.mesIdx,id=pagoActual.id,monto=pagoActual.monto,nombre=pagoActual.nombre;
   var ts=new Date().toLocaleString('es-DO',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
+  // Actualización optimista local
   var el=document.getElementById('item-'+id);
   if(el){el.classList.add('done');el.querySelector('.pay-check').classList.add('done');}
-  if(monto>0&&descontarSaldo){
-    var ck=cuenta.toLowerCase();
-    if(state.saldos[ck]!==undefined)state.saldos[ck]=Math.max(0,(state.saldos[ck]||0)-monto);
-  }
-  state.pagos[pKey(mi,id)]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:cuenta};
-  initSaldos();renderMes();renderHechos();updateStats();closeModalPago(null);
-  showToast(nombre+' · '+cuenta+(descontarSaldo?'':' (saldo ya descontado)'), 'ok');
-  cuentaSel=null;
+  state.pagos[pKey(mi,id)]={done:true,ts:ts,nombre:nombre,monto:monto,cuenta:''};
+  renderMes();renderHechos();updateStats();closeModalPago(null);
+  showToast(nombre+' marcado como pagado','ok');
+  // Enviar al servidor — sin descontar saldo
   var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
-  enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Hecho',cuenta:cuenta,timestamp:new Date().toISOString()});
-  // Solo sincronizar saldo si hubo descuento local (si no lo hizo el email-cron lo ya sincronizo)
-  if(descontarSaldo){
-    enviar({tipo:'saldo',cuenta:cuenta,monto:state.saldos[cuenta.toLowerCase()]||0});
-  }
+  enviar({
+    tipo:'marcar_pago',
+    pagoId:id,
+    mesIdx:mi,
+    nombre:nombre,
+    monto:monto,
+    hoja:hoja,
+    timestamp:new Date().toISOString()
+  }).then(function(ok){
+    if(!ok)showToast('Error al guardar en servidor','err');
+    // Recargar estado desde la nube para confirmar consistencia
+    else cargarDesdeNube();
+  });
 }
 
-function confirmarPago(){
-  if(!cuentaSel){showToast('Selecciona una cuenta','err');return;}
-  if(!pagoActual)return;
-
-  // Verificar si hay un gasto-email del dia con el mismo monto y cuenta
-  // (el usuario va a marcar mantenimiento que el banco ya dedujo automaticamente)
-  if(pagoActual.monto>0){
-    var dup=detectarDuplicado(pagoActual.nombre,pagoActual.monto,cuentaSel);
-    if(dup){
-      var hora=new Date(dup.timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
-      showDupModal(
-        'El banco ya lo registro',
-        'Este monto ya fue detectado automaticamente desde tu correo bancario y el saldo ya se actualizo. Puedes marcarlo como hecho en el presupuesto sin descontar de nuevo.',
-        '<b>Gasto auto-detectado:</b> '+dup.desc+'<br><b>Monto:</b> '+fmt(dup.monto)+'<br><b>Cuenta:</b> '+dup.cuenta+'<br><b>Hora:</b> '+hora+'<br><br><i style="color:var(--muted)">El boton "Registrar de todas formas" marcara el pago como hecho SIN descontar el saldo de nuevo.</i>',
-        function(){_ejecutarConfirmarPago(false);}  // false = no descontar saldo
-      );
-      return;
-    }
-  }
-
-  _ejecutarConfirmarPago(true);
-}
-
+// desmarcarPago: revierte done=true a false.
+// NO restaura saldo — el pago nunca descontó al marcarse (banco lo manejó).
 function desmarcarPago(mi,id,monto,nombre){
   var el=document.getElementById('item-'+id);
   if(!el)return;
-  var ps=state.pagos[pKey(mi,id)];
-  var cA=ps?ps.cuenta:null;
   el.classList.remove('done');el.querySelector('.pay-check').classList.remove('done');
-  if(monto>0&&cA){
-    var ck=cA.toLowerCase();
-    if(state.saldos[ck]!==undefined)state.saldos[ck]+=monto;
-  }
   state.pagos[pKey(mi,id)]={done:false,nombre:nombre,monto:monto};
-  initSaldos();renderMes();renderHechos();updateStats();
+  renderMes();renderHechos();updateStats();
   showToast(nombre+' desmarcado','info');
   var hoja=MESES[mi]?MESES[mi].hoja:'Presupuesto';
-  enviar({tipo:'pago',concepto:nombre,hoja:hoja,mesIdx:mi,pagoId:id,estado:'Pendiente',timestamp:new Date().toISOString()});
+  enviar({tipo:'marcar_pago',pagoId:id,mesIdx:mi,nombre:nombre,monto:monto,hoja:hoja,estado:'Pendiente',timestamp:new Date().toISOString()});
 }
 
 function closeModalPago(e){
   if(e&&e.target!==document.getElementById('modal-pago-bg'))return;
-  document.getElementById('modal-pago-bg').classList.remove('open');cuentaSel=null;
+  document.getElementById('modal-pago-bg').classList.remove('open');
+  pagoActual=null;
+  var preview=document.getElementById('modal-pago-preview');
+  if(preview)preview.style.display='none';
+  var btn=document.getElementById('modal-pago-btn-confirmar');
+  if(btn)btn.disabled=true;
 }
 
 // ─── Modal Saldo ───

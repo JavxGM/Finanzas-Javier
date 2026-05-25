@@ -131,10 +131,11 @@ export async function POST(req: Request) {
   try {
     const data = await req.json()
     const tipo: string = data.tipo ?? 'pago'
-    if (tipo === 'gasto')   return registrarGasto(data)
-    if (tipo === 'entrada') return registrarEntrada(data)
-    if (tipo === 'saldo')   return registrarSaldo(data)
-    if (tipo === 'uber')    return registrarUber(data)
+    if (tipo === 'gasto')       return registrarGasto(data)
+    if (tipo === 'entrada')     return registrarEntrada(data)
+    if (tipo === 'saldo')       return registrarSaldo(data)
+    if (tipo === 'uber')        return registrarUber(data)
+    if (tipo === 'marcar_pago') return marcarPago(data)
     return registrarPago(data)
   } catch (err) {
     console.error('[POST /api/webhook]', err)
@@ -219,6 +220,35 @@ async function registrarUber(data: Record<string, unknown>) {
     fecha:       String(data.fecha ?? new Date().toISOString().slice(0, 10)),
   })
   if (error) console.error('[registrarUber]', error)
+  return NextResponse.json({ ok: !error }, { headers: CORS })
+}
+
+// marcarPago: marca un pago del plan como done=true (o false si estado='Pendiente')
+// A diferencia de registrarPago, NO actualiza saldo de ninguna cuenta — el banco
+// ya realizó el débito; aquí solo se actualiza el estado en el plan de pagos.
+async function marcarPago(data: Record<string, unknown>) {
+  const sb = getSupabase()
+  const mesIdx = Number(data.mesIdx ?? 0)
+  const pagoId = String(data.pagoId ?? '')
+  const nombre = String(data.nombre ?? '')
+  const monto  = Number(data.monto ?? 0)
+  const done   = String(data.estado ?? 'Hecho') !== 'Pendiente'
+  const ts     = done
+    ? new Date().toLocaleString('es-DO', {
+        hour: '2-digit', minute: '2-digit',
+        day: 'numeric', month: 'short',
+        timeZone: 'America/Santo_Domingo',
+      })
+    : null
+
+  const { error } = await sb
+    .from('pagos')
+    .upsert(
+      { mes_idx: mesIdx, pago_id: pagoId, nombre, monto, done, ts, cuenta: null },
+      { onConflict: 'mes_idx,pago_id' }
+    )
+
+  if (error) console.error('[marcarPago]', error)
   return NextResponse.json({ ok: !error }, { headers: CORS })
 }
 
