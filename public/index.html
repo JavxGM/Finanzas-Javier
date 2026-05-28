@@ -297,7 +297,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <button class="tab" onclick="showPage('pagos',this)">Pagos</button>
   <button class="tab" onclick="showPage('gastos',this)">Gastos</button>
   <button class="tab" onclick="showPage('analytics',this)">Analytics</button>
-  <button class="tab" onclick="showPage('uber',this)">🚗 Uber</button>
+
   <button class="tab" onclick="showPage('deudas',this)">Deudas</button>
   <button class="tab" onclick="showPage('score',this)">Score</button>
 </div>
@@ -478,8 +478,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div id="an-historial"><div class="an-empty">Sin historial registrado</div></div>
 </div>
 
-<!-- UBER WEEK TRACKER -->
-<div class="page" id="page-uber">
+<!-- UBER (oculto, datos preservados) -->
+<div class="page" id="page-uber" style="display:none!important">
 
   <!-- Hero: progreso hacia meta -->
   <div class="hero" id="uber-hero">
@@ -811,7 +811,7 @@ const MESES = {
           {id:'pj-crun',    nombre:'Crunchyroll',                 monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pj-barb1',   nombre:'Barberia parte 1',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pj-carro',   nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
-          {id:'pm-lentes-1',nombre:'Lentes cuota 1/6 · Q1 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pm-lentes-1',nombre:'Lentes cuota 1/6 · Q1 jun',  monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pj-gas1',    nombre:'Gasolina Q1',                 monto:1989,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
           {id:'pj-ademi-q1',nombre:'Ademi cuota 2 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Cobro automatico · del sobrante'}
         ]
@@ -824,7 +824,7 @@ const MESES = {
           {id:'pj-ban2',    nombre:'Banreservas Q2',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pj-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pj-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-lentes-2',nombre:'Lentes cuota 2/6 · Q2 jun',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pm-lentes-2',nombre:'Lentes cuota 2/6 · Q2 jun',  monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pj-ademi1',  nombre:'Ademi cuota 3 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
           {id:'pj-gas2',    nombre:'Gasolina Q2',                 monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
@@ -846,7 +846,7 @@ const MESES = {
           {id:'pjl-crun',    nombre:'Crunchyroll',                monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pjl-barb1',   nombre:'Barberia parte 1',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pjl-carro',   nombre:'Pago carro completo',        monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
-          {id:'pm-lentes-3', nombre:'Lentes cuota 3/6 · Q1 jul', monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pm-lentes-3', nombre:'Lentes cuota 3/6 · Q1 jul', monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pjl-gas1',    nombre:'Gasolina Q1',                monto:1982,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
       },
@@ -860,7 +860,7 @@ const MESES = {
           {id:'pjl-ban2',    nombre:'Banreservas Q2',             monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pjl-res',     nombre:'Residencial',                monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pjl-barb2',   nombre:'Barberia parte 2',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-lentes-4', nombre:'Lentes cuota 4/6 · Q2 jul', monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pm-lentes-4', nombre:'Lentes cuota 4/6 · Q2 jul', monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pjl-ademi',   nombre:'Ademi cuota 3 · dia 14',     monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
           {id:'pjl-gas2',    nombre:'Gasolina Q2',                monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
@@ -882,7 +882,7 @@ const MESES = {
           {id:'pa-crun',    nombre:'Crunchyroll',                 monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pa-barb1',   nombre:'Barberia parte 1',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pa-carro',   nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
-          {id:'pm-lentes-5',nombre:'Lentes cuota 5/6 · Q1 ago',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
+          {id:'pm-lentes-5',nombre:'Lentes cuota 5/6 · Q1 ago',  monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
           {id:'pa-gas1',    nombre:'Gasolina Q1',                 monto:1982,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
       },
@@ -896,7 +896,7 @@ const MESES = {
           {id:'pa-ban2',    nombre:'Banreservas Q2',              monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pa-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pa-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
-          {id:'pm-lentes-6',nombre:'Lentes cuota 6/6 · Q2 ago',  monto:1000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD · ULTIMA'},
+          {id:'pm-lentes-6',nombre:'Lentes cuota 6/6 · Q2 ago',  monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD · ULTIMA'},
           {id:'pa-ademi',   nombre:'Ademi cuota 4 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
           {id:'pa-gas2',    nombre:'Gasolina Q2',                 monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
@@ -1134,7 +1134,7 @@ function renderMes(){
       items+='<div class="pay-check'+(isDone?' done':'')+'"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
     });
     // ── Resumen financiero de la quincena ──────────────────────
-    var INGRESO_QUINC = 16596.68;
+    var INGRESO_QUINC = 18000; // salario bruto; lentes ya están como item en el plan
     // Suma real de montos de esta quincena (no el total hardcodeado)
     var qComprom = q.pagos.reduce(function(s,p){ return s + (p.monto||0); }, 0);
     var qSobrante = INGRESO_QUINC - qComprom;
