@@ -1131,7 +1131,7 @@ function renderMes(){
       items+='<div class="pay-check'+(isDone?' done':'')+'"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
     });
     // ── Resumen financiero de la quincena ──────────────────────
-    var INGRESO_QUINC = 18000; // salario bruto; lentes ya están como item en el plan
+    var INGRESO_QUINC = 18596; // salario bruto quincena
     // Suma real de montos de esta quincena (no el total hardcodeado)
     var qComprom = q.pagos.reduce(function(s,p){ return s + (p.monto||0); }, 0);
     var qSobrante = INGRESO_QUINC - qComprom;
