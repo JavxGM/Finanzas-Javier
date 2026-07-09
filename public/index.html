@@ -260,6 +260,17 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .hist-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
 .hist-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
 .an-empty{text-align:center;padding:28px 16px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace}
+.mes-chip{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;border:1px solid var(--border2);background:var(--raised);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.mes-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.an-bar-row{cursor:pointer;transition:background .15s}
+.an-bar-row:hover{background:var(--card)}
+.an-cat-txs{display:none;border-top:1px solid var(--border);margin-top:0}
+.an-cat-txs.open{display:block}
+.an-cat-tx{display:flex;align-items:center;justify-content:space-between;padding:8px 13px 8px 50px;font-size:12px;border-bottom:1px solid var(--border)}
+.an-cat-tx:last-child{border-bottom:none}
+.an-cat-tx-desc{color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-cat-tx-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.an-cat-tx-monto{font-weight:700;font-family:'DM Mono',monospace;color:var(--red);flex-shrink:0;margin-left:10px}
 .realtime-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);
   box-shadow:0 0 6px var(--blue);animation:pulse 2s infinite;display:inline-block;margin-right:4px;vertical-align:middle}
 /* ── Resumen financiero por quincena ─────────────────────────── */
@@ -293,13 +304,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 
 <div class="tabs">
   <button class="tab active" onclick="showPage('inicio',this)">Inicio</button>
-  <button class="tab" onclick="showPage('balance',this)">Balance</button>
   <button class="tab" onclick="showPage('pagos',this)">Pagos</button>
-  <button class="tab" onclick="showPage('gastos',this)">Gastos</button>
+  <button class="tab" onclick="showPage('registro',this)">Registro</button>
   <button class="tab" onclick="showPage('analytics',this)">Analytics</button>
-
   <button class="tab" onclick="showPage('deudas',this)">Deudas</button>
-  <button class="tab" onclick="showPage('score',this)">Score</button>
+  <button class="tab" onclick="showPage('ia',this)">IA</button>
+  <button class="tab" onclick="showPage('lista',this)">Lista</button>
 </div>
 
 <!-- INICIO -->
@@ -352,12 +362,46 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="cuenta-info"><div class="cuenta-name">Efectivo</div><div class="cuenta-desc">Dinero en mano · efectivo disponible</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-efectivo">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
-  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Préstamo pendiente: RD$8,448.38. Depositar RD$2,139 antes del dia 13 de cada mes.</div>
+  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Saldo pendiente: RD$6,928. Cuota 3 · Depositar RD$2,139 antes del dia 13 de julio.</div>
 </div>
 
-<!-- BALANCE -->
-<div class="page" id="page-balance">
-  <div class="card">
+<!-- REGISTRO (Balance + Gastos unificados) -->
+<div class="page" id="page-registro">
+  <!-- Toggle -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <button id="reg-btn-gasto" onclick="regSetTab('gasto')" style="padding:10px;border-radius:10px;border:2px solid var(--red);background:var(--rdim);color:var(--red);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Gasto</button>
+    <button id="reg-btn-entrada" onclick="regSetTab('entrada')" style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Entrada</button>
+  </div>
+
+  <!-- Formulario gasto -->
+  <div id="reg-form-gasto" class="card">
+    <div class="form-title">Registrar gasto</div>
+    <div class="field"><label>Descripcion</label><input type="text" id="g-desc" placeholder="Almuerzo, farmacia, Uber..." autocomplete="off"/></div>
+    <div class="frow">
+      <div class="field"><label>Monto (RD$)</label><input type="number" id="g-monto" placeholder="0" inputmode="numeric"/></div>
+      <div class="field"><label>Cuenta</label>
+        <select id="g-cuenta">
+          <option value="Banreservas">Banreservas</option><option value="BHD">BHD</option>
+          <option value="Efectivo">Efectivo</option><option value="Ademi">Ademi</option><option value="Qik">Qik</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>Categoria</label>
+        <select id="g-cat">
+          <option value="Comida">Comida</option><option value="Transporte">Transporte</option>
+          <option value="Gasolina">Gasolina</option><option value="Salud">Salud</option>
+          <option value="Entretenimiento">Ocio</option><option value="Ropa">Ropa</option>
+          <option value="Hogar">Hogar</option><option value="General">General</option>
+        </select>
+      </div>
+      <div class="field"><label>Notas</label><input type="text" id="g-notas" placeholder="Opcional..." autocomplete="off"/></div>
+    </div>
+    <button class="btn btn-g" id="btn-gasto" onclick="guardarGasto()">Guardar · fecha/hora automatica</button>
+  </div>
+
+  <!-- Formulario entrada -->
+  <div id="reg-form-entrada" class="card" style="display:none">
     <div class="form-title">Registrar entrada</div>
     <div class="frow">
       <div class="field"><label>Monto (RD$)</label><input type="number" id="e-monto" placeholder="18,600" inputmode="numeric"/></div>
@@ -378,6 +422,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
     <button class="btn btn-g" id="btn-entrada" onclick="guardarEntrada()">Registrar entrada</button>
   </div>
+
+  <!-- Resumen del mes -->
   <div class="sec">Resumen del mes</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
     <div class="rrow"><span class="rrow-lbl">Total entradas</span><span class="rrow-val g" id="r-entradas">RD$0</span></div>
@@ -387,6 +433,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="rrow"><span class="rrow-lbl">Comprometido fijo</span><span class="rrow-val a" id="r-comprometido">RD$0</span></div>
     <div class="rrow" style="border-top:2px solid var(--border2)"><span class="rrow-lbl" style="font-weight:600">Margen real</span><span class="rrow-val g" id="r-margen">—</span></div>
   </div>
+  <div class="sec">Gastos de hoy</div>
+  <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin gastos hoy</div></div>
   <div class="sec">Entradas registradas</div>
   <div id="entradas-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas este mes</div></div>
 </div>
@@ -413,44 +461,13 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div id="pagos-container"></div>
 </div>
 
-<!-- GASTOS -->
-<div class="page" id="page-gastos">
-  <div class="card">
-    <div class="form-title">Registrar gasto</div>
-    <div class="field"><label>Descripcion</label><input type="text" id="g-desc" placeholder="Almuerzo, farmacia, Uber..." autocomplete="off"/></div>
-    <div class="frow">
-      <div class="field"><label>Monto (RD$)</label><input type="number" id="g-monto" placeholder="0" inputmode="numeric"/></div>
-      <div class="field"><label>Cuenta</label>
-        <select id="g-cuenta">
-          <option value="Banreservas">Banreservas</option><option value="BHD">BHD</option>
-          <option value="Efectivo">Efectivo</option><option value="Ademi">Ademi</option><option value="Qik">Qik</option>
-        </select>
-      </div>
-    </div>
-    <div class="frow">
-      <div class="field"><label>Categoria</label>
-        <select id="g-cat">
-          <option value="Comida">Comida</option><option value="Transporte">Transporte</option>
-          <option value="Gasolina">Gasolina</option><option value="Salud">Salud</option>
-          <option value="Entretenimiento">Ocio</option><option value="Ropa">Ropa</option>
-          <option value="Hogar">Hogar</option><option value="General">General</option>
-        </select>
-      </div>
-      <div class="field"><label>Notas</label><input type="text" id="g-notas" placeholder="Opcional..." autocomplete="off"/></div>
-    </div>
-    <button class="btn btn-g" id="btn-gasto" onclick="guardarGasto()">Guardar · fecha/hora automatica</button>
-  </div>
-  <div class="sec">Hoy</div>
-  <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin gastos hoy</div></div>
-</div>
-
 <!-- ANALYTICS -->
 <div class="page" id="page-analytics">
   <!-- Hero: gasto del mes vs presupuesto libre -->
   <div class="an-hero">
     <div class="an-hero-top">
       <div>
-        <div class="an-hero-label">Gastado este mes</div>
+        <div class="an-hero-label" id="an-mes-label">Gastado este mes</div>
         <div class="an-hero-val r" id="an-gastado">RD$0</div>
         <div class="an-hero-sub" id="an-gastado-sub">0 transacciones</div>
       </div>
@@ -467,12 +484,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       <div class="prog-track"><div class="prog-fill" id="an-prog" style="width:0%"></div></div>
     </div>
   </div>
+  <!-- Selector de mes -->
+  <div id="an-mes-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
   <!-- Breakdown por categoría -->
-  <div class="sec">Categorias · mes actual</div>
+  <div class="sec" id="an-cat-sec">Categorias</div>
   <div id="an-categorias"><div class="an-empty">Sin datos de gastos este mes</div></div>
-  <!-- Historial completo -->
+  <!-- Historial del mes seleccionado -->
   <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
-    <span>Historial · desde mayo 2026</span>
+    <span id="an-hist-title">Historial</span>
     <span id="an-realtime-indicator" style="display:none"><span class="realtime-dot"></span><span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">en vivo</span></span>
   </div>
   <div id="an-historial"><div class="an-empty">Sin historial registrado</div></div>
@@ -595,14 +614,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="deuda" style="border-color:var(--gb)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div style="font-size:14px;font-weight:700">SAM · Companeros Templaris</div>
-      <span class="pill pg">En proceso</span>
+      <span class="pill pg">Liquidado ✓</span>
     </div>
-    <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val g">RD$6,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Pago abril Q2 (dia 20)</span><span class="deuda-val">RD$2,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Ultimo pago mayo</span><span class="deuda-val">RD$4,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Liquidacion</span><span class="deuda-val g">Mayo 2026</span></div>
-    <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:40%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>RD$4,000 pagados</span><span>RD$6,000 pendientes</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Total pagado</span><span class="deuda-val g">RD$10,000</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Liquidado en</span><span class="deuda-val g">Mayo 2026</span></div>
+    <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:100%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>RD$10,000 pagados</span><span>Deuda cerrada</span></div>
   </div>
   <div class="sec">Banco Ademi — Prestamo 1948469</div>
   <div class="deuda">
@@ -610,12 +627,10 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       <div style="font-size:14px;font-weight:700">Banco Ademi · Consumo</div>
       <span class="pill pa">Activo</span>
     </div>
-    <div class="alert g" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Mayo y junio cubiertos</b>RD$4,600 en cuenta cubre las primeras 2 cuotas. Desde julio depositar antes del dia 13.</div>
+    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Cuota 3 · Julio 2026</b>Cuotas 1 y 2 pagadas. Depositar RD$2,139 antes del dia 13 de cada mes.</div>
+    <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val a">RD$6,928</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Cuotas pagadas</span><span class="deuda-val g">2 de 6</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Monto prestamo</span><span class="deuda-val">RD$10,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Monto recibido (neto)</span><span class="deuda-val">RD$9,600</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Gastos legales</span><span class="deuda-val r">RD$400</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Usas realmente</span><span class="deuda-val b">RD$5,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Sobrante en cuenta</span><span class="deuda-val g">RD$4,600</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Cuota mensual (todo incl.)</span><span class="deuda-val a">RD$2,139.15</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Plazo</span><span class="deuda-val">6 meses</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Tasa nominal / efectiva</span><span class="deuda-val r">48% / 107.83%</span></div>
@@ -628,9 +643,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="sec">Tabla de cuotas</div>
   <div class="tabla-cuotas">
     <div class="tabla-hdr"><span>Fecha</span><span style="text-align:right">Cuota</span><span style="text-align:right">Saldo</span></div>
-    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">14 mayo 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 1 · PROXIMA · del sobrante</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$8,488</div></div>
-    <div class="tabla-row"><div><div style="font-size:12px;font-weight:700">14 jun 2026</div><div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">Cuota 2 · del sobrante</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$6,928</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 jul 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 3 · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$5,293</div></div>
+    <div class="tabla-row"><div><div style="font-size:12px;font-weight:700">14 mayo 2026</div><div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">Cuota 1 · PAGADA ✓</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$8,488</div></div>
+    <div class="tabla-row"><div><div style="font-size:12px;font-weight:700">14 jun 2026</div><div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">Cuota 2 · PAGADA ✓</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$6,928</div></div>
+    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">14 jul 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 3 · PROXIMA · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$5,293</div></div>
     <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 ago 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 4 · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$3,601</div></div>
     <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 sep 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 5 · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$1,838</div></div>
     <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 oct 2026</div><div style="font-size:10px;color:var(--red);font-family:'DM Mono',monospace">Cuota 6 · ULTIMA · liquidado</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--green);font-family:'DM Mono',monospace">RD$0</div></div>
@@ -642,10 +657,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="rrow"><span class="rrow-lbl">Total acumulado dia 14</span><span class="rrow-val g">RD$2,139.15</span></div>
     <div class="rrow"><span class="rrow-lbl">Depositar en cuenta Ademi antes del</span><span class="rrow-val r">Dia 13 de cada mes</span></div>
   </div>
-</div>
-
-<!-- SCORE -->
-<div class="page" id="page-score">
+  <!-- Score crediticio (integrado en Deudas) -->
+  <div class="sec" style="margin-top:4px">Score crediticio</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:20px">
     <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace">Score crediticio · Credicefi</div>
     <div style="font-size:50px;font-weight:800;letter-spacing:-2px;color:var(--green);line-height:1">783</div>
@@ -656,13 +669,72 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="sec">Hoja de ruta</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:18px">
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Abril 2026 <span class="pill pa" style="margin-left:4px;font-size:9px">Ahora</span></div><div class="tl-detail">Prestamo Ademi activo · mayo y junio cubiertos con sobrante</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Abril 2026</div><div class="tl-detail">Prestamo Ademi activo · mayo y junio cubiertos con sobrante</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Mayo 2026</div><div class="tl-detail">Cuota 1 Ademi automatica · SAM liquidado · score ~795</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Junio 2026</div><div class="tl-detail">Cuota 2 automatica · RD$4,000 libres por SAM · score ~803</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Jul-Sep 2026</div><div class="tl-detail">Apartar RD$1,069 por quincena · depositar antes del dia 13</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Jul-Sep 2026 <span class="pill pa" style="margin-left:4px;font-size:9px">Ahora</span></div><div class="tl-detail">Apartar RD$1,069 por quincena · depositar antes del dia 13</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Octubre 2026</div><div class="tl-detail">Ultima cuota Ademi · 6 meses historial bancario limpio · score ~825</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--blue)"></div></div><div class="tl-body"><div class="tl-month">Nov 2026+</div><div class="tl-detail">Solicitar tarjeta bancaria · max 30% limite · score 840+</div></div></div>
   </div>
+</div>
+
+<!-- IA -->
+<div class="page" id="page-ia">
+  <div class="an-hero" style="margin-bottom:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div>
+        <div class="an-hero-label">Asistente financiero</div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-.5px">IA · Finanzas</div>
+      </div>
+      <button id="ia-analizar-btn" onclick="iaAnalizar()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Analizar mes</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Google Gemma 4 31B · datos reales de Supabase</div>
+  </div>
+
+  <!-- Resultado análisis -->
+  <div id="ia-resultado" style="display:none">
+    <div class="sec">Análisis del mes</div>
+    <div id="ia-resultado-body" style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:16px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;font-family:inherit"></div>
+  </div>
+
+  <!-- Chat -->
+  <div class="sec" style="margin-top:4px">Chat · pregúntale a tus finanzas</div>
+  <div id="ia-chat" style="display:flex;flex-direction:column;gap:8px;min-height:60px;margin-bottom:12px"></div>
+  <div style="display:flex;gap:8px;align-items:flex-end">
+    <textarea id="ia-input" rows="2" placeholder="¿Cuánto gasté en comida este mes? ¿Me alcanza para el carro?" style="flex:1;background:var(--raised);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit;resize:none;outline:none;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaChat()}"></textarea>
+    <button onclick="iaChat()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Enviar</button>
+  </div>
+  <div id="ia-loading" style="display:none;text-align:center;padding:16px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">Consultando IA...</div>
+  <div id="ia-error" style="display:none" class="alert" style="margin-top:8px"></div>
+</div>
+
+<!-- LISTA (Cosas que quiero comprar) -->
+<div class="page" id="page-lista">
+  <!-- Resumen -->
+  <div id="lista-resumen" style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:16px 18px">
+    <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px">Cosas que quiero comprar</div>
+    <div style="font-size:28px;font-weight:800;color:var(--amber);font-family:'DM Mono',monospace;letter-spacing:-1px" id="lista-total">RD$0</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px" id="lista-count">0 artículos</div>
+  </div>
+  <!-- Formulario agregar -->
+  <div class="card">
+    <div class="form-title">Agregar artículo</div>
+    <div class="field"><label>Nombre</label><input type="text" id="w-nombre" placeholder="AirPods Pro, tablet, silla de escritorio..." autocomplete="off"/></div>
+    <div class="frow">
+      <div class="field"><label>Precio estimado (RD$)</label><input type="number" id="w-precio" placeholder="0" inputmode="numeric"/></div>
+      <div class="field"><label>Prioridad</label>
+        <select id="w-prio">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Notas (opcional)</label><input type="text" id="w-notas" placeholder="Por qué lo quiero, dónde conseguirlo..." autocomplete="off"/></div>
+    <button class="btn btn-g" onclick="listaAgregar()">Agregar a la lista</button>
+  </div>
+  <!-- Lista de artículos -->
+  <div id="lista-items"><div class="an-empty">Tu lista está vacía · agrega cosas que quieres comprar</div></div>
 </div>
 
 <!-- MODAL SALDO -->
@@ -830,36 +902,31 @@ const MESES = {
   },
   3: {
     nombre: 'Julio 2026',
-    comprometido: 30989,
+    comprometido: 25146,
     hoja: 'Presupuesto Julio',
     quincenas: [
       {
         titulo: 'Quincena 1 · cobras dia 5',
-        total: 13489,
+        total: 12646,
         pagos: [
-          {id:'pjl-ban1',    nombre:'Banreservas Q1',             monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pjl-gym',     nombre:'Gimnasio',                   monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
           {id:'pjl-net',     nombre:'Internet · Claro',           monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
           {id:'pjl-crun',    nombre:'Crunchyroll',                monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
           {id:'pjl-barb1',   nombre:'Barberia parte 1',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pjl-carro',   nombre:'Pago carro completo',        monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
           {id:'pm-lentes-3', nombre:'Lentes cuota 3/6 · Q1 jul', monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
-          {id:'pjl-gas1',    nombre:'Gasolina Q1',                monto:1982,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
+          {id:'pjl-ademi',   nombre:'Ademi cuota 3 · dia 14',     monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
         ]
       },
       {
         titulo: 'Quincena 2 · cobras dia 20',
-        total: 17500,
+        total: 12500,
         pagos: [
           {id:'pjl-qik',     nombre:'Qik ahorro',                 monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
-          {id:'pjl-uber',    nombre:'Reserva UberDriver',         monto:0,     cuenta:'Qik',        color:'rgba(6,182,212,.12)',tc:'var(--blue)',icon:'UBR', nota:'Monto por definir'},
-          {id:'pjl-trading', nombre:'Reserva Trading',            monto:0,     cuenta:'Qik',        color:'rgba(167,139,250,.1)',tc:'var(--purple)',icon:'TRD', nota:'Monto por definir'},
           {id:'pjl-ban2',    nombre:'Banreservas Q2',             monto:2000,  cuenta:'Banreservas',color:'var(--adim)', tc:'var(--amber)',  icon:'BNR'},
           {id:'pjl-res',     nombre:'Residencial',                monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pjl-barb2',   nombre:'Barberia parte 2',           monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pm-lentes-4', nombre:'Lentes cuota 4/6 · Q2 jul', monto:2000,  cuenta:'BHD',        color:'rgba(6,182,212,.1)', tc:'',icon:'LNT', nota:'Descuento nomina BHD'},
-          {id:'pjl-ademi',   nombre:'Ademi cuota 3 · dia 14',     monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
-          {id:'pjl-gas2',    nombre:'Gasolina Q2',                monto:2200,  cuenta:'BHD',        color:'rgba(234,179,8,.1)',tc:'',icon:'GAS'},
         ]
       }
     ]
@@ -1487,66 +1554,161 @@ function anCatIcon(cat){
   return icons[cat] || cat.slice(0,3).toUpperCase();
 }
 
-function renderAnalytics(){
-  var mes = MESES[mesActual];
-  var comprometido = mes ? mes.comprometido : 31050;
-  var ingresos = 37200; // ingreso mensual fijo
+var anMesFiltro = null; // null = mes actual, 'YYYY-MM' para meses pasados
+var anCatOpen   = null; // categoría expandida actualmente
 
-  // Presupuesto libre = ingresos - comprometidos fijos
-  var presupuestoLibre = ingresos - comprometido;
-
-  // Total gastado del historial del mes actual (sumamos gastosMes totals)
-  var totalGastado = state.gastosMes.reduce(function(s,c){ return s + (c.total||0); }, 0);
-  var numTx = state.gastosMes.reduce(function(s,c){ return s + (c.cantidad||0); }, 0);
-  var margen = presupuestoLibre - totalGastado;
-  var pctGastado = presupuestoLibre > 0 ? Math.min(100, Math.round(totalGastado / presupuestoLibre * 100)) : 0;
-
-  // Hero
-  document.getElementById('an-gastado').textContent = fmt(totalGastado);
-  document.getElementById('an-gastado-sub').textContent = numTx + ' transaccione' + (numTx === 1 ? '' : 's') + ' · mes actual';
-  var libreEl = document.getElementById('an-libre');
-  libreEl.textContent = fmt(margen);
-  libreEl.className = 'an-free-val ' + (margen >= 0 ? 'g' : 'r');
-  document.getElementById('an-prog-label-left').textContent = pctGastado + '% del presupuesto libre usado';
-  document.getElementById('an-prog-label-right').textContent = fmt(Math.max(0, margen)) + ' disponible';
-  var progEl = document.getElementById('an-prog');
-  progEl.style.width = pctGastado + '%';
-  progEl.style.background = pctGastado >= 90 ? 'var(--red)' : pctGastado >= 70 ? 'var(--amber)' : 'var(--green)';
-
-  // Breakdown categorías
-  var catContainer = document.getElementById('an-categorias');
-  if (!state.gastosMes.length) {
-    catContainer.innerHTML = '<div class="an-empty">Sin gastos este mes</div>';
-  } else {
-    catContainer.innerHTML = state.gastosMes.map(function(c){
-      var color = anCatColor(c.categoria);
-      var icon  = anCatIcon(c.categoria);
-      return '<div class="an-bar-row">'
-        + '<div class="an-bar-icon" style="background:' + color + '22;color:' + color + '">' + icon + '</div>'
-        + '<div class="an-bar-info">'
-        +   '<div class="an-bar-name">' + c.categoria + '</div>'
-        +   '<div class="an-bar-track"><div class="an-bar-fill" style="width:' + c.pct + '%;background:' + color + '"></div></div>'
-        +   '<div class="an-bar-stats">' + c.cantidad + ' tx · ' + c.pct + '%</div>'
-        + '</div>'
-        + '<div class="an-bar-right">'
-        +   '<div class="an-bar-monto">-' + fmt(c.total) + '</div>'
-        +   '<div class="an-bar-pct">' + c.pct + '%</div>'
-        + '</div>'
-        + '</div>';
-    }).join('');
-  }
-
-  // Historial completo
-  renderHistorial();
+function anGetMesISO(){ // mes actual en zona RD como 'YYYY-MM'
+  return new Date().toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'}).slice(0,7);
 }
 
-function renderHistorial(){
+function anTsToMes(ts){ // convierte cualquier timestamp a 'YYYY-MM' en zona RD
+  if (!ts) return '';
+  var d = new Date(ts);
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString('en-CA', {timeZone:'America/Santo_Domingo'}).slice(0,7);
+}
+
+function anGetTxMes(){ // filtra historialMes por el mes seleccionado
+  var filtro = anMesFiltro || anGetMesISO();
+  return state.historialMes.filter(function(g){
+    return anTsToMes(g.timestamp) === filtro;
+  });
+}
+
+function anAgruparPorCat(txs){ // agrupa array de tx por categoría → [{categoria,total,cantidad,pct,txs}]
+  var map = {};
+  txs.forEach(function(g){
+    var cat = g.categoria || 'Sin categoría';
+    if (!map[cat]) map[cat] = {categoria:cat, total:0, cantidad:0, txs:[]};
+    map[cat].total += (g.monto || 0);
+    map[cat].cantidad++;
+    map[cat].txs.push(g);
+  });
+  var total = txs.reduce(function(s,g){ return s+(g.monto||0); },0);
+  return Object.values(map).sort(function(a,b){ return b.total-a.total; }).map(function(c){
+    c.pct = total > 0 ? Math.round(c.total/total*100) : 0;
+    return c;
+  });
+}
+
+function renderAnMesChips(){
+  // Obtener meses únicos del historial
+  var mesesSet = {};
+  state.historialMes.forEach(function(g){
+    var m = anTsToMes(g.timestamp);
+    if(m) mesesSet[m] = true;
+  });
+  var actual = anGetMesISO();
+  mesesSet[actual] = true;
+  var meses = Object.keys(mesesSet).sort().reverse();
+
+  var container = document.getElementById('an-mes-chips');
+  container.innerHTML = meses.map(function(m){
+    var d = new Date(m + '-02');
+    var label = d.toLocaleDateString('es-DO', {month:'short', year:'2-digit'});
+    var isActive = (anMesFiltro || actual) === m;
+    return '<button class="mes-chip' + (isActive?' active':'') + '" onclick="anSetMes(\'' + m + '\')">' + label.replace('.','') + '</button>';
+  }).join('');
+}
+
+function anSetMes(m){
+  anMesFiltro = m;
+  anCatOpen = null;
+  renderAnalytics();
+}
+
+function anToggleCat(cat){
+  anCatOpen = anCatOpen === cat ? null : cat;
+  // Re-render solo las categorías
+  renderAnCategorias(anAgruparPorCat(anGetTxMes()));
+}
+
+function renderAnCategorias(cats){
+  var catContainer = document.getElementById('an-categorias');
+  if(!cats.length){
+    catContainer.innerHTML = '<div class="an-empty">Sin gastos este mes</div>';
+    return;
+  }
+  catContainer.innerHTML = cats.map(function(c){
+    var color = anCatColor(c.categoria);
+    var icon  = anCatIcon(c.categoria);
+    var isOpen = anCatOpen === c.categoria;
+    var txsHtml = c.txs.sort(function(a,b){ return b.monto-a.monto; }).map(function(g){
+      var d = new Date(g.timestamp);
+      var fecha = d.toLocaleDateString('es-DO',{day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
+      return '<div class="an-cat-tx">'
+        + '<div><div class="an-cat-tx-desc">' + (g.desc||g.descripcion||'') + '</div>'
+        + '<div class="an-cat-tx-meta">' + fecha + ' · ' + (g.cuenta||'BHD') + '</div></div>'
+        + '<div class="an-cat-tx-monto">-' + fmt(g.monto) + '</div>'
+        + '</div>';
+    }).join('');
+    return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:6px">'
+      + '<div class="an-bar-row" onclick="anToggleCat(\'' + c.categoria.replace(/'/g,"\\'") + '\')" style="border-radius:0">'
+      + '<div class="an-bar-icon" style="background:' + color + '22;color:' + color + '">' + icon + '</div>'
+      + '<div class="an-bar-info">'
+      +   '<div class="an-bar-name">' + c.categoria + '</div>'
+      +   '<div class="an-bar-track"><div class="an-bar-fill" style="width:' + c.pct + '%;background:' + color + '"></div></div>'
+      +   '<div class="an-bar-stats">' + c.cantidad + ' tx · ' + c.pct + '% del total</div>'
+      + '</div>'
+      + '<div class="an-bar-right">'
+      +   '<div class="an-bar-monto">-' + fmt(c.total) + '</div>'
+      +   '<div class="an-bar-pct" style="color:' + color + '">' + (isOpen ? '▲' : '▼') + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="an-cat-txs' + (isOpen?' open':'') + '">' + txsHtml + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderAnalytics(){
+  var filtroISO = anMesFiltro || anGetMesISO();
+  var txs = anGetTxMes();
+
+  // Hero
+  var totalGastado = txs.reduce(function(s,g){ return s+(g.monto||0); },0);
+  var numTx = txs.length;
+  var mes = MESES[mesActual];
+  var comprometido = mes ? mes.comprometido : 25146;
+  var ingresos = 37200;
+  var presupuestoLibre = ingresos - comprometido;
+  var margen = presupuestoLibre - totalGastado;
+  var pctGastado = presupuestoLibre > 0 ? Math.min(100, Math.round(totalGastado/presupuestoLibre*100)) : 0;
+
+  var d = new Date(filtroISO + '-02');
+  var mesNombre = d.toLocaleDateString('es-DO',{month:'long',year:'numeric'});
+  document.getElementById('an-mes-label').textContent = 'Gastado · ' + mesNombre;
+  document.getElementById('an-gastado').textContent = fmt(totalGastado);
+  document.getElementById('an-gastado-sub').textContent = numTx + ' transaccione' + (numTx===1?'':'s');
+  var libreEl = document.getElementById('an-libre');
+  libreEl.textContent = fmt(margen);
+  libreEl.className = 'an-free-val ' + (margen>=0?'g':'r');
+  document.getElementById('an-prog-label-left').textContent = pctGastado + '% del presupuesto libre usado';
+  document.getElementById('an-prog-label-right').textContent = fmt(Math.max(0,margen)) + ' disponible';
+  var progEl = document.getElementById('an-prog');
+  progEl.style.width = pctGastado + '%';
+  progEl.style.background = pctGastado>=90?'var(--red)':pctGastado>=70?'var(--amber)':'var(--green)';
+
+  // Chips de mes
+  renderAnMesChips();
+
+  // Categorías
+  document.getElementById('an-cat-sec').textContent = 'Categorias · ' + mesNombre;
+  renderAnCategorias(anAgruparPorCat(txs));
+
+  // Historial
+  document.getElementById('an-hist-title').textContent = 'Historial · ' + mesNombre;
+  renderHistorial(txs);
+}
+
+function renderHistorial(txsFiltradas){
   var container = document.getElementById('an-historial');
-  if (!state.historialMes.length) {
+  var lista = txsFiltradas !== undefined ? txsFiltradas : state.historialMes;
+  if (!lista.length) {
     container.innerHTML = '<div class="an-empty">Sin historial registrado</div>';
     return;
   }
-  container.innerHTML = state.historialMes.map(function(g){
+  var sorted = lista.slice().sort(function(a,b){ return new Date(b.timestamp)-new Date(a.timestamp); });
+  container.innerHTML = sorted.map(function(g){
     var esAuto = (g.notas || '').indexOf('gmail:') === 0;
     var d = new Date(g.timestamp);
     var fecha = d.toLocaleDateString('es-DO', {day:'numeric', month:'short', timeZone:'America/Santo_Domingo'});
@@ -1556,8 +1718,8 @@ function renderHistorial(){
     return '<div class="hist-item' + (esAuto ? ' auto' : '') + '">'
       + '<div class="hist-dot" style="background:' + color + '"></div>'
       + '<div class="hist-info">'
-      +   '<div class="hist-desc">' + g.desc + autoBadge + '</div>'
-      +   '<div class="hist-meta">' + g.categoria + ' · ' + g.cuenta + ' · ' + fecha + ' ' + hora + '</div>'
+      +   '<div class="hist-desc">' + (g.desc||g.descripcion||'') + autoBadge + '</div>'
+      +   '<div class="hist-meta">' + g.categoria + ' · ' + (g.cuenta||'BHD') + ' · ' + fecha + ' ' + hora + '</div>'
       + '</div>'
       + '<div class="hist-monto">-' + fmt(g.monto) + '</div>'
       + '</div>';
@@ -1723,6 +1885,116 @@ function showPage(id,btn){
   if(id==='pagos'){renderMes();renderHechos();updateStats();}
   if(id==='analytics'){renderAnalytics();}
   if(id==='uber'){uberRender();}
+  if(id==='lista'){listaRender();}
+}
+
+// ─── REGISTRO TAB TOGGLE ─────────────────────────────────────────────────────
+function regSetTab(tab){
+  var isGasto = tab === 'gasto';
+  document.getElementById('reg-form-gasto').style.display  = isGasto ? '' : 'none';
+  document.getElementById('reg-form-entrada').style.display = isGasto ? 'none' : '';
+  var bg = document.getElementById('reg-btn-gasto');
+  var be = document.getElementById('reg-btn-entrada');
+  if(isGasto){
+    bg.style.border='2px solid var(--red)';bg.style.background='var(--rdim)';bg.style.color='var(--red)';bg.style.fontWeight='700';
+    be.style.border='1px solid var(--border2)';be.style.background='transparent';be.style.color='var(--muted)';be.style.fontWeight='600';
+  } else {
+    be.style.border='2px solid var(--green)';be.style.background='var(--gdim)';be.style.color='var(--green)';be.style.fontWeight='700';
+    bg.style.border='1px solid var(--border2)';bg.style.background='transparent';bg.style.color='var(--muted)';bg.style.fontWeight='600';
+  }
+}
+
+// ─── LISTA (Cosas que quiero comprar) ────────────────────────────────────────
+var listaItems = JSON.parse(localStorage.getItem('fj-lista') || 'null');
+if (!listaItems) {
+  listaItems = [
+    {id:1751000001,nombre:'Casco para moto',precio:0,prioridad:'alta',notas:'Seguridad · prioridad máxima',comprado:false},
+    {id:1751000002,nombre:'Mesa en L',precio:0,prioridad:'media',notas:'Para el espacio de trabajo',comprado:false},
+    {id:1751000003,nombre:'Lona para motor',precio:0,prioridad:'media',notas:'Funda protectora para la pasola',comprado:false},
+    {id:1751000004,nombre:'UPS para el Internet',precio:0,prioridad:'media',notas:'Para que el router no se apague con los apagones',comprado:false},
+    {id:1751000005,nombre:'Proteína',precio:0,prioridad:'media',notas:'Suplemento',comprado:false},
+    {id:1751000006,nombre:'Pintar el motor',precio:0,prioridad:'baja',notas:'Pintura para la pasola',comprado:false},
+    {id:1751000007,nombre:'Polo chess lisos negros',precio:0,prioridad:'media',notas:'',comprado:false},
+    {id:1751000008,nombre:'Soporte elevador para laptop',precio:0,prioridad:'media',notas:'Para elevar la laptop del escritorio',comprado:false}
+  ];
+  listaGuardar();
+}
+
+function listaGuardar(){localStorage.setItem('fj-lista',JSON.stringify(listaItems));}
+
+function listaAgregar(){
+  var nombre = (document.getElementById('w-nombre').value||'').trim();
+  if(!nombre){showToast('Agrega un nombre','err');return;}
+  listaItems.push({
+    id: Date.now(),
+    nombre: nombre,
+    precio: parseFloat(document.getElementById('w-precio').value)||0,
+    prioridad: document.getElementById('w-prio').value,
+    notas: (document.getElementById('w-notas').value||'').trim(),
+    comprado: false
+  });
+  listaGuardar();
+  document.getElementById('w-nombre').value='';
+  document.getElementById('w-precio').value='';
+  document.getElementById('w-notas').value='';
+  document.getElementById('w-prio').value='media';
+  listaRender();
+  showToast('Artículo agregado','ok');
+}
+
+function listaEliminar(id){
+  listaItems = listaItems.filter(function(i){return i.id!==id;});
+  listaGuardar();listaRender();
+}
+
+function listaToggleComprado(id){
+  var item = listaItems.find(function(i){return i.id===id;});
+  if(item){item.comprado=!item.comprado;listaGuardar();listaRender();}
+}
+
+function listaRender(){
+  var order={alta:0,media:1,baja:2};
+  var pendientes = listaItems.filter(function(i){return!i.comprado;}).sort(function(a,b){return order[a.prioridad]-order[b.prioridad];});
+  var comprados  = listaItems.filter(function(i){return i.comprado;});
+  var total = pendientes.reduce(function(s,i){return s+(i.precio||0);},0);
+
+  var totalEl = document.getElementById('lista-total');
+  var countEl = document.getElementById('lista-count');
+  if(totalEl) totalEl.textContent = 'RD$'+fmt(total);
+  if(countEl) countEl.textContent = pendientes.length+' artículo'+(pendientes.length!==1?'s':'')+' pendientes'+(comprados.length?' · '+comprados.length+' comprado'+(comprados.length!==1?'s':''):'');
+
+  var container = document.getElementById('lista-items');
+  if(!container)return;
+  if(!listaItems.length){container.innerHTML='<div class="an-empty">Tu lista está vacía · agrega cosas que quieres comprar</div>';return;}
+
+  function renderItem(item){
+    var prioMap={alta:['var(--red)','Alta'],media:['var(--amber)','Media'],baja:['var(--muted)','Baja']};
+    var p=prioMap[item.prioridad]||prioMap.media;
+    return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 14px;margin-bottom:8px;opacity:'+(item.comprado?.55:1)+'">'
+      +'<div style="display:flex;align-items:flex-start;gap:10px">'
+      +'<div onclick="listaToggleComprado('+item.id+')" style="width:22px;height:22px;border-radius:7px;border:1.5px solid '+(item.comprado?'var(--green)':'var(--border2)')+';background:'+(item.comprado?'var(--green)':'transparent')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px">'
+      +(item.comprado?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#0a0a0f" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>':'')+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:14px;font-weight:700;'+(item.comprado?'text-decoration:line-through;color:var(--muted);':'')+'">'+(item.nombre||'')+'</div>'
+      +(item.notas?'<div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:\'DM Mono\',monospace">'+(item.notas)+'</div>':'')
+      +'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">'
+      +'<span style="font-size:10px;font-weight:700;color:'+p[0]+';background:'+p[0]+'18;padding:2px 8px;border-radius:99px;border:1px solid '+p[0]+'44">'+p[1]+'</span>'
+      +(item.precio?'<span style="font-size:12px;font-weight:700;font-family:\'DM Mono\',monospace">RD$'+fmt(item.precio)+'</span>':'')
+      +(item.comprado?'<span style="font-size:10px;color:var(--green);font-family:\'DM Mono\',monospace">✓ Comprado</span>':'')
+      +'</div></div>'
+      +'<button onclick="listaEliminar('+item.id+')" style="background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0">×</button>'
+      +'</div></div>';
+  }
+
+  var html='';
+  if(pendientes.length){
+    html+=pendientes.map(renderItem).join('');
+  }
+  if(comprados.length){
+    html+='<div class="sec" style="margin-top:8px">Comprados</div>';
+    html+=comprados.map(renderItem).join('');
+  }
+  container.innerHTML=html;
 }
 
 // ─── UBER WEEK TRACKER ───────────────────────────────────────────────────────
@@ -1926,6 +2198,68 @@ function showToast(msg,type){
   var t=document.getElementById('toast');
   t.textContent=msg;t.className='toast '+type+' show';
   setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+// ─── IA ──────────────────────────────────────────────────────────────────────
+var iaChatHistory = [];
+
+function iaSetLoading(on){
+  document.getElementById('ia-loading').style.display = on ? 'block' : 'none';
+  document.getElementById('ia-analizar-btn').disabled = on;
+}
+
+function iaShowError(msg){
+  var el = document.getElementById('ia-error');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function iaBubble(role, text){
+  var el = document.createElement('div');
+  var isUser = role === 'user';
+  el.style.cssText = 'padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.6;max-width:90%;white-space:pre-wrap;'
+    + (isUser
+      ? 'background:var(--blue);color:#fff;align-self:flex-end;margin-left:auto;'
+      : 'background:var(--raised);border:1px solid var(--border2);color:var(--text);');
+  el.textContent = text;
+  document.getElementById('ia-chat').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+function iaAnalizar(){
+  iaSetLoading(true);
+  iaShowError('');
+  fetch('/api/ia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'analysis'})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.error){iaShowError('Error: '+d.error);return;}
+      var res = document.getElementById('ia-resultado');
+      var body = document.getElementById('ia-resultado-body');
+      body.textContent = d.reply;
+      res.style.display = 'block';
+    })
+    .catch(function(e){iaShowError('Error de conexión: '+e.message);})
+    .finally(function(){iaSetLoading(false);});
+}
+
+function iaChat(){
+  var input = document.getElementById('ia-input');
+  var msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  iaBubble('user', msg);
+  iaChatHistory.push({role:'user', content:msg});
+  iaSetLoading(true);
+  iaShowError('');
+  fetch('/api/ia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'chat',message:msg})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.error){iaShowError('Error: '+d.error);return;}
+      iaBubble('assistant', d.reply);
+      iaChatHistory.push({role:'assistant', content:d.reply});
+    })
+    .catch(function(e){iaShowError('Error de conexión: '+e.message);})
+    .finally(function(){iaSetLoading(false);});
 }
 </script>
 </body>
