@@ -548,6 +548,21 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <!-- Selector de mes -->
   <div id="an-mes-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
   <!-- Breakdown por categoría -->
+  <div class="sec">Ritmo del mes</div>
+  <div id="an-ritmo"></div>
+
+  <div class="sec">Fijos vs variables</div>
+  <div id="an-fijos"></div>
+
+  <div class="sec">De donde sale</div>
+  <div id="an-cuentas"></div>
+
+  <div class="sec">Donde se va</div>
+  <div id="an-comercios"></div>
+
+  <div class="sec">Mes a mes</div>
+  <div id="an-meses"></div>
+
   <div class="sec" id="an-cat-sec">Categorias</div>
   <div id="an-categorias"><div class="an-empty">Sin datos de gastos este mes</div></div>
   <!-- Historial del mes seleccionado -->
@@ -913,6 +928,10 @@ const CAT_COLORS={
 // Los pagos se guardan por clave: "mes_id"
 // Ejemplo: "0_py-qik1" para Abril, "1_py-m1-ban1" para Mayo
 // ═══════════════════════════════════════════════════
+// Ingreso bruto por quincena. Vive aqui arriba porque lo usan tanto el resumen
+// de cada quincena como los tableros de Analisis.
+const INGRESO_QUINC = 18596;
+
 const MESES = {
   0: {
     nombre: 'Abril 2026',
@@ -1261,7 +1280,7 @@ function calcPendienteQuincena(mesIdx,qIdx){
 function actualizarHero(){
   var qIdx=quincenaActual();
   var pend=calcPendienteQuincena(mesActual,qIdx);
-  var libre=(state.saldos.bhd||0)+(state.saldos.banreservas||0)+(state.saldos.efectivo||0);
+  var libre=(state.saldos.bhd||0)+(state.saldos.banreservas||0)+(state.saldos.efectivo||0)+(state.saldos.ademi||0);
   var disp=libre-pend.monto;
   var el=document.getElementById('h-disponible');
   if(!el)return;
@@ -1383,7 +1402,6 @@ function renderMes(){
       items+='<div class="pay-check'+(isDone?' done':'')+'"><svg viewBox="0 0 12 10"><polyline points="1,5 4,9 11,1"/></svg></div></div></div>';
     });
     // ── Resumen financiero de la quincena ──────────────────────
-    var INGRESO_QUINC = 18596; // salario bruto quincena
     // Suma real de montos de esta quincena (no el total hardcodeado)
     var qComprom = q.pagos.reduce(function(s,p){ return s + (p.monto||0); }, 0);
     var qSobrante = INGRESO_QUINC - qComprom;
@@ -1844,7 +1862,7 @@ function renderAnalytics(){
   var numTx = txs.length;
   var mes = MESES[mesActual];
   var comprometido = mes ? mes.comprometido : 25146;
-  var ingresos = 37200;
+  var ingresos = INGRESO_QUINC * 2;
   var presupuestoLibre = ingresos - comprometido;
   var margen = presupuestoLibre - totalGastado;
   var pctGastado = presupuestoLibre > 0 ? Math.min(100, Math.round(totalGastado/presupuestoLibre*100)) : 0;
@@ -1866,6 +1884,13 @@ function renderAnalytics(){
   // Chips de mes
   renderAnMesChips();
 
+  // Tableros
+  anRitmo(txs, filtroISO);
+  anFijosVsVariables(txs, filtroISO);
+  anPorCuenta(txs);
+  anTopComercios(txs);
+  anMesAMes();
+
   // Categorías
   document.getElementById('an-cat-sec').textContent = 'Categorias · ' + mesNombre;
   renderAnCategorias(anAgruparPorCat(txs));
@@ -1873,6 +1898,169 @@ function renderAnalytics(){
   // Historial
   document.getElementById('an-hist-title').textContent = 'Historial · ' + mesNombre;
   renderHistorial(txs);
+}
+
+
+// ─── TABLEROS DE ANALISIS ────────────────────────────────────────────────────
+// Cada uno responde una pregunta distinta; juntos son el "medir bien todo".
+
+function anCaja(interior){
+  return '<div style="background:var(--raised);border:1px solid var(--border);'
+    + 'border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px">'
+    + interior + '</div>';
+}
+
+function anFila(etiqueta, valor, color){
+  return '<div style="display:flex;justify-content:space-between;align-items:baseline">'
+    + '<span style="font-size:12px;color:var(--muted)">' + etiqueta + '</span>'
+    + '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace;color:'
+    + (color || 'var(--text)') + '">' + valor + '</span></div>';
+}
+
+function anBarra(pct, color){
+  return '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:'
+    + Math.max(0,Math.min(100,pct)) + '%;background:' + (color || 'var(--green)') + '"></div></div>';
+}
+
+// Convierte "2026-09" al indice de MESES (abril 2026 = 0).
+function anMesIdx(iso){
+  var pr = iso.split('-');
+  return (parseInt(pr[0],10) - 2026) * 12 + (parseInt(pr[1],10) - 1) - 3;
+}
+
+// ¿Voy rapido o voy bien? Gasto por dia y a donde llego si sigo asi.
+function anRitmo(txs, iso){
+  var el = document.getElementById('an-ritmo');
+  if(!el) return;
+  var pr = iso.split('-'), anio = parseInt(pr[0],10), mesN = parseInt(pr[1],10);
+  var diasMes = new Date(anio, mesN, 0).getDate();
+  var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
+  var esActual = rd.getFullYear() === anio && (rd.getMonth()+1) === mesN;
+  var dia = esActual ? rd.getDate() : diasMes;
+  var total = txs.reduce(function(a,g){ return a+(g.monto||0); }, 0);
+  if(!total){ el.innerHTML = '<div class="an-empty">Sin gastos que medir este mes</div>'; return; }
+  var porDia = dia ? total/dia : 0;
+  var proy = porDia * diasMes;
+  var idx = anMesIdx(iso);
+  var comp = MESES[idx] ? MESES[idx].comprometido : 0;
+  var libre = (INGRESO_QUINC*2) - comp;
+  var seVaPasar = proy > libre && libre > 0;
+  el.innerHTML = anCaja(
+    anFila('Dia ' + dia + ' de ' + diasMes, fmt(total) + ' gastados')
+    + anBarra(Math.round(dia/diasMes*100), 'var(--faint)')
+    + anFila('Promedio diario', fmt(porDia))
+    + anFila('A este ritmo cierras en', fmt(proy), seVaPasar ? 'var(--red)' : 'var(--green)')
+    + (libre > 0
+        ? anFila('Presupuesto libre del mes', fmt(libre), 'var(--muted)')
+          + '<div style="font-size:11px;color:' + (seVaPasar?'var(--amber)':'var(--muted)') + ';line-height:1.5">'
+          + (seVaPasar
+              ? 'Vas camino a pasarte por ' + fmt(proy-libre) + '. Bajar a ' + fmt(libre/diasMes) + ' por dia te deja justo.'
+              : 'Vas dentro. Puedes gastar ' + fmt(Math.max(0,(libre-total)/Math.max(1,diasMes-dia))) + ' por dia lo que resta.')
+          + '</div>'
+        : '')
+  );
+}
+
+// ¿El problema son mis compromisos o mis gastos sueltos?
+function anFijosVsVariables(txs, iso){
+  var el = document.getElementById('an-fijos');
+  if(!el) return;
+  var idx = anMesIdx(iso);
+  var fijos = MESES[idx] ? calcTotalPagadoMes(idx) : 0;
+  var variables = txs.reduce(function(a,g){ return a+(g.monto||0); }, 0);
+  var total = fijos + variables;
+  if(!total){ el.innerHTML = '<div class="an-empty">Sin movimientos este mes</div>'; return; }
+  var pctF = Math.round(fijos/total*100);
+  el.innerHTML = anCaja(
+    '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--card)">'
+    + '<div style="width:' + pctF + '%;background:var(--blue)"></div>'
+    + '<div style="width:' + (100-pctF) + '%;background:var(--amber)"></div></div>'
+    + anFila('Fijos · pagos del plan', fmt(fijos) + ' · ' + pctF + '%', 'var(--blue)')
+    + anFila('Variables · dia a dia', fmt(variables) + ' · ' + (100-pctF) + '%', 'var(--amber)')
+    + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
+    + (pctF >= 70
+        ? 'Tu mes lo mandan los compromisos fijos. Para mover la aguja hay que renegociar el plan, no apretar el dia a dia.'
+        : 'Buena parte se va en gastos sueltos: ahi si tienes margen de maniobra.')
+    + '</div>'
+  );
+}
+
+// ¿De que cuenta sale el dinero?
+function anPorCuenta(txs){
+  var el = document.getElementById('an-cuentas');
+  if(!el) return;
+  if(!txs.length){ el.innerHTML = '<div class="an-empty">Sin gastos este mes</div>'; return; }
+  var mapa = {};
+  txs.forEach(function(g){
+    var c = g.cuenta || 'sin cuenta';
+    mapa[c] = (mapa[c]||0) + (g.monto||0);
+  });
+  var tonos = {bhd:'var(--green)', qik:'var(--blue)', banreservas:'var(--amber)', ademi:'var(--purple)', efectivo:'var(--muted)'};
+  var lista = Object.keys(mapa).map(function(c){ return {cuenta:c, total:mapa[c]}; })
+    .sort(function(a,b){ return b.total-a.total; });
+  var max = lista[0].total;
+  el.innerHTML = anCaja(lista.map(function(x){
+    return '<div style="display:flex;flex-direction:column;gap:6px">'
+      + anFila(x.cuenta.toUpperCase(), fmt(x.total))
+      + anBarra(Math.round(x.total/max*100), tonos[x.cuenta] || 'var(--muted)')
+      + '</div>';
+  }).join(''));
+}
+
+// ¿Donde se va realmente? Los cinco de siempre.
+function anTopComercios(txs){
+  var el = document.getElementById('an-comercios');
+  if(!el) return;
+  if(!txs.length){ el.innerHTML = '<div class="an-empty">Sin gastos este mes</div>'; return; }
+  var mapa = {};
+  txs.forEach(function(g){
+    var d = (g.descripcion||'Sin descripcion').trim();
+    if(!mapa[d]) mapa[d] = {total:0, veces:0};
+    mapa[d].total += (g.monto||0);
+    mapa[d].veces++;
+  });
+  var lista = Object.keys(mapa).map(function(d){
+    return {nombre:d, total:mapa[d].total, veces:mapa[d].veces};
+  }).sort(function(a,b){ return b.total-a.total; }).slice(0,5);
+  el.innerHTML = anCaja(lista.map(function(x){
+    return anFila(
+      x.nombre.slice(0,26) + (x.veces>1 ? ' <span style="color:var(--faint)">x'+x.veces+'</span>' : ''),
+      fmt(x.total)
+    );
+  }).join(''));
+}
+
+// ¿Voy mejor o peor que los meses anteriores?
+function anMesAMes(){
+  var el = document.getElementById('an-meses');
+  if(!el) return;
+  var mapa = {};
+  (state.historialMes||[]).forEach(function(g){
+    var m = anTsToMes(g.timestamp);
+    mapa[m] = (mapa[m]||0) + (g.monto||0);
+  });
+  var meses = Object.keys(mapa).sort().slice(-6);
+  if(meses.length < 2){
+    el.innerHTML = '<div class="an-empty">Hace falta mas de un mes de historial para comparar</div>';
+    return;
+  }
+  var max = Math.max.apply(null, meses.map(function(m){ return mapa[m]; }));
+  var prom = meses.reduce(function(a,m){ return a+mapa[m]; },0) / meses.length;
+  var barras = meses.map(function(m){
+    var alto = Math.max(6, Math.round(mapa[m]/max*90));
+    var esUltimo = m === meses[meses.length-1];
+    var etiqueta = new Date(m + '-02').toLocaleDateString('es-DO',{month:'short'});
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">'
+      + '<div style="width:100%;height:' + alto + 'px;border-radius:6px 6px 3px 3px;background:'
+      + (esUltimo ? 'var(--green)' : 'var(--card)') + '"></div>'
+      + '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">' + etiqueta + '</div>'
+      + '</div>';
+  }).join('');
+  el.innerHTML = anCaja(
+    '<div style="display:flex;align-items:flex-end;gap:8px;height:110px">' + barras + '</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:12px">'
+    + anFila('Promedio mensual', fmt(prom), 'var(--muted)') + '</div>'
+  );
 }
 
 function renderHistorial(txsFiltradas){
