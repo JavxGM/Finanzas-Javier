@@ -73,6 +73,9 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   padding:6px;display:none;flex-direction:column;gap:2px;min-width:150px;
   box-shadow:0 12px 32px rgba(0,0,0,.6)}
 .nav-mas.abierto{display:flex}
+/* IA y Lista: en movil viven en el menu "Mas"; en escritorio son items
+   normales de la barra lateral y el boton "Mas" deja de existir. */
+.solo-escritorio{display:none}
 .nav-mas .tab{flex-direction:row;justify-content:flex-start;gap:10px;padding:11px 12px;
   border-radius:var(--rsm);font-size:13px;font-family:'Chivo','Helvetica Neue',sans-serif;
   font-weight:600;color:var(--muted)}
@@ -87,6 +90,8 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
     border-radius:var(--rsm);font-size:13.5px;font-weight:600;
     font-family:'Chivo','Helvetica Neue',sans-serif;color:var(--muted)}
   .tab.active{background:var(--gdim);color:var(--green)}
+  .solo-escritorio{display:flex}
+  .nav .tab[data-page="mas"]{display:none}
   .nav-mas{display:none !important}
   .topbar{padding-left:calc(236px + 20px)}
   body{padding-left:236px;padding-bottom:32px}
@@ -350,6 +355,8 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <button class="tab"        data-page="registro"  onclick="showPage('registro',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Registro</span></button>
   <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analisis</span></button>
   <button class="tab"        data-page="deudas"    onclick="showPage('deudas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg><span>Deudas</span></button>
+  <button class="tab solo-escritorio" data-page="ia"    onclick="showPage('ia',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg><span>IA</span></button>
+  <button class="tab solo-escritorio" data-page="lista" onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Lista</span></button>
   <button class="tab"        data-page="mas"       onclick="toggleMas(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mas</span></button>
 </nav>
 
@@ -2062,9 +2069,13 @@ function showPage(id,btn){
   document.getElementById('page-'+id).classList.add('active');
   // IA y Lista viven en el menú secundario: si no tienen boton propio en la
   // barra, se resalta el de "Mas" para que se note donde estas parado.
-  var propio=document.querySelector('.tab[data-page="'+id+'"]');
-  if(propio)propio.classList.add('active');
-  if(!propio||!propio.closest('.nav')){
+  var copias=document.querySelectorAll('.tab[data-page="'+id+'"]');
+  var enBarra=false;
+  copias.forEach(function(b){
+    b.classList.add('active');
+    if(b.closest('.nav')&&b.offsetParent!==null)enBarra=true;
+  });
+  if(!enBarra){
     var mas=document.querySelector('.nav .tab[data-page="mas"]');
     if(mas)mas.classList.add('active');
   }
