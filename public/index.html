@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0a0a0f"/>
 <title>Finanzas · Javier</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800&family=Chivo+Mono:wght@300;400;500&display=swap');
 :root{
   --bg:#0a0a0f;--surface:#111118;--raised:#18181f;--card:#1e1e28;
   --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
@@ -23,16 +23,19 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{font-size:16px;background:var(--bg)}
-body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
+body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue',sans-serif;
   min-height:100dvh;padding-bottom:calc(80px + env(safe-area-inset-bottom));
-  -webkit-font-smoothing:antialiased}
+  -webkit-font-smoothing:antialiased;
+  /* Cifras de ancho fijo: las columnas de montos alinean por la coma decimal
+     en vez de bailar segun los digitos que toquen. */
+  font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:200;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   transition:opacity .4s}
 .loading-screen.hidden{opacity:0;pointer-events:none}
 .loading-logo{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--green),#00b8ff);
   display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0a0a0f}
-.loading-text{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
+.loading-text{font-size:13px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
 .loading-dots span{animation:dot 1.4s infinite;display:inline-block}
 .loading-dots span:nth-child(2){animation-delay:.2s}
 .loading-dots span:nth-child(3){animation-delay:.4s}
@@ -45,34 +48,34 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--green),#00b8ff);
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0a0a0f}
 .topbar-title{font-size:16px;font-weight:700}
-.topbar-sub{font-size:10px;color:var(--muted);margin-top:1px;font-family:'DM Mono',monospace}
+.topbar-sub{font-size:10px;color:var(--muted);margin-top:1px;font-family:'Chivo Mono',ui-monospace,monospace}
 .sync-wrap{display:flex;align-items:center;gap:6px;cursor:pointer}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);transition:all .3s}
 .sync-dot.err{background:var(--red);box-shadow:0 0 8px var(--red);animation:none}
 .sync-dot.loading{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:pulse 1s infinite}
-.sync-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.sync-txt{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .tabs{display:flex;gap:5px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;
   background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:40}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;
-  font-family:'Syne',sans-serif;border:1px solid var(--border2);
+  font-family:'Chivo','Helvetica Neue',sans-serif;border:1px solid var(--border2);
   background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
 .tab.active{background:var(--green);color:#0a0a0f;border-color:var(--green);font-weight:700}
 .page{display:none;padding:14px;flex-direction:column;gap:11px}
 .page.active{display:flex}
 .sec{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--faint);padding:0 2px;margin-top:2px;font-family:'DM Mono',monospace}
+  color:var(--faint);padding:0 2px;margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
 .hero{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);
   padding:20px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-50px;right:-50px;width:140px;height:140px;
   border-radius:50%;background:var(--gdim);filter:blur(35px)}
-.hero-label{font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace}
+.hero-label{font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'Chivo Mono',ui-monospace,monospace}
 .hero-value{font-size:38px;font-weight:800;color:var(--green);line-height:1;letter-spacing:-1px}
 .hero-sub{font-size:11px;color:var(--muted);margin-top:5px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
 .stat{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 12px}
-.stat-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'DM Mono',monospace;letter-spacing:.04em}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:.04em}
 .stat-value{font-size:20px;font-weight:700}
 .g{color:var(--green)}.a{color:var(--amber)}.r{color:var(--red)}.b{color:var(--blue)}.p{color:var(--purple)}.m{color:var(--muted)}
 .total-pagado-bar{background:var(--raised);border:1px solid var(--gb);border-radius:var(--rsm);padding:12px 14px}
@@ -85,23 +88,23 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
 .cuenta-info{flex:1}
 .cuenta-name{font-size:13px;font-weight:700}
-.cuenta-desc{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+.cuenta-desc{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
 .cuenta-saldo{text-align:right}
-.cuenta-monto{font-size:16px;font-weight:800;font-family:'DM Mono',monospace}
-.cuenta-edit{font-size:10px;color:var(--faint);margin-top:2px;font-family:'DM Mono',monospace}
+.cuenta-monto{font-size:16px;font-weight:800;font-family:'Chivo Mono',ui-monospace,monospace}
+.cuenta-edit{font-size:10px;color:var(--faint);margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
 .card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px}
 .form-title{font-size:15px;font-weight:700;margin-bottom:14px}
 .field{margin-bottom:12px}
 .field label{font-size:10px;color:var(--muted);display:block;margin-bottom:5px;
-  font-family:'DM Mono',monospace;letter-spacing:.04em;text-transform:uppercase}
+  font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase}
 .field input,.field select{width:100%;background:var(--card);border:1px solid var(--border2);
   border-radius:var(--rsm);color:var(--text);padding:11px 13px;font-size:16px;
-  font-family:'Syne',sans-serif;outline:none;transition:border-color .2s;-webkit-appearance:none}
+  font-family:'Chivo','Helvetica Neue',sans-serif;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .field input:focus,.field select:focus{border-color:var(--green)}
 .field select option{background:var(--card)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .btn{width:100%;padding:15px;border-radius:var(--rsm);font-size:14px;font-weight:800;
-  font-family:'Syne',sans-serif;border:none;cursor:pointer;letter-spacing:.02em;
+  font-family:'Chivo','Helvetica Neue',sans-serif;border:none;cursor:pointer;letter-spacing:.02em;
   transition:opacity .2s,transform .1s;margin-top:4px}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.5}
@@ -114,16 +117,16 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   cursor:pointer;font-size:16px;font-weight:700;transition:all .2s;flex-shrink:0}
 .mes-btn:active{background:var(--green);color:#0a0a0f;border-color:var(--green)}
 .mes-nombre{font-size:15px;font-weight:700;text-align:center}
-.mes-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;margin-top:2px}
+.mes-sub{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;text-align:center;margin-top:2px}
 .pay-section{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .pay-section-hdr{padding:13px 15px 9px;display:flex;flex-direction:column;gap:6px}
 .pay-section-hdr-top{display:flex;align-items:center;justify-content:space-between}
 .pay-section-title{font-size:13px;font-weight:700}
-.pay-section-amt{font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Mono',monospace}
+.pay-section-amt{font-size:12px;font-weight:600;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
 .pay-section-progress{display:flex;align-items:center;gap:8px}
 .pay-section-prog-track{flex:1;height:3px;background:var(--card);border-radius:2px;overflow:hidden}
 .pay-section-prog-fill{height:100%;border-radius:2px;background:var(--green);transition:width .5s}
-.pay-section-stats{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;display:flex;justify-content:space-between}
+.pay-section-stats{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;display:flex;justify-content:space-between}
 .pay-section-stats .pagado{color:var(--green);font-weight:600}
 .pay-section-stats .falta{color:var(--amber)}
 .pay-item{display:flex;align-items:center;gap:11px;padding:11px 15px;
@@ -133,10 +136,10 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 .pay-info{flex:1;min-width:0}
 .pay-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pay-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
-.pay-ts{font-size:9px;color:var(--faint);font-family:'DM Mono',monospace;margin-top:1px}
+.pay-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
+.pay-ts{font-size:9px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:1px}
 .pay-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.pay-amount{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.pay-amount{font-size:13px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace}
 .pay-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border2);
   display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 .pay-check.done{background:var(--green);border-color:var(--green)}
@@ -151,24 +154,24 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .hecho-check svg{width:11px;height:11px;stroke:#0a0a0f;stroke-width:2.5;fill:none}
 .hecho-info{flex:1;min-width:0}
 .hecho-name{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hecho-ts{font-size:9px;color:var(--faint);font-family:'DM Mono',monospace;margin-top:1px}
-.hecho-cuenta{font-size:9px;color:var(--blue);font-family:'DM Mono',monospace;margin-top:1px}
-.hecho-amount{font-size:13px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace}
+.hecho-ts{font-size:9px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:1px}
+.hecho-cuenta{font-size:9px;color:var(--blue);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:1px}
+.hecho-amount{font-size:13px;font-weight:700;color:var(--green);font-family:'Chivo Mono',ui-monospace,monospace}
 .gasto-item{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
   padding:11px 13px;display:flex;align-items:center;gap:11px}
 .gasto-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .gasto-info{flex:1;min-width:0}
 .gasto-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gasto-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
-.gasto-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
+.gasto-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
+.gasto-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'Chivo Mono',ui-monospace,monospace;white-space:nowrap}
 .deuda{background:var(--raised);border:1px solid var(--ab);border-radius:var(--r);padding:18px}
 .deuda-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .deuda-row:last-child{border-bottom:none;padding-bottom:0}
 .deuda-lbl{color:var(--muted)}
-.deuda-val{font-weight:700;font-family:'DM Mono',monospace}
+.deuda-val{font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace}
 .tabla-cuotas{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .tabla-hdr{display:grid;grid-template-columns:2fr 1fr 1fr;background:var(--card);
-  padding:8px 14px;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace;
+  padding:8px 14px;font-size:10px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace;
   letter-spacing:.06em;text-transform:uppercase}
 .tabla-row{display:grid;grid-template-columns:2fr 1fr 1fr;padding:10px 14px;
   border-top:1px solid var(--border);font-size:12px;align-items:center}
@@ -179,7 +182,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   margin:12px 0 4px;position:relative}
 .score-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;
   background:var(--text);border:2px solid var(--bg);transform:translateX(-50%)}
-.score-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);font-family:'DM Mono',monospace}
+.score-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace}
 .tl-item{display:flex;gap:13px;padding-bottom:18px}
 .tl-item:last-child{padding-bottom:0}
 .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
@@ -193,12 +196,12 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
 .rrow:last-child{border-bottom:none}
 .rrow-lbl{color:var(--muted)}
-.rrow-val{font-weight:700;font-family:'DM Mono',monospace}
+.rrow-val{font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace}
 .alert{border-radius:var(--rsm);padding:11px 13px;font-size:12px;line-height:1.6}
 .alert.a{background:var(--adim);border:1px solid var(--ab);color:var(--amber)}
 .alert.g{background:var(--gdim);border:1px solid var(--gb);color:var(--green)}
 .pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
-  font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
+  font-size:10px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace}
 .pg{background:var(--gdim);color:var(--green);border:1px solid var(--gb)}
 .pa{background:var(--adim);color:var(--amber);border:1px solid var(--ab)}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:90;
@@ -217,7 +220,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   padding:12px;text-align:center;cursor:pointer;transition:all .2s}
 .cuenta-opt.selected{border-color:var(--green);background:var(--gdim)}
 .cuenta-opt-name{font-size:13px;font-weight:700;margin-bottom:2px}
-.cuenta-opt-saldo{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.cuenta-opt-saldo{font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
 .cuenta-opt.selected .cuenta-opt-name{color:var(--green)}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(16px);
   background:var(--raised);border:1px solid var(--border2);border-radius:12px;
@@ -230,37 +233,37 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 /* ── Analytics ───────────────────────────────────────────── */
 .an-hero{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px}
 .an-hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.an-hero-label{font-size:11px;color:var(--muted);margin-bottom:3px;font-family:'DM Mono',monospace}
-.an-hero-val{font-size:30px;font-weight:800;font-family:'DM Mono',monospace}
+.an-hero-label{font-size:11px;color:var(--muted);margin-bottom:3px;font-family:'Chivo Mono',ui-monospace,monospace}
+.an-hero-val{font-size:30px;font-weight:800;font-family:'Chivo Mono',ui-monospace,monospace}
 .an-hero-sub{font-size:11px;color:var(--muted);margin-top:3px}
 .an-free{text-align:right}
-.an-free-label{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px}
-.an-free-val{font-size:18px;font-weight:700;font-family:'DM Mono',monospace}
+.an-free-label{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-bottom:2px}
+.an-free-val{font-size:18px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace}
 .an-prog-wrap{margin-top:4px}
-.an-prog-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px}
+.an-prog-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-bottom:5px}
 .an-bar-row{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:11px 13px;display:flex;align-items:center;gap:10px}
 .an-bar-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:#0a0a0f}
 .an-bar-info{flex:1;min-width:0}
 .an-bar-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .an-bar-track{height:4px;background:var(--card);border-radius:3px;overflow:hidden;margin:5px 0 2px}
 .an-bar-fill{height:100%;border-radius:3px;transition:width .5s}
-.an-bar-stats{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.an-bar-stats{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
 .an-bar-right{text-align:right;flex-shrink:0}
-.an-bar-monto{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--red)}
-.an-bar-pct{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.an-bar-monto{font-size:13px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;color:var(--red)}
+.an-bar-pct{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:2px}
 .hist-item{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);
   padding:11px 13px;display:flex;align-items:center;gap:10px}
 .hist-item.auto{border-left:3px solid var(--blue)}
 .hist-auto-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:10px;
-  font-size:9px;font-weight:700;font-family:'DM Mono',monospace;
+  font-size:9px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;
   background:var(--bdim);color:var(--blue);border:1px solid var(--bb);margin-left:5px}
 .hist-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .hist-info{flex:1;min-width:0}
 .hist-desc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hist-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
-.hist-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'DM Mono',monospace;white-space:nowrap}
-.an-empty{text-align:center;padding:28px 16px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace}
-.mes-chip{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;border:1px solid var(--border2);background:var(--raised);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.hist-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Chivo Mono',ui-monospace,monospace}
+.hist-monto{font-size:13px;font-weight:700;color:var(--red);font-family:'Chivo Mono',ui-monospace,monospace;white-space:nowrap}
+.an-empty{text-align:center;padding:28px 16px;color:var(--faint);font-size:12px;font-family:'Chivo Mono',ui-monospace,monospace}
+.mes-chip{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;border:1px solid var(--border2);background:var(--raised);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .mes-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
 .an-bar-row{cursor:pointer;transition:background .15s}
 .an-bar-row:hover{background:var(--card)}
@@ -269,15 +272,15 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 .an-cat-tx{display:flex;align-items:center;justify-content:space-between;padding:8px 13px 8px 50px;font-size:12px;border-bottom:1px solid var(--border)}
 .an-cat-tx:last-child{border-bottom:none}
 .an-cat-tx-desc{color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.an-cat-tx-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
-.an-cat-tx-monto{font-weight:700;font-family:'DM Mono',monospace;color:var(--red);flex-shrink:0;margin-left:10px}
+.an-cat-tx-meta{font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:2px}
+.an-cat-tx-monto{font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;color:var(--red);flex-shrink:0;margin-left:10px}
 .realtime-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);
   box-shadow:0 0 6px var(--blue);animation:pulse 2s infinite;display:inline-block;margin-right:4px;vertical-align:middle}
 /* ── Resumen financiero por quincena ─────────────────────────── */
 .quinc-resumen{border-top:1px solid var(--border2);margin-top:4px;padding:10px 15px 13px}
 .quinc-resumen-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px}
-.quinc-resumen-lbl{color:var(--muted);font-family:'DM Mono',monospace}
-.quinc-resumen-val{font-weight:700;font-family:'DM Mono',monospace;font-size:13px}
+.quinc-resumen-lbl{color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace}
+.quinc-resumen-val{font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;font-size:13px}
 .quinc-resumen-sep{border:none;border-top:1px solid var(--border);margin:4px 0}
 </style>
 </head>
@@ -326,14 +329,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="total-pagado-bar">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase">Total pagado este mes</div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace" id="s-pct-pagado">0%</div>
+      <div style="font-size:10px;color:var(--green);font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase">Total pagado este mes</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace" id="s-pct-pagado">0%</div>
     </div>
-    <div style="font-size:26px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace;margin-top:4px" id="s-total-pagado">RD$0</div>
+    <div style="font-size:26px;font-weight:800;color:var(--green);font-family:'Chivo Mono',ui-monospace,monospace;margin-top:4px" id="s-total-pagado">RD$0</div>
     <div class="prog-track"><div class="prog-fill" id="prog-pagado" style="width:0%"></div></div>
     <div style="display:flex;justify-content:space-between;margin-top:3px">
       <div style="font-size:11px;color:var(--muted)" id="s-comp-label">de RD$0 comprometidos</div>
-      <div style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700" id="s-pendiente-pagar"></div>
+      <div style="font-size:11px;font-family:'Chivo Mono',ui-monospace,monospace;font-weight:700" id="s-pendiente-pagar"></div>
     </div>
   </div>
   <div class="sec">Cuentas</div>
@@ -369,8 +372,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 <div class="page" id="page-registro">
   <!-- Toggle -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <button id="reg-btn-gasto" onclick="regSetTab('gasto')" style="padding:10px;border-radius:10px;border:2px solid var(--red);background:var(--rdim);color:var(--red);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Gasto</button>
-    <button id="reg-btn-entrada" onclick="regSetTab('entrada')" style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Entrada</button>
+    <button id="reg-btn-gasto" onclick="regSetTab('gasto')" style="padding:10px;border-radius:10px;border:2px solid var(--red);background:var(--rdim);color:var(--red);font-family:'Chivo','Helvetica Neue',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Gasto</button>
+    <button id="reg-btn-entrada" onclick="regSetTab('entrada')" style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Chivo','Helvetica Neue',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Entrada</button>
   </div>
 
   <!-- Formulario gasto -->
@@ -434,9 +437,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="rrow" style="border-top:2px solid var(--border2)"><span class="rrow-lbl" style="font-weight:600">Margen real</span><span class="rrow-val g" id="r-margen">—</span></div>
   </div>
   <div class="sec">Gastos de hoy</div>
-  <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin gastos hoy</div></div>
+  <div id="gastos-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'Chivo Mono',ui-monospace,monospace">Sin gastos hoy</div></div>
   <div class="sec">Entradas registradas</div>
-  <div id="entradas-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas este mes</div></div>
+  <div id="entradas-lista"><div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'Chivo Mono',ui-monospace,monospace">Sin entradas este mes</div></div>
 </div>
 
 <!-- PAGOS -->
@@ -455,7 +458,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       <div class="pay-section-title" style="color:var(--green)">Pagados este mes</div>
       <div class="pay-section-amt" style="color:var(--green)" id="total-hechos-amt">RD$0</div>
     </div>
-    <div id="hechos-lista"><div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:'DM Mono',monospace">Ninguno marcado aun</div></div>
+    <div id="hechos-lista"><div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace">Ninguno marcado aun</div></div>
   </div>
   <!-- Pagos del mes actual (dinamico) -->
   <div id="pagos-container"></div>
@@ -492,7 +495,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <!-- Historial del mes seleccionado -->
   <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
     <span id="an-hist-title">Historial</span>
-    <span id="an-realtime-indicator" style="display:none"><span class="realtime-dot"></span><span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">en vivo</span></span>
+    <span id="an-realtime-indicator" style="display:none"><span class="realtime-dot"></span><span style="font-size:9px;color:var(--blue);font-family:'Chivo Mono',ui-monospace,monospace">en vivo</span></span>
   </div>
   <div id="an-historial"><div class="an-empty">Sin historial registrado</div></div>
 </div>
@@ -506,7 +509,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="hero-value" id="uber-neto" style="font-size:32px">RD$0</div>
     <div class="hero-sub" id="uber-meta-sub">Meta: RD$12,556 · Madres 2026</div>
     <div style="margin-top:14px">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-bottom:5px">
         <span id="uber-pct-label">0%</span>
         <span id="uber-restante">Faltan RD$12,296</span>
       </div>
@@ -522,23 +525,23 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
       <div>
         <div style="font-size:13px;font-weight:600">Extractor Teka TMX76</div>
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Innova Centro · con 15% dcto</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Innova Centro · con 15% dcto</div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$6,796</div>
+      <div style="font-family:'Chivo Mono',ui-monospace,monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$6,796</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
       <div>
         <div style="font-size:13px;font-weight:600">Proteína + Creatina</div>
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Suplementos</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Suplementos</div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$3,500</div>
+      <div style="font-family:'Chivo Mono',ui-monospace,monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$3,500</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px">
       <div>
         <div style="font-size:13px;font-weight:600">Gasolina invertida</div>
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">Recuperar inversión de combustible</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Recuperar inversión de combustible</div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$2,000</div>
+      <div style="font-family:'Chivo Mono',ui-monospace,monospace;font-size:13px;font-weight:700;color:var(--amber)">RD$2,000</div>
     </div>
   </div>
 
@@ -547,11 +550,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="card">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
       <button id="uber-btn-ganancia" onclick="uberSetTipo('ganancia')"
-        style="padding:10px;border-radius:10px;border:2px solid var(--green);background:var(--gdim);color:var(--green);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        style="padding:10px;border-radius:10px;border:2px solid var(--green);background:var(--gdim);color:var(--green);font-family:'Chivo','Helvetica Neue',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
         Ganancia
       </button>
       <button id="uber-btn-gasto" onclick="uberSetTipo('gasto')"
-        style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        style="padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Chivo','Helvetica Neue',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
         Gasto
       </button>
     </div>
@@ -600,7 +603,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <!-- Historial -->
   <div class="sec">Historial (últimas 30 entradas)</div>
   <div id="uber-historial" style="display:flex;flex-direction:column;gap:6px">
-    <div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'DM Mono',monospace">Sin entradas aún</div>
+    <div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:'Chivo Mono',ui-monospace,monospace">Sin entradas aún</div>
   </div>
 
   <!-- Recomendaciones -->
@@ -619,7 +622,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="deuda-row"><span class="deuda-lbl">Total pagado</span><span class="deuda-val g">RD$10,000</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Liquidado en</span><span class="deuda-val g">Mayo 2026</span></div>
     <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:100%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>RD$10,000 pagados</span><span>Deuda cerrada</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace"><span>RD$10,000 pagados</span><span>Deuda cerrada</span></div>
   </div>
   <div class="sec">Banco Ademi — Prestamo 1948469</div>
   <div class="deuda" style="border-color:var(--gb)">
@@ -632,7 +635,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="deuda-row"><span class="deuda-lbl">Total pagado</span><span class="deuda-val g">RD$13,234.90</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val g">RD$0</span></div>
     <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:100%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>6 cuotas pagadas</span><span>Deuda cerrada</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace"><span>6 cuotas pagadas</span><span>Deuda cerrada</span></div>
   </div>
   <div class="sec">Banco Ademi — Prestamo 2 (nuevo)</div>
   <div class="deuda">
@@ -655,14 +658,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <div class="sec">Tabla de cuotas</div>
   <div class="tabla-cuotas">
     <div class="tabla-hdr"><span>Fecha</span><span style="text-align:right">Cuota</span><span style="text-align:right">Saldo</span></div>
-    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">21 sep 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 1 · PROXIMA</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$16,506</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 oct 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 2</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$14,148</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 nov 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 3</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$11,790</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 dic 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 4</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$9,432</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 ene 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 5</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$7,074</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 feb 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 6</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$4,716</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 mar 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 7</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$2,358</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 abr 2027</div><div style="font-size:10px;color:var(--red);font-family:'DM Mono',monospace">Cuota 8 · ULTIMA · liquidado</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--green);font-family:'DM Mono',monospace">RD$0</div></div>
+    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">21 sep 2026</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 1 · PROXIMA</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$16,506</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 oct 2026</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 2</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$14,148</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 nov 2026</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 3</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$11,790</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 dic 2026</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 4</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$9,432</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 ene 2027</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 5</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$7,074</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 feb 2027</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 6</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$4,716</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 mar 2027</div><div style="font-size:10px;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 7</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 abr 2027</div><div style="font-size:10px;color:var(--red);font-family:'Chivo Mono',ui-monospace,monospace">Cuota 8 · ULTIMA · liquidado</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--green);font-family:'Chivo Mono',ui-monospace,monospace">RD$0</div></div>
   </div>
   <div class="sec">Plan de ahorro (septiembre en adelante)</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
@@ -674,7 +677,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   <!-- Score crediticio (integrado en Deudas) -->
   <div class="sec" style="margin-top:4px">Score crediticio</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:20px">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'DM Mono',monospace">Score crediticio · Credicefi</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'Chivo Mono',ui-monospace,monospace">Score crediticio · Credicefi</div>
     <div style="font-size:50px;font-weight:800;letter-spacing:-2px;color:var(--green);line-height:1">783</div>
     <div style="font-size:12px;color:var(--muted);margin-top:4px">Bueno en cooperativas · construyendo historial bancario</div>
     <div class="score-track"><div class="score-marker" style="left:78.3%"></div></div>
@@ -701,7 +704,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
       </div>
       <button id="ia-analizar-btn" onclick="iaAnalizar()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Analizar mes</button>
     </div>
-    <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Google Gemma 4 31B · datos reales de Supabase</div>
+    <div style="font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Google Gemma 4 31B · datos reales de Supabase</div>
   </div>
 
   <!-- Resultado análisis -->
@@ -717,7 +720,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <textarea id="ia-input" rows="2" placeholder="¿Cuánto gasté en comida este mes? ¿Me alcanza para el carro?" style="flex:1;background:var(--raised);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit;resize:none;outline:none;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaChat()}"></textarea>
     <button onclick="iaChat()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Enviar</button>
   </div>
-  <div id="ia-loading" style="display:none;text-align:center;padding:16px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">Consultando IA...</div>
+  <div id="ia-loading" style="display:none;text-align:center;padding:16px;font-size:12px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Consultando IA...</div>
   <div id="ia-error" style="display:none" class="alert" style="margin-top:8px"></div>
 </div>
 
@@ -725,8 +728,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
 <div class="page" id="page-lista">
   <!-- Resumen -->
   <div id="lista-resumen" style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:16px 18px">
-    <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px">Cosas que quiero comprar</div>
-    <div style="font-size:28px;font-weight:800;color:var(--amber);font-family:'DM Mono',monospace;letter-spacing:-1px" id="lista-total">RD$0</div>
+    <div style="font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-bottom:2px">Cosas que quiero comprar</div>
+    <div style="font-size:28px;font-weight:800;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:-1px" id="lista-total">RD$0</div>
     <div style="font-size:11px;color:var(--muted);margin-top:2px" id="lista-count">0 artículos</div>
   </div>
   <!-- Formulario agregar -->
@@ -775,14 +778,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     </div>
     <div id="modal-pago-preview" style="display:none;background:var(--card);border:1px solid var(--border2);border-radius:var(--rsm);padding:11px 13px;margin-bottom:4px;font-size:12px;line-height:1.7">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--muted);font-family:'DM Mono',monospace">Monto</span>
-        <span id="modal-pago-preview-monto" style="font-weight:700;font-family:'DM Mono',monospace;color:var(--amber)"></span>
+        <span style="color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Monto</span>
+        <span id="modal-pago-preview-monto" style="font-weight:700;font-family:'Chivo Mono',ui-monospace,monospace;color:var(--amber)"></span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
-        <span style="color:var(--muted);font-family:'DM Mono',monospace">Cuenta plan</span>
-        <span id="modal-pago-preview-cuenta" style="font-size:11px;color:var(--blue);font-family:'DM Mono',monospace"></span>
+        <span style="color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Cuenta plan</span>
+        <span id="modal-pago-preview-cuenta" style="font-size:11px;color:var(--blue);font-family:'Chivo Mono',ui-monospace,monospace"></span>
       </div>
-      <div style="margin-top:6px;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace">El saldo NO se descuenta — el banco ya lo dedujo.</div>
+      <div style="margin-top:6px;font-size:10px;color:var(--faint);font-family:'Chivo Mono',ui-monospace,monospace">El saldo NO se descuenta — el banco ya lo dedujo.</div>
     </div>
     <button class="btn btn-g" id="modal-pago-btn-confirmar" onclick="confirmarPago()" disabled>Marcar como pagado</button>
     <button class="btn btn-outline" style="margin-top:8px" onclick="closeModalPago(null)">Cancelar</button>
@@ -1221,9 +1224,9 @@ function renderMes(){
     q.pagos.forEach(function(p){
       var ps=getPagoState(mesActual,p.id);
       var isDone=ps.done;
-      var nota=p.nota?'<div style="font-size:9px;color:var(--purple);font-family:\'DM Mono\',monospace;margin-top:1px">'+p.nota+'</div>':'';
+      var nota=p.nota?'<div style="font-size:9px;color:var(--purple);font-family:\'Chivo Mono\',monospace;margin-top:1px">'+p.nota+'</div>':'';
       var tsHtml=ps.ts?'<div class="pay-ts">'+ps.ts+'</div>':'';
-      var cuentaHtml=ps.cuenta?'<div style="font-size:9px;color:var(--blue);font-family:\'DM Mono\',monospace">'+ps.cuenta+'</div>':'';
+      var cuentaHtml=ps.cuenta?'<div style="font-size:9px;color:var(--blue);font-family:\'Chivo Mono\',monospace">'+ps.cuenta+'</div>':'';
       var iStyle=p.tc?'color:'+p.tc+';font-size:10px;font-weight:800':'font-size:10px;font-weight:800;color:var(--muted)';
       // El onclick pasa el mesActual para que el pago quede vinculado al mes correcto
       items+='<div class="pay-item'+(isDone?' done':'')+'" id="item-'+p.id+'" onclick="abrirModalPago('+mesActual+',\''+p.id+'\','+p.monto+',\''+p.nombre+'\')">';
@@ -1266,7 +1269,7 @@ function renderMes(){
 function renderHechos(){
   var lista=document.getElementById('hechos-lista');
   var mes=MESES[mesActual];
-  if(!mes){lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';document.getElementById('total-hechos-amt').textContent='RD$0';return;}
+  if(!mes){lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'Chivo Mono\',monospace">Ninguno marcado aun</div>';document.getElementById('total-hechos-amt').textContent='RD$0';return;}
   // Recopilar solo los pagos del mes activo que esten done
   var hechos=[];
   mes.quincenas.forEach(function(q){
@@ -1276,7 +1279,7 @@ function renderHechos(){
     });
   });
   if(!hechos.length){
-    lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'DM Mono\',monospace">Ninguno marcado aun</div>';
+    lista.innerHTML='<div style="text-align:center;padding:14px;font-size:12px;color:var(--faint);font-family:\'Chivo Mono\',monospace">Ninguno marcado aun</div>';
     document.getElementById('total-hechos-amt').textContent='RD$0';
     return;
   }
@@ -1458,7 +1461,7 @@ function guardarEntrada(){
 
 function renderEntradas(){
   var lista=document.getElementById('entradas-lista');
-  if(!state.entradasMes.length){lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'DM Mono\',monospace">Sin entradas este mes</div>';return;}
+  if(!state.entradasMes.length){lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'Chivo Mono\',monospace">Sin entradas este mes</div>';return;}
   lista.innerHTML=state.entradasMes.slice().reverse().map(function(e){
     var d=new Date(e.timestamp);
     var fecha=d.toLocaleDateString('es-DO',{day:'numeric',month:'short',timeZone:'America/Santo_Domingo'});
@@ -1558,7 +1561,7 @@ function guardarGasto(){
 
 function renderGastosHoy(){
   var lista=document.getElementById('gastos-lista');
-  if(!state.gastosHoy.length){lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'DM Mono\',monospace">Sin gastos hoy</div>';return;}
+  if(!state.gastosHoy.length){lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'Chivo Mono\',monospace">Sin gastos hoy</div>';return;}
   lista.innerHTML=state.gastosHoy.slice().reverse().map(function(g){
     var hora=new Date(g.timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/Santo_Domingo'});
     var color=CAT_COLORS[g.categoria]||'#8888a0';
@@ -2013,11 +2016,11 @@ function listaRender(){
       +(item.comprado?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#0a0a0f" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>':'')+'</div>'
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:14px;font-weight:700;'+(item.comprado?'text-decoration:line-through;color:var(--muted);':'')+'">'+(item.nombre||'')+'</div>'
-      +(item.notas?'<div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:\'DM Mono\',monospace">'+(item.notas)+'</div>':'')
+      +(item.notas?'<div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:\'Chivo Mono\',monospace">'+(item.notas)+'</div>':'')
       +'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">'
       +'<span style="font-size:10px;font-weight:700;color:'+p[0]+';background:'+p[0]+'18;padding:2px 8px;border-radius:99px;border:1px solid '+p[0]+'44">'+p[1]+'</span>'
-      +(item.precio?'<span style="font-size:12px;font-weight:700;font-family:\'DM Mono\',monospace">RD$'+fmt(item.precio)+'</span>':'')
-      +(item.comprado?'<span style="font-size:10px;color:var(--green);font-family:\'DM Mono\',monospace">✓ Comprado</span>':'')
+      +(item.precio?'<span style="font-size:12px;font-weight:700;font-family:\'Chivo Mono\',monospace">RD$'+fmt(item.precio)+'</span>':'')
+      +(item.comprado?'<span style="font-size:10px;color:var(--green);font-family:\'Chivo Mono\',monospace">✓ Comprado</span>':'')
       +'</div></div>'
       +'<button onclick="listaEliminar('+item.id+')" style="background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0">×</button>'
       +'</div></div>';
@@ -2153,46 +2156,46 @@ function uberRender(){
   var refHTML = REF.map(function(r){
     var rph=r.monto/(r.horasMin/60);
     return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:10px 14px">'+
-      '<div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-bottom:4px">'+r.label+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',monospace;margin-bottom:4px">'+r.label+'</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-size:13px;font-weight:700;color:var(--green);font-family:\'DM Mono\',monospace">'+fmt(r.monto)+'</span>'+
-        '<span style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace">'+fmtH(r.horasMin)+' · '+r.viajes+' viajes</span>'+
-        '<span style="font-size:11px;color:var(--amber);font-family:\'DM Mono\',monospace">≈'+fmt(Math.round(rph))+'/h</span>'+
+        '<span style="font-size:13px;font-weight:700;color:var(--green);font-family:\'Chivo Mono\',monospace">'+fmt(r.monto)+'</span>'+
+        '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',monospace">'+fmtH(r.horasMin)+' · '+r.viajes+' viajes</span>'+
+        '<span style="font-size:11px;color:var(--amber);font-family:\'Chivo Mono\',monospace">≈'+fmt(Math.round(rph))+'/h</span>'+
       '</div>'+
     '</div>';
   }).join('');
 
   var recEl = document.getElementById('uber-recomendaciones');
   if(recEl) recEl.innerHTML =
-    '<div class="sec">Sesiones de referencia <span style="color:var(--faint);font-size:10px;font-family:\'DM Mono\',monospace">≈'+fmt(Math.round(rdPorHora))+'/h · '+fmt(Math.round(rdPorViaje))+'/viaje</span></div>'+
+    '<div class="sec">Sesiones de referencia <span style="color:var(--faint);font-size:10px;font-family:\'Chivo Mono\',monospace">≈'+fmt(Math.round(rdPorHora))+'/h · '+fmt(Math.round(rdPorViaje))+'/viaje</span></div>'+
     '<div style="display:flex;flex-direction:column;gap:6px">'+refHTML+'</div>'+
     '<div class="sec" style="margin-top:14px">Necesitas para el 25 mayo 4AM</div>'+
     '<div style="background:var(--raised);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
       '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<span style="font-size:12px;color:var(--muted)">Días disponibles</span>'+
-        '<span style="font-size:14px;font-weight:700;color:var(--fg);font-family:\'DM Mono\',monospace">'+diasDisp+' días</span>'+
+        '<span style="font-size:14px;font-weight:700;color:var(--fg);font-family:\'Chivo Mono\',monospace">'+diasDisp+' días</span>'+
       '</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<span style="font-size:12px;color:var(--muted)">Ganancia necesaria/día</span>'+
-        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">'+fmt(Math.round(necesarioPorDia))+'</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'Chivo Mono\',monospace">'+fmt(Math.round(necesarioPorDia))+'</span>'+
       '</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<span style="font-size:12px;color:var(--muted)">Horas en app/día</span>'+
-        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">~'+fmtH(horasNecDia*60)+'</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'Chivo Mono\',monospace">~'+fmtH(horasNecDia*60)+'</span>'+
       '</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<span style="font-size:12px;color:var(--muted)">Viajes aprox/día</span>'+
-        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'DM Mono\',monospace">~'+viajesNecDia+' viajes</span>'+
+        '<span style="font-size:14px;font-weight:700;color:'+semColor+';font-family:\'Chivo Mono\',monospace">~'+viajesNecDia+' viajes</span>'+
       '</div>'+
       '<div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;align-items:center">'+
         '<span style="font-size:12px;color:var(--muted)">Pendiente total</span>'+
-        '<span style="font-size:15px;font-weight:700;color:var(--amber);font-family:\'DM Mono\',monospace">'+fmt(Math.round(falta))+'</span>'+
+        '<span style="font-size:15px;font-weight:700;color:var(--amber);font-family:\'Chivo Mono\',monospace">'+fmt(Math.round(falta))+'</span>'+
       '</div>'+
     '</div>';
 
   var lista = document.getElementById('uber-historial');
   if(!data.length){
-    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'DM Mono\',monospace">Sin entradas aún</div>';
+    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--faint);font-size:12px;font-family:\'Chivo Mono\',monospace">Sin entradas aún</div>';
     return;
   }
   lista.innerHTML = data.map(function(e){
@@ -2206,15 +2209,15 @@ function uberRender(){
     var tiempoStr = '';
     if(esG && (e.horas||e.minutos)){
       var h = e.horas||0, m = e.minutos||0;
-      tiempoStr = '<span style="font-size:10px;color:var(--blue);margin-left:6px;font-family:\'DM Mono\',monospace">' +
+      tiempoStr = '<span style="font-size:10px;color:var(--blue);margin-left:6px;font-family:\'Chivo Mono\',monospace">' +
         h+'h'+(m?(' '+m+'m'):'')+'</span>';
     }
     return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">'+
       '<div style="flex:1;min-width:0">'+
         '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+String(e.descripcion||'')+tiempoStr+'</div>'+
-        '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px">'+fechaStr+'</div>'+
+        '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',monospace;margin-top:2px">'+fechaStr+'</div>'+
       '</div>'+
-      '<div style="font-family:\'DM Mono\',monospace;font-size:15px;font-weight:700;color:'+color+';flex-shrink:0;margin-left:10px">'+signo+fmt(e.monto)+'</div>'+
+      '<div style="font-family:\'Chivo Mono\',monospace;font-size:15px;font-weight:700;color:'+color+';flex-shrink:0;margin-left:10px">'+signo+fmt(e.monto)+'</div>'+
     '</div>';
   }).join('');
 
@@ -2224,10 +2227,10 @@ function _recRow(label, monto, viajes, dias, highlight){
   var bg = highlight ? 'background:rgba(6,182,212,.07);' : '';
   var c  = highlight ? 'color:var(--blue)' : 'color:var(--fg)';
   return '<div style="padding:12px 8px;'+bg+'border-right:1px solid var(--border)">'+
-    '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-bottom:4px">'+label+'</div>'+
-    '<div style="font-size:14px;font-weight:700;font-family:\'DM Mono\',monospace;'+c+'">'+monto+'</div>'+
-    '<div style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px">'+viajes+'</div>'+
-    '<div style="font-size:10px;color:var(--faint);font-family:\'DM Mono\',monospace;margin-top:1px">'+dias+'</div>'+
+    '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',monospace;margin-bottom:4px">'+label+'</div>'+
+    '<div style="font-size:14px;font-weight:700;font-family:\'Chivo Mono\',monospace;'+c+'">'+monto+'</div>'+
+    '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',monospace;margin-top:2px">'+viajes+'</div>'+
+    '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',monospace;margin-top:1px">'+dias+'</div>'+
   '</div>';
 }
 
