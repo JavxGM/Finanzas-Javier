@@ -19,8 +19,10 @@ export async function GET() {
     const now = new Date()
     const lastUpdate = now.toLocaleString('es-DO', { timeZone: 'America/Santo_Domingo' })
 
-    // Inicio del historial: 1 de mayo 2026 (primer mes registrado en la app)
-    const historialDesde = '2026-05-01T04:00:00.000Z'
+    // Inicio del historial: 1 de marzo 2026. La reconstruccion desde los correos
+    // del banco recupero gastos de marzo y abril que la app no llegaba a mostrar
+    // porque la ventana arrancaba en mayo.
+    const historialDesde = '2026-03-01T04:00:00.000Z'
     // Inicio del mes actual para la RPC de analytics
     const mesActualDesde = monthStartRD()
     // Fin = mañana para incluir todo el día de hoy
