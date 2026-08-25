@@ -1290,7 +1290,7 @@ function actualizarHero(){
   if(!sub)return;
   if(!libre){sub.textContent='Toca cada cuenta para configurar';return;}
   sub.textContent=pend.cuantos
-    ? 'Quincena '+(qIdx+1)+' · faltan '+pend.cuantos+' pagos por '+fmt(pend.monto)
+    ? 'Quincena '+(qIdx+1)+(pend.cuantos===1?' · falta 1 pago por ':' · faltan '+pend.cuantos+' pagos por ')+fmt(pend.monto)
     : 'Quincena '+(qIdx+1)+' · todo pagado';
 }
 
@@ -2014,7 +2014,7 @@ function anTopComercios(txs){
   if(!txs.length){ el.innerHTML = '<div class="an-empty">Sin gastos este mes</div>'; return; }
   var mapa = {};
   txs.forEach(function(g){
-    var d = (g.descripcion||'Sin descripcion').trim();
+    var d = (g.desc||g.descripcion||'Sin descripcion').trim();
     if(!mapa[d]) mapa[d] = {total:0, veces:0};
     mapa[d].total += (g.monto||0);
     mapa[d].veces++;
