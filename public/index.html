@@ -354,7 +354,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="cuenta" onclick="openModalSaldo('ademi')">
     <div class="cuenta-dot" style="background:var(--pdim);color:var(--purple)">A</div>
-    <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Cobro automatico dia 14 · No tocar</div></div>
+    <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Prestamo · cobro dia 21</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto p" id="saldo-ademi">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="cuenta" onclick="openModalSaldo('efectivo')">
@@ -362,7 +362,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="cuenta-info"><div class="cuenta-name">Efectivo</div><div class="cuenta-desc">Dinero en mano · efectivo disponible</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-efectivo">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
-  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Saldo pendiente: RD$6,928. Cuota 3 · Depositar RD$2,139 antes del dia 13 de julio.</div>
+  <div class="alert a"><b style="display:block;margin-bottom:2px">Prestamo nuevo — cuota 1</b>Se cobra el 21 de septiembre. RD$2,358 por cuota · 8 cuotas hasta abril 2027.</div>
 </div>
 
 <!-- REGISTRO (Balance + Gastos unificados) -->
@@ -622,40 +622,53 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>RD$10,000 pagados</span><span>Deuda cerrada</span></div>
   </div>
   <div class="sec">Banco Ademi — Prestamo 1948469</div>
+  <div class="deuda" style="border-color:var(--gb)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">Banco Ademi · Consumo</div>
+      <span class="pill pg">Liquidado ✓</span>
+    </div>
+    <div class="deuda-row"><span class="deuda-lbl">Monto prestamo</span><span class="deuda-val">RD$10,000</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Cuotas pagadas</span><span class="deuda-val g">6 de 6</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Total pagado</span><span class="deuda-val g">RD$13,234.90</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val g">RD$0</span></div>
+    <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:100%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>6 cuotas pagadas</span><span>Deuda cerrada</span></div>
+  </div>
+  <div class="sec">Prestamo nuevo — activo</div>
   <div class="deuda">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="font-size:14px;font-weight:700">Banco Ademi · Consumo</div>
+      <div style="font-size:14px;font-weight:700">Prestamo · 8 cuotas</div>
       <span class="pill pa">Activo</span>
     </div>
-    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Cuota 3 · Julio 2026</b>Cuotas 1 y 2 pagadas. Depositar RD$2,139 antes del dia 13 de cada mes.</div>
-    <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val a">RD$6,928</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Cuotas pagadas</span><span class="deuda-val g">2 de 6</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Monto prestamo</span><span class="deuda-val">RD$10,000</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Cuota mensual (todo incl.)</span><span class="deuda-val a">RD$2,139.15</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Plazo</span><span class="deuda-val">6 meses</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Tasa nominal / efectiva</span><span class="deuda-val r">48% / 107.83%</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Total intereses</span><span class="deuda-val r">RD$1,469.18</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Total a pagar</span><span class="deuda-val">RD$13,234.90</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Cobro</span><span class="deuda-val r">Automatico dia 14</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Primer pago</span><span class="deuda-val">14 mayo 2026</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Liquidacion</span><span class="deuda-val g">14 octubre 2026</span></div>
+    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Cuota 1 · Septiembre 2026</b>Se paga el dia 21 de cada mes. RD$2,358 por cuota.</div>
+    <div class="deuda-row"><span class="deuda-lbl">Cuota mensual</span><span class="deuda-val a">RD$2,358</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Plazo</span><span class="deuda-val">8 meses</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Total a pagar</span><span class="deuda-val">RD$18,864</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Cuotas pagadas</span><span class="deuda-val">0 de 8</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val a">RD$18,864</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Cobro</span><span class="deuda-val r">Dia 21 de cada mes</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Primer pago</span><span class="deuda-val">21 septiembre 2026</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Liquidacion</span><span class="deuda-val g">21 abril 2027</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Monto y tasa</span><span class="deuda-val" style="color:var(--muted)">por confirmar</span></div>
   </div>
   <div class="sec">Tabla de cuotas</div>
   <div class="tabla-cuotas">
     <div class="tabla-hdr"><span>Fecha</span><span style="text-align:right">Cuota</span><span style="text-align:right">Saldo</span></div>
-    <div class="tabla-row"><div><div style="font-size:12px;font-weight:700">14 mayo 2026</div><div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">Cuota 1 · PAGADA ✓</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$8,488</div></div>
-    <div class="tabla-row"><div><div style="font-size:12px;font-weight:700">14 jun 2026</div><div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">Cuota 2 · PAGADA ✓</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$6,928</div></div>
-    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">14 jul 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 3 · PROXIMA · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$5,293</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 ago 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 4 · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$3,601</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 sep 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 5 · depositar antes dia 13</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$1,838</div></div>
-    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">14 oct 2026</div><div style="font-size:10px;color:var(--red);font-family:'DM Mono',monospace">Cuota 6 · ULTIMA · liquidado</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,139</div><div style="text-align:right;font-size:11px;color:var(--green);font-family:'DM Mono',monospace">RD$0</div></div>
+    <div class="tabla-row proxima"><div><div style="font-size:12px;font-weight:700">21 sep 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 1 · PROXIMA</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$16,506</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 oct 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 2</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$14,148</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 nov 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 3</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$11,790</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 dic 2026</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 4</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$9,432</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 ene 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 5</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$7,074</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 feb 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 6</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$4,716</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 mar 2027</div><div style="font-size:10px;color:var(--amber);font-family:'DM Mono',monospace">Cuota 7</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">RD$2,358</div></div>
+    <div class="tabla-row pendiente"><div><div style="font-size:12px;font-weight:700">21 abr 2027</div><div style="font-size:10px;color:var(--red);font-family:'DM Mono',monospace">Cuota 8 · ULTIMA · liquidado</div></div><div style="text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace">RD$2,358</div><div style="text-align:right;font-size:11px;color:var(--green);font-family:'DM Mono',monospace">RD$0</div></div>
   </div>
-  <div class="sec">Plan de ahorro (julio en adelante)</div>
+  <div class="sec">Plan de ahorro (septiembre en adelante)</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-    <div class="rrow"><span class="rrow-lbl">Apartar de Q1 (dia 5)</span><span class="rrow-val a">RD$1,069.58</span></div>
-    <div class="rrow"><span class="rrow-lbl">Apartar de Q2 (dia 20)</span><span class="rrow-val a">RD$1,069.57</span></div>
-    <div class="rrow"><span class="rrow-lbl">Total acumulado dia 14</span><span class="rrow-val g">RD$2,139.15</span></div>
-    <div class="rrow"><span class="rrow-lbl">Depositar en cuenta Ademi antes del</span><span class="rrow-val r">Dia 13 de cada mes</span></div>
+    <div class="rrow"><span class="rrow-lbl">Apartar de Q1 (dia 5)</span><span class="rrow-val a">RD$1,179</span></div>
+    <div class="rrow"><span class="rrow-lbl">Apartar de Q2 (dia 20)</span><span class="rrow-val a">RD$1,179</span></div>
+    <div class="rrow"><span class="rrow-lbl">Total acumulado dia 20</span><span class="rrow-val g">RD$2,358</span></div>
+    <div class="rrow"><span class="rrow-lbl">Se cobra el</span><span class="rrow-val r">Dia 21 de cada mes</span></div>
   </div>
   <!-- Score crediticio (integrado en Deudas) -->
   <div class="sec" style="margin-top:4px">Score crediticio</div>
@@ -669,12 +682,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="sec">Hoja de ruta</div>
   <div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:18px">
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Abril 2026</div><div class="tl-detail">Prestamo Ademi activo · mayo y junio cubiertos con sobrante</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Mayo 2026</div><div class="tl-detail">Cuota 1 Ademi automatica · SAM liquidado · score ~795</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Junio 2026</div><div class="tl-detail">Cuota 2 automatica · RD$4,000 libres por SAM · score ~803</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Jul-Sep 2026 <span class="pill pa" style="margin-left:4px;font-size:9px">Ahora</span></div><div class="tl-detail">Apartar RD$1,069 por quincena · depositar antes del dia 13</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Octubre 2026</div><div class="tl-detail">Ultima cuota Ademi · 6 meses historial bancario limpio · score ~825</div></div></div>
-    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--blue)"></div></div><div class="tl-body"><div class="tl-month">Nov 2026+</div><div class="tl-detail">Solicitar tarjeta bancaria · max 30% limite · score 840+</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Mayo 2026</div><div class="tl-detail">SAM liquidado · primera cuota Ademi</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Agosto 2026 <span class="pill pa" style="margin-left:4px;font-size:9px">Ahora</span></div><div class="tl-detail">Prestamo Ademi LIQUIDADO · lentes terminados · quedan Qik y Residencial</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Septiembre 2026</div><div class="tl-detail">Arranca prestamo nuevo · cuota 1 de 8 el dia 21 · RD$2,358</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Sep 2026 - Mar 2027</div><div class="tl-detail">Apartar RD$1,179 por quincena para cubrir la cuota del dia 21</div></div></div>
+    <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div></div><div class="tl-body"><div class="tl-month">Abril 2027</div><div class="tl-detail">Ultima cuota · segundo prestamo liquidado · historial bancario de 12+ meses</div></div></div>
   </div>
 </div>
 
@@ -957,6 +969,34 @@ const MESES = {
           {id:'pa-res',     nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
           {id:'pa-barb2',   nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
           {id:'pa-ademi',   nombre:'Ademi cuota 4 · dia 14',      monto:2139,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Depositar antes del dia 13'},
+        ]
+      }
+    ]
+  },
+  5: {
+    nombre: 'Septiembre 2026',
+    comprometido: 19365,
+    hoja: 'Presupuesto Septiembre',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        total: 8507,
+        pagos: [
+          {id:'ps-gym',      nombre:'Gimnasio',                    monto:1850,  cuenta:'BHD',        color:'rgba(99,102,241,.12)',tc:'',icon:'GYM'},
+          {id:'ps-net',      nombre:'Internet · Claro',            monto:900,   cuenta:'BHD',        color:'var(--rdim)', tc:'',             icon:'NET'},
+          {id:'ps-crun',     nombre:'Crunchyroll',                 monto:250,   cuenta:'BHD',        color:'rgba(249,115,22,.1)',tc:'',icon:'CR'},
+          {id:'ps-barb1',    nombre:'Barberia parte 1',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
+          {id:'ps-carro',    nombre:'Pago carro completo',         monto:5007,  cuenta:'BHD',        color:'rgba(99,102,241,.1)',tc:'',icon:'CAR'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        total: 10858,
+        pagos: [
+          {id:'ps-qik',      nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
+          {id:'ps-res',      nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
+          {id:'ps-prest-1',  nombre:'Prestamo cuota 1/8 · dia 21', monto:2358,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'PRE', nota:'Cobro dia 21'},
+          {id:'ps-barb2',    nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
         ]
       }
     ]
