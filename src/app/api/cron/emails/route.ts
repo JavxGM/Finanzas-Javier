@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getGmail, extractText, extractAttachmentText } from '@/lib/gmail'
+import { conInbox, buscarCorreos, type CorreoLeido } from '@/lib/imap'
 import { getSupabase } from '@/lib/supabase'
 import { categorizarGasto } from '@/lib/categorizar'
 
@@ -33,18 +33,42 @@ function isCuentaValida(c: string): c is CuentaTipo {
  * Si la cuenta no tiene saldo previo registrado, el descuento parte de 0
  * (quedará negativo — señal visible en la UI de que falta configurar el saldo).
  */
+/**
+ * Descuenta un gasto del saldo de la cuenta — pero solo si la transacción es
+ * POSTERIOR al último saldo registrado.
+ *
+ * Sin esa condición se produce doble descuento: cuando anotas el saldo leyéndolo
+ * de la app del banco, ese número YA incluye las compras del día. Si el cron
+ * procesa después los correos de esas mismas compras y vuelve a restarlas, el
+ * saldo queda por debajo del real.
+ *
+ * El saldo registrado es la fuente de verdad al momento en que se anotó, así que
+ * solo tiene sentido restar lo que ocurrió después.
+ */
 async function descontarSaldo(
   sb: ReturnType<typeof getSupabase>,
   cuenta: string,
   monto: number,
+  tsTransaccion: Date,
 ): Promise<void> {
   if (!isCuentaValida(cuenta)) return
 
   const { data: actual } = await sb
     .from('saldos_actuales')
-    .select('monto')
+    .select('monto, timestamp')
     .eq('cuenta', cuenta)
     .maybeSingle()
+
+  if (actual?.timestamp) {
+    const tsSaldo = new Date(actual.timestamp as string)
+    if (tsTransaccion.getTime() <= tsSaldo.getTime()) {
+      console.log(
+        `[cron/emails] saldo ${cuenta}: no se descuenta RD$${monto}, la transaccion ` +
+        `(${tsTransaccion.toISOString()}) es anterior al saldo anotado (${tsSaldo.toISOString()})`,
+      )
+      return
+    }
+  }
 
   const saldoActual = actual ? Number(actual.monto) : 0
   const nuevoSaldo  = saldoActual - monto
@@ -60,6 +84,15 @@ async function descontarSaldo(
 
 function parseAmount(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
+}
+
+// Los correos del BHD traen la hoja de estilos embebida. stripHtml solo quita
+// etiquetas, así que sin esto el CSS entero queda dentro del texto que ven los
+// parsers. No rompe nada, pero ensucia el diagnóstico cuando algo falla.
+function sinEstilos(html: string): string {
+  return html
+    .replace(/<\s*style[^>]*>[\s\S]*?<\s*\/\s*style\s*>/gi, ' ')
+    .replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, ' ')
 }
 
 function stripHtml(html: string): string {
@@ -193,45 +226,44 @@ function parseBHDTransferencia(bodyText: string, _attachmentText: string, cuenta
 // ── Configuracion de bancos ───────────────────────────────────────────────────
 
 type BankConfig = {
-  query:           string
-  cuenta:          string
-  needsAttachment: boolean
+  emisor: string   // remitente exacto en Gmail
+  asunto: string   // fragmento del asunto (filtro en JS, case-insensitive)
+  cuenta: string
   parse: (bodyText: string, attachmentText: string, cuenta: string) => ParseResult
 }
 
+// Los filtros se aplican por IMAP (remitente) + JS (asunto). Verificado contra
+// la bandeja real: los asuntos de abajo son los que efectivamente llegan.
 const BANKS: BankConfig[] = [
   {
-    // El email BHD es multipart/related: text/html con tabla de transacción
-    // + application/octet-stream que es el logo JPEG (no contiene datos útiles).
-    // No se necesita descargar attachment; todo el contenido está en el body HTML.
-    query:           'from:Alertas@bhd.com.do subject:"Notificación de Transacciones" newer_than:2d',
-    cuenta:          'bhd',
-    needsAttachment: false,
-    parse:           (body, att, cuenta) => parseBHD(body, att, cuenta),
+    emisor: 'Alertas@bhd.com.do',
+    asunto: 'Notificación de Transacciones',
+    cuenta: 'bhd',
+    parse:  (body, att, cuenta) => parseBHD(body, att, cuenta),
   },
   {
-    query:           'from:servicioselectronicos@bancoademi.com.do subject:"Aviso Compra en Comercio" newer_than:2d',
-    cuenta:          'ademi',
-    needsAttachment: false,
-    parse:           (body, _att, cuenta) => parseAdemi(body, cuenta),
+    emisor: 'servicioselectronicos@bancoademi.com.do',
+    asunto: 'Aviso Compra en Comercio',
+    cuenta: 'ademi',
+    parse:  (body, _att, cuenta) => parseAdemi(body, cuenta),
   },
   {
-    query:           'from:notificaciones@qik.do subject:"Usaste tu tarjeta de débito Qik" newer_than:2d',
-    cuenta:          'qik',
-    needsAttachment: false,
-    parse:           (body, _att, cuenta) => parseQik(body, cuenta),
+    emisor: 'notificaciones@qik.do',
+    asunto: 'Usaste tu tarjeta de débito Qik',
+    cuenta: 'qik',
+    parse:  (body, _att, cuenta) => parseQik(body, cuenta),
   },
   {
-    query:           'from:notificaciones@banreservas.com subject:"Notificaciones Banreservas" newer_than:2d',
-    cuenta:          'banreservas',
-    needsAttachment: false,
-    parse:           (body, _att, cuenta) => parseBanreservas(body, cuenta),
+    emisor: 'notificaciones@banreservas.com',
+    asunto: 'Notificaciones Banreservas',
+    cuenta: 'banreservas',
+    parse:  (body, _att, cuenta) => parseBanreservas(body, cuenta),
   },
   {
-    query:           'from:Alertas@bhd.com.do subject:"Transacciones entre productos BHD y a otros Bancos" newer_than:2d',
-    cuenta:          'bhd',
-    needsAttachment: false,
-    parse:           (body, att, cuenta) => parseBHDTransferencia(body, att, cuenta),
+    emisor: 'Alertas@bhd.com.do',
+    asunto: 'Transacciones entre productos BHD y a otros Bancos',
+    cuenta: 'bhd',
+    parse:  (body, att, cuenta) => parseBHDTransferencia(body, att, cuenta),
   },
 ]
 
@@ -324,119 +356,122 @@ export async function GET(req: NextRequest) {
 
   // ?debug=1 expone bodyText (primeros 300 chars) y razón de SKIPPED/null por mensaje.
   const debugMode = req.nextUrl.searchParams.get('debug') === '1'
+  // ?dias=N amplía la ventana de búsqueda (por defecto 2, igual que el cron diario).
+  const dias = Number(req.nextUrl.searchParams.get('dias') ?? 2)
 
-  const gmail = getGmail()
-  const sb    = getSupabase()
+  const sb = getSupabase()
   const inserted: ParsedTx[] = []
   const errors:   string[]   = []
   const skipped:  Array<{ id: string; cuenta: string; reason: string; bodySnippet?: string }> = []
 
-  for (const bank of BANKS) {
-    let msgs: Array<{ id?: string | null }> = []
-    try {
-      const list = await gmail.users.messages.list({ userId: 'me', q: bank.query, maxResults: 20 })
-      msgs = list.data.messages ?? []
-      console.log(`[cron/emails] ${bank.cuenta}: ${msgs.length} msgs encontrados`)
-    } catch (e) {
-      const errMsg = `${bank.cuenta}: list error — ${String(e)}`
-      errors.push(errMsg)
-      console.error(`[cron/emails] ${errMsg}`)
-      continue
-    }
-
-    for (const msg of msgs) {
-      try {
-        const full         = await gmail.users.messages.get({ userId: 'me', id: msg.id! })
-        const payload      = full.data.payload as never
-        const bodyText     = stripHtml(extractText(payload))
-        const internalDate = Number(full.data.internalDate ?? 0)
-        const ts           = internalDate ? new Date(internalDate) : new Date()
-
-        let attachmentText = ''
-        if (bank.needsAttachment) {
-          const raw = await extractAttachmentText(gmail, msg.id!, payload)
-          attachmentText = stripHtml(raw)
-        }
-
-        const partial = bank.parse(bodyText, attachmentText, bank.cuenta)
-
-        // SKIPPED: transacción ignorada a propósito (divisa extranjera, reversada, etc.)
-        if (partial === SKIPPED) {
-          // Determinar razón específica para diagnóstico
-          let reason = 'unknown'
-          if (/Rechazada|Reversada/i.test(bodyText)) reason = 'reversada/rechazada'
-          else if (/\bUS\s+\$[\d,]+\.\d{2}/.test(bodyText)) reason = 'moneda USD'
-          skipped.push({
-            id:     msg.id!,
-            cuenta: bank.cuenta,
-            reason,
-            ...(debugMode ? { bodySnippet: bodyText.slice(0, 300) } : {}),
-          })
+  try {
+    await conInbox(async client => {
+      for (const bank of BANKS) {
+        let correos: CorreoLeido[] = []
+        try {
+          correos = await buscarCorreos(client, bank.emisor, dias, bank.asunto)
+          console.log(`[cron/emails] ${bank.cuenta} (${bank.asunto}): ${correos.length} msgs`)
+        } catch (e) {
+          const errMsg = `${bank.cuenta}: search error — ${String(e)}`
+          errors.push(errMsg)
+          console.error(`[cron/emails] ${errMsg}`)
           continue
         }
 
-        // null: fallo de parseo real — loguear para diagnóstico
-        if (!partial) {
-          errors.push(`${bank.cuenta}: no parse — ${msg.id}`)
-          if (debugMode) {
-            skipped.push({
-              id:          msg.id!,
-              cuenta:      bank.cuenta,
-              reason:      'parse_failed',
-              bodySnippet: bodyText.slice(0, 300),
+        for (const correo of correos) {
+          const id = correo.messageId
+          try {
+            // Los parsers fueron escritos contra el HTML aplanado con stripHtml
+            // (espacios colapsados). Preferimos el HTML crudo y caemos al texto
+            // plano solo si el correo no trae parte HTML.
+            const fuente   = correo.html || correo.texto
+            const bodyText = stripHtml(sinEstilos(fuente))
+            const ts       = correo.fecha ?? new Date()
+
+            const partial = bank.parse(bodyText, '', bank.cuenta)
+
+            // SKIPPED: transacción ignorada a propósito (divisa extranjera, reversada, etc.)
+            if (partial === SKIPPED) {
+              let reason = 'unknown'
+              if (/Rechazada|Reversada/i.test(bodyText)) reason = 'reversada/rechazada'
+              else if (/\bUS\s+\$[\d,]+\.\d{2}/.test(bodyText)) reason = 'moneda USD'
+              skipped.push({
+                id,
+                cuenta: bank.cuenta,
+                reason,
+                ...(debugMode ? { bodySnippet: bodyText.slice(0, 300) } : {}),
+              })
+              continue
+            }
+
+            // null: fallo de parseo real — loguear para diagnóstico
+            if (!partial) {
+              errors.push(`${bank.cuenta}: no parse — ${id}`)
+              if (debugMode) {
+                skipped.push({
+                  id,
+                  cuenta:      bank.cuenta,
+                  reason:      'parse_failed',
+                  bodySnippet: bodyText.slice(0, 300),
+                })
+              }
+              continue
+            }
+
+            const categoria = categorizarGasto(partial.comercio)
+            const tx: ParsedTx = { ...partial, categoria }
+
+            // Idempotencia: saltar si este mensaje ya fue procesado
+            const { data: dup } = await sb
+              .from('gastos')
+              .select('id')
+              .eq('notas', `mail:${id}`)
+              .maybeSingle()
+            if (dup) {
+              skipped.push({ id, cuenta: bank.cuenta, reason: 'duplicate' })
+              continue
+            }
+
+            const { error } = await sb.from('gastos').insert({
+              descripcion: tx.comercio,
+              categoria:   tx.categoria,
+              monto:       tx.monto,
+              cuenta:      tx.cuenta,
+              notas:       `mail:${id}`,
+              timestamp:   ts,
             })
+
+            if (error) {
+              errors.push(`${bank.cuenta}: db error — ${error.message}`)
+              continue
+            }
+
+            // El descuento de saldo lo decide descontarSaldo comparando contra la
+            // fecha del último saldo anotado — así no se resta dos veces lo que el
+            // saldo manual ya incluía, ni se tocan los backfills históricos.
+            await descontarSaldo(sb, tx.cuenta, tx.monto, ts)
+            inserted.push(tx)
+
+            // ── Auto-match de pago por transferencia ────────────────────────────
+            // Si la descripción empieza con "Transferencia · " buscamos en pagos si
+            // existe un registro pendiente cuyo transfer_match coincida con el
+            // beneficiario (ILIKE fuzzy) o cuyo monto coincida exactamente (y tenga
+            // transfer_match definido — evita falsos positivos en pagos sin nombre).
+            // Solo marcamos automáticamente si hay exactamente 1 candidato; 0 o >1
+            // son ambiguos y se ignoran para no marcar el pago incorrecto.
+            if (tx.comercio.startsWith('Transferencia · ')) {
+              await autoMatchPago(sb, tx.comercio, tx.monto)
+            }
+          } catch (e) {
+            errors.push(`${bank.cuenta}: ${String(e)}`)
           }
-          continue
         }
-
-        const categoria = categorizarGasto(partial.comercio)
-        const tx: ParsedTx = { ...partial, categoria }
-
-        // Idempotencia: saltar si este mensaje ya fue procesado
-        const { data: dup } = await sb
-          .from('gastos')
-          .select('id')
-          .eq('notas', `gmail:${msg.id}`)
-          .maybeSingle()
-        if (dup) {
-          skipped.push({ id: msg.id!, cuenta: bank.cuenta, reason: 'duplicate' })
-          continue
-        }
-
-        const { error } = await sb.from('gastos').insert({
-          descripcion: tx.comercio,
-          categoria:   tx.categoria,
-          monto:       tx.monto,
-          cuenta:      tx.cuenta,
-          notas:       `gmail:${msg.id}`,
-          timestamp:   ts,
-        })
-
-        if (error) {
-          errors.push(`${bank.cuenta}: db error — ${error.message}`)
-          continue
-        }
-
-        // Solo descontar saldo si la transacción es reciente (menos de 48h).
-        // Para backfills históricos el saldo ya refleja esos gastos — no volver a restar.
-        const esReciente = (Date.now() - ts.getTime()) < 48 * 60 * 60 * 1000
-        if (esReciente) await descontarSaldo(sb, tx.cuenta, tx.monto)
-        inserted.push(tx)
-
-        // ── Auto-match de pago por transferencia ────────────────────────────────
-        // Si la descripción empieza con "Transferencia · " buscamos en pagos si
-        // existe un registro pendiente cuyo transfer_match coincida con el
-        // beneficiario (ILIKE fuzzy) o cuyo monto coincida exactamente (y tenga
-        // transfer_match definido — evita falsos positivos en pagos sin nombre).
-        // Solo marcamos automáticamente si hay exactamente 1 candidato; 0 o >1
-        // son ambiguos y se ignoran para no marcar el pago incorrecto.
-        if (tx.comercio.startsWith('Transferencia · ')) {
-          await autoMatchPago(sb, tx.comercio, tx.monto)
-        }
-      } catch (e) {
-        errors.push(`${bank.cuenta}: ${String(e)}`)
       }
-    }
+    })
+  } catch (e) {
+    // Falla de conexión IMAP: sin esto la corrida entera se cae sin explicación.
+    errors.push(`imap: ${e instanceof Error ? e.message : String(e)}`)
+    console.error('[cron/emails] fallo de conexion IMAP:', e)
   }
 
   console.log(`[cron/emails] DONE — inserted:${inserted.length} errors:${errors.length} skipped:${skipped.length}`)

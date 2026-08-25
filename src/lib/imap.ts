@@ -14,12 +14,13 @@ import { simpleParser } from 'mailparser'
  */
 
 export type CorreoLeido = {
-  uid:     number
-  fecha:   Date | null
-  asunto:  string
-  emisor:  string
-  texto:   string   // cuerpo en texto plano (o HTML degradado a texto)
-  html:    string   // cuerpo HTML crudo, vacío si no hay
+  uid:       number
+  messageId: string  // header Message-ID, clave estable para idempotencia
+  fecha:     Date | null
+  asunto:    string
+  emisor:    string
+  texto:     string  // cuerpo en texto plano (o HTML degradado a texto)
+  html:      string  // cuerpo HTML crudo, vacío si no hay
 }
 
 function nuevoCliente(): ImapFlow {
@@ -76,12 +77,14 @@ export async function buscarCorreos(
     const asuntoMsg = msg.envelope?.subject ?? ''
     if (asunto && !asuntoMsg.toLowerCase().includes(asunto.toLowerCase())) continue
 
-    let texto = ''
-    let html  = ''
+    let texto     = ''
+    let html      = ''
+    let messageId = ''
     try {
       const parsed = await simpleParser(msg.source as Buffer)
-      texto = parsed.text ?? ''
-      html  = typeof parsed.html === 'string' ? parsed.html : ''
+      texto     = parsed.text ?? ''
+      html      = typeof parsed.html === 'string' ? parsed.html : ''
+      messageId = parsed.messageId ?? ''
       // Si no vino texto plano, degradamos el HTML a texto para los parsers.
       if (!texto && html) texto = htmlATexto(html)
     } catch {
@@ -89,10 +92,11 @@ export async function buscarCorreos(
     }
 
     salida.push({
-      uid:    msg.uid,
-      fecha:  msg.envelope?.date ?? null,
-      asunto: asuntoMsg,
-      emisor: msg.envelope?.from?.[0]?.address ?? '',
+      uid:       msg.uid,
+      messageId: messageId || `uid:${msg.uid}`,
+      fecha:     msg.envelope?.date ?? null,
+      asunto:    asuntoMsg,
+      emisor:    msg.envelope?.from?.[0]?.address ?? '',
       texto,
       html,
     })
@@ -104,6 +108,11 @@ export async function buscarCorreos(
 /** Convierte HTML a texto plano conservando los saltos de fila de las tablas. */
 export function htmlATexto(html: string): string {
   return html
+    // Los correos del BHD traen la hoja de estilos embebida; sin esto el CSS
+    // termina dentro del texto y ensucia lo que ven los parsers.
+    .replace(/<\s*style[^>]*>[\s\S]*?<\s*\/\s*style\s*>/gi, ' ')
+    .replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<\s*br\s*\/?>/gi, '\n')
     .replace(/<\s*\/\s*(tr|p|div|h[1-6])\s*>/gi, '\n')
     .replace(/<\s*\/\s*(td|th)\s*>/gi, ' ')
