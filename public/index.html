@@ -354,7 +354,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
   </div>
   <div class="cuenta" onclick="openModalSaldo('ademi')">
     <div class="cuenta-dot" style="background:var(--pdim);color:var(--purple)">A</div>
-    <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Prestamo · cobro dia 21</div></div>
+    <div class="cuenta-info"><div class="cuenta-name">Ademi</div><div class="cuenta-desc">Cobro automatico dia 21 · No tocar</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto p" id="saldo-ademi">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="cuenta" onclick="openModalSaldo('efectivo')">
@@ -362,7 +362,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="cuenta-info"><div class="cuenta-name">Efectivo</div><div class="cuenta-desc">Dinero en mano · efectivo disponible</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto g" id="saldo-efectivo">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
-  <div class="alert a"><b style="display:block;margin-bottom:2px">Prestamo nuevo — cuota 1</b>Se cobra el 21 de septiembre. RD$2,358 por cuota · 8 cuotas hasta abril 2027.</div>
+  <div class="alert a"><b style="display:block;margin-bottom:2px">Ademi — cobro automatico</b>Cuota 1 el 21 de septiembre. RD$2,358 · 8 cuotas hasta abril 2027. Depositar antes del dia 20.</div>
 </div>
 
 <!-- REGISTRO (Balance + Gastos unificados) -->
@@ -634,22 +634,23 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
     <div class="prog-track" style="margin:10px 0 4px"><div class="prog-fill" style="width:100%"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'DM Mono',monospace"><span>6 cuotas pagadas</span><span>Deuda cerrada</span></div>
   </div>
-  <div class="sec">Prestamo nuevo — activo</div>
+  <div class="sec">Banco Ademi — Prestamo 2 (nuevo)</div>
   <div class="deuda">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="font-size:14px;font-weight:700">Prestamo · 8 cuotas</div>
+      <div style="font-size:14px;font-weight:700">Banco Ademi · Consumo</div>
       <span class="pill pa">Activo</span>
     </div>
-    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Cuota 1 · Septiembre 2026</b>Se paga el dia 21 de cada mes. RD$2,358 por cuota.</div>
+    <div class="alert a" style="margin-bottom:12px"><b style="display:block;margin-bottom:2px">Cuota 1 · Septiembre 2026</b>Cobro automatico el dia 21. Depositar en la cuenta Ademi antes del dia 20.</div>
     <div class="deuda-row"><span class="deuda-lbl">Cuota mensual</span><span class="deuda-val a">RD$2,358</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Plazo</span><span class="deuda-val">8 meses</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Total a pagar</span><span class="deuda-val">RD$18,864</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Cuotas pagadas</span><span class="deuda-val">0 de 8</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Saldo pendiente</span><span class="deuda-val a">RD$18,864</span></div>
-    <div class="deuda-row"><span class="deuda-lbl">Cobro</span><span class="deuda-val r">Dia 21 de cada mes</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Cobro</span><span class="deuda-val r">Automatico dia 21</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Primer pago</span><span class="deuda-val">21 septiembre 2026</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Liquidacion</span><span class="deuda-val g">21 abril 2027</span></div>
     <div class="deuda-row"><span class="deuda-lbl">Monto y tasa</span><span class="deuda-val" style="color:var(--muted)">por confirmar</span></div>
+    <div class="deuda-row"><span class="deuda-lbl">Entidad</span><span class="deuda-val">Banco Ademi</span></div>
   </div>
   <div class="sec">Tabla de cuotas</div>
   <div class="tabla-cuotas">
@@ -995,7 +996,7 @@ const MESES = {
         pagos: [
           {id:'ps-qik',      nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
           {id:'ps-res',      nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'rgba(148,163,184,.08)',tc:'',icon:'HSE'},
-          {id:'ps-prest-1',  nombre:'Prestamo cuota 1/8 · dia 21', monto:2358,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'PRE', nota:'Cobro dia 21'},
+          {id:'ps-ademi-1',  nombre:'Ademi cuota 1/8 · dia 21',    monto:2358,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Automatico · depositar antes del dia 20'},
           {id:'ps-barb2',    nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'rgba(20,184,166,.1)',tc:'',icon:'BAR'},
         ]
       }
