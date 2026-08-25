@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { conInbox, buscarCorreos } from '@/lib/imap'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 120
+export const maxDuration = 300
 
 /**
  * Diagnóstico de la lectura de correo por IMAP.
@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
   const dias   = Number(req.nextUrl.searchParams.get('dias') ?? 45)
   const uno    = req.nextUrl.searchParams.get('emisor')
   const full   = req.nextUrl.searchParams.get('full') === '1'
+  const limite = Number(req.nextUrl.searchParams.get('limite') ?? 25)
   const corte  = full ? 1500 : 300
   const lista  = uno ? [uno] : EMISORES
 
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
     const resultado = await conInbox(async client => {
       const out: Record<string, unknown> = {}
       for (const emisor of lista) {
-        const correos = await buscarCorreos(client, emisor, dias)
+        const correos = await buscarCorreos(client, emisor, dias, undefined, limite)
         out[emisor] = {
           total: correos.length,
           correos: correos.slice(-5).map(c => ({

@@ -64,13 +64,15 @@ export async function buscarCorreos(
   emisor:  string,
   dias:    number,
   asunto?: string,
+  limite   = 25,
 ): Promise<CorreoLeido[]> {
   const since = new Date(Date.now() - dias * 24 * 3600 * 1000)
   const uids = await client.search({ from: emisor, since })
   if (!uids || uids.length === 0) return []
 
-  // Los más recientes primero, con tope para no traer cientos de mensajes.
-  const seleccion = uids.slice(-25)
+  // Los más recientes primero. El tope existe para la corrida diaria; para
+  // reconstruir historial viejo se sube con el parámetro `limite`.
+  const seleccion = uids.slice(-limite)
   const salida: CorreoLeido[] = []
 
   for await (const msg of client.fetch(seleccion, { source: true, envelope: true })) {

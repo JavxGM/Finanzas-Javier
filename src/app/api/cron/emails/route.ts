@@ -4,6 +4,7 @@ import { getSupabase } from '@/lib/supabase'
 import { categorizarGasto } from '@/lib/categorizar'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 300
 
 interface ParsedTx {
   monto:     number
@@ -358,6 +359,9 @@ export async function GET(req: NextRequest) {
   const debugMode = req.nextUrl.searchParams.get('debug') === '1'
   // ?dias=N amplía la ventana de búsqueda (por defecto 2, igual que el cron diario).
   const dias = Number(req.nextUrl.searchParams.get('dias') ?? 2)
+  // Tope de correos por remitente. La corrida diaria no lo necesita; la
+  // reconstruccion de historial viejo sube este numero.
+  const limite = Number(req.nextUrl.searchParams.get('limite') ?? 25)
 
   const sb = getSupabase()
   const inserted: ParsedTx[] = []
@@ -369,7 +373,7 @@ export async function GET(req: NextRequest) {
       for (const bank of BANKS) {
         let correos: CorreoLeido[] = []
         try {
-          correos = await buscarCorreos(client, bank.emisor, dias, bank.asunto)
+          correos = await buscarCorreos(client, bank.emisor, dias, bank.asunto, limite)
           console.log(`[cron/emails] ${bank.cuenta} (${bank.asunto}): ${correos.length} msgs`)
         } catch (e) {
           const errMsg = `${bank.cuenta}: search error — ${String(e)}`
