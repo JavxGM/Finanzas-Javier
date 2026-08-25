@@ -1228,7 +1228,10 @@ function pintarSaldo(id, valor){
 }
 
 function initSaldos(){
-  var total=(state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0)+(state.saldos.efectivo||0);
+  // El balance total suma TODAS las cuentas, Ademi incluida. "Disponible esta
+  // quincena" sigue sin contarla: ese dinero esta comprometido con el cobro
+  // automatico del dia 21, no es plata con la que puedas contar.
+  var total=(state.saldos.bhd||0)+(state.saldos.qik||0)+(state.saldos.banreservas||0)+(state.saldos.efectivo||0)+(state.saldos.ademi||0);
   document.getElementById('h-neto').textContent=total?fmt(total):'—';
   pintarSaldo('saldo-bhd', state.saldos.bhd);
   pintarSaldo('saldo-qik', state.saldos.qik);
