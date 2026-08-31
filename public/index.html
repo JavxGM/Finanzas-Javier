@@ -360,9 +360,6 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
     </div>
     <div class="hero-sub" id="h-sub">—</div>
   </div>
-  <div class="sec">Meta</div>
-  <div id="meta-card"></div>
-
   <div class="sec">Tarjeta de credito</div>
   <div id="tc-card"></div>
 
@@ -1342,58 +1339,6 @@ function calcPendienteQuincena(mesIdx,qIdx){
 
 // Dinero con el que realmente cuentas: excluye Qik (ahorro intocable) y
 // Ademi (cuenta de prestamo), y le resta lo que falta pagar en la quincena.
-// Cuanto llevas del fondo del telefono. Solo cuenta lo que hay en Qik POR
-// ENCIMA del piso: los primeros 10,000 son colchon, no fondo.
-function renderMeta(){
-  var el = document.getElementById('meta-card');
-  if(!el) return;
-
-  // El porcentaje se mide contra el precio COMPLETO y solo cuenta dinero en
-  // mano. La regalia llega en diciembre: hasta entonces no suma nada.
-  var ahorrado = Math.max(0, (state.saldos.qik||0) - PISO_QIK);
-  var pct = Math.min(100, Math.round(ahorrado/META.precio*100));
-  var falta = Math.max(0, META.precio - ahorrado);
-
-  // Meses completos que quedan hasta la fecha limite de ahorro
-  var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
-  var meses = (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth());
-  meses = Math.max(1, meses);
-  // De lo que falta, 15,000 llegan con la regalia: no hay que ahorrarlos.
-  var porAhorrar = Math.max(0, falta - META.deRegalia);
-  var porMes = Math.ceil(porAhorrar/meses);
-
-  var color = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--green)' : 'var(--amber)';
-
-  el.innerHTML =
-    '<div style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px">'
-    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'
-    +   '<div style="min-width:0">'
-    +     '<div style="font-size:14px;font-weight:700">' + META.nombre + '</div>'
-    +     '<div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">'
-    +       fmt(META.deRegalia) + ' saldran de la regalia en diciembre'
-    +     '</div>'
-    +   '</div>'
-    +   '<div style="text-align:right;flex-shrink:0">'
-    +     '<div style="font-size:22px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + '">' + pct + '%</div>'
-    +   '</div>'
-    + '</div>'
-    + '<div>'
-    +   '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
-    +   '<div style="display:flex;justify-content:space-between;margin-top:6px">'
-    +     '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(ahorrado) + ' de ' + fmt(META.precio) + '</span>'
-    +     '<span style="font-size:11px;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (falta>0?'var(--amber)':'var(--green)') + '">'
-    +       (falta > 0 ? 'faltan ' + fmt(falta) : 'meta cumplida') + '</span>'
-    +   '</div>'
-    + '</div>'
-    + (falta > 0
-        ? '<div style="border-top:1px solid var(--border);padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">'
-          + '<span style="font-size:12px;color:var(--muted)">Para llegar en ' + meses + ' mes' + (meses===1?'':'es') + '</span>'
-          + '<span style="font-size:14px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(porMes) + '/mes</span>'
-          + '</div>'
-        : '')
-    + '</div>';
-}
-
 // Cuanto debes en la tarjeta: los cargos menos los abonos ya marcados.
 function renderTarjeta(){
   var el = document.getElementById('tc-card');
@@ -1511,7 +1456,6 @@ function updateStats(){
   document.getElementById('r-gastos').textContent=fmt(gT);
   document.getElementById('r-comprometido').textContent=fmt(comp);
   actualizarHero();
-  renderMeta();
   renderTarjeta();
   var mg=eT-gT-comp;
   var mEl=document.getElementById('r-margen');
