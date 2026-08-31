@@ -339,7 +339,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <button class="tab active" data-page="inicio"    onclick="showPage('inicio',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Inicio</span></button>
   <button class="tab"        data-page="pagos"     onclick="showPage('pagos',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M8 11h8M8 15h5"/></svg><span>Pagos</span></button>
   <button class="tab"        data-page="registro"  onclick="showPage('registro',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Registro</span></button>
-  <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analisis</span></button>
+  <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Análisis</span></button>
   <button class="tab"        data-page="deudas"    onclick="showPage('deudas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg><span>Deudas</span></button>
   <button class="tab"        data-page="inversion" onclick="showPage('inversion',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg><span>Trading</span></button>
   <button class="tab"        data-page="lista"     onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Metas</span></button>
@@ -532,8 +532,14 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <!-- Selector de mes -->
   <div id="an-mes-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
   <!-- Breakdown por categoría -->
+  <div class="sec">Patrimonio</div>
+  <div id="an-patrimonio"></div>
+
   <div class="sec">Ahorro del mes</div>
   <div id="an-ahorro"></div>
+
+  <div class="sec">Plan vs realidad</div>
+  <div id="an-presupuesto"></div>
 
   <div class="sec">Ritmo del mes</div>
   <div id="an-ritmo"></div>
@@ -550,7 +556,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <div class="sec">De dónde sale</div>
   <div id="an-cuentas"></div>
 
-  <div class="sec">Donde se va</div>
+  <div class="sec">Dónde se va</div>
   <div id="an-comercios"></div>
 
   <div class="sec">Mes a mes</div>
@@ -2032,7 +2038,9 @@ function renderAnalytics(){
   renderAnMesChips();
 
   // Tableros
+  anPatrimonio();
   anAhorro(txs, filtroISO);
+  anPresupuesto(txs, filtroISO);
   anRitmo(txs, filtroISO);
   anQuincenas(txs);
   anComparativa(filtroISO);
@@ -2042,7 +2050,7 @@ function renderAnalytics(){
   anMesAMes();
 
   // Categorías
-  document.getElementById('an-cat-sec').textContent = 'Categorias · ' + mesNombre;
+  document.getElementById('an-cat-sec').textContent = 'Categorías · ' + mesNombre;
   renderAnCategorias(anAgruparPorCat(txs));
 
   // Historial
@@ -2079,6 +2087,127 @@ function anMesIdx(iso){
 }
 
 // ¿Voy rapido o voy bien? Gasto por dia y a donde llego si sigo asi.
+// Tasa de cambio para valorar la cuenta de trading en pesos. Sale de tu
+// deposito real: RD$5,938.21 se convirtieron en US$100.
+var TASA_USD = 59.38;
+
+// El numero que de verdad dice si estas mejorando: todo lo que tienes menos
+// todo lo que debes. Ningun otro tablero responde esa pregunta.
+function anPatrimonio(){
+  var el = document.getElementById('an-patrimonio');
+  if(!el) return;
+
+  var s = state.saldos || {};
+  var enCuentas = (s.bhd||0) + (s.qik||0) + (s.banreservas||0) + (s.ademi||0) + (s.efectivo||0);
+
+  // Inversion: capital base mas lo ganado, convertido a pesos
+  var plUSD = (state.inversion||[]).reduce(function(a,f){ return a+(f.pl||0); }, 0);
+  var depUSD = (state.inversion||[]).reduce(function(a,f){ return a+(f.deposito||0); }, 0);
+  var inversionRD = (INV_CAPITAL_BASE + depUSD + plUSD) * TASA_USD;
+
+  // Deudas: lo que falta de la tarjeta y del prestamo
+  var abonado = 0, cargado = 0;
+  Object.keys(MESES).forEach(function(k){
+    MESES[k].quincenas.forEach(function(q){
+      q.pagos.forEach(function(pg){
+        var hecho = getPagoState(k, pg.id).done;
+        if(pg.abonoTarjeta && hecho) abonado += pg.monto||0;
+        if(pg.tarjeta && hecho) cargado += pg.monto||0;
+      });
+    });
+  });
+  var deudaTarjeta = Math.max(0, TARJETA.consumido + cargado - abonado);
+
+  // Prestamo Ademi: 8 cuotas de 2,358, se descuenta lo ya pagado
+  var cuotasPagadas = 0;
+  Object.keys(MESES).forEach(function(k){
+    MESES[k].quincenas.forEach(function(q){
+      q.pagos.forEach(function(pg){
+        if(/Ademi cuota \d\/8/.test(pg.nombre) && getPagoState(k, pg.id).done) cuotasPagadas++;
+      });
+    });
+  });
+  var deudaPrestamo = Math.max(0, (8 - cuotasPagadas) * 2358);
+
+  var activos = enCuentas + inversionRD;
+  var deudas = deudaTarjeta + deudaPrestamo;
+  var patrimonio = activos - deudas;
+  var color = patrimonio >= 0 ? 'var(--green)' : 'var(--red)';
+
+  el.innerHTML = anCaja(
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">'
+    + '<div><div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">Todo lo tuyo, menos lo que debes</div>'
+    + '<div style="font-size:30px;font-weight:500;font-family:\'Chivo Mono\',ui-monospace,monospace;letter-spacing:-1px;line-height:1.1;color:' + color + '">' + fmt(patrimonio) + '</div></div>'
+    + '</div>'
+    + '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--card)">'
+    +   '<div style="width:' + (activos>0 ? Math.round(Math.min(100, patrimonio/activos*100)) : 0) + '%;background:var(--green)"></div>'
+    +   '<div style="flex:1;background:var(--red)"></div>'
+    + '</div>'
+    + anFila('En cuentas', fmt(enCuentas), 'var(--green)')
+    + anFila('En trading', fmt(inversionRD), 'var(--cool)')
+    + (deudaTarjeta > 0 ? anFila('Debes en la tarjeta', '-' + fmt(deudaTarjeta), 'var(--red)') : '')
+    + (deudaPrestamo > 0 ? anFila('Falta del prestamo Ademi', '-' + fmt(deudaPrestamo), 'var(--red)') : '')
+    + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
+    +   'La cuenta de trading se valora a RD$' + TASA_USD + ' por dolar. '
+    +   (deudas > 0
+        ? 'Cuando liquides el prestamo en abril, tu patrimonio sube ' + fmt(deudaPrestamo) + ' de golpe.'
+        : 'Sin deudas: todo lo que tienes es tuyo.')
+    + '</div>'
+  );
+}
+
+// Lo que el plan dice que gastas contra lo que gastaste de verdad.
+function anPresupuesto(txs, iso){
+  var el = document.getElementById('an-presupuesto');
+  if(!el) return;
+
+  var idx = anMesIdx(iso);
+  var mes = MESES[idx];
+  if(!mes){ el.innerHTML = '<div class="an-empty">Ese mes no esta en el plan</div>'; return; }
+
+  var planeado = mes.comprometido;
+
+  // Real: todo lo que salio de la cuenta, sin contar lo que solo se movio
+  var real = 0;
+  txs.forEach(function(g){
+    var cat = g.categoria || 'Otros';
+    if(cat === 'Ahorro e inversion') return;
+    real += g.monto||0;
+  });
+
+  var ingreso = INGRESO_QUINC * 2;
+  var pctPlan = Math.round(planeado/ingreso*100);
+  var pctReal = Math.round(real/ingreso*100);
+  var dif = real - planeado;
+
+  el.innerHTML = anCaja(
+    '<div style="display:flex;flex-direction:column;gap:9px">'
+    +   '<div>'
+    +     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+    +       '<span style="font-size:12px;color:var(--muted)">Lo que planificaste</span>'
+    +       '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(planeado) + '</span>'
+    +     '</div>'
+    +     anBarra(pctPlan, 'var(--blue)')
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+    +       '<span style="font-size:12px;color:var(--muted)">Lo que gastaste</span>'
+    +       '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (dif>0?'var(--red)':'var(--green)') + '">' + fmt(real) + '</span>'
+    +     '</div>'
+    +     anBarra(pctReal, dif>0?'var(--red)':'var(--green)')
+    +   '</div>'
+    + '</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:11px">'
+    +   anFila(dif > 0 ? 'Te pasaste' : 'Por debajo del plan', (dif>0?'+':'') + fmt(Math.abs(dif)), dif>0?'var(--red)':'var(--green)')
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
+    + (dif > 0
+        ? 'Gastaste ' + fmt(dif) + ' mas de lo planificado. Suele ser gasto suelto que el plan no contempla.'
+        : 'Te mantuviste dentro del plan por ' + fmt(Math.abs(dif)) + '.')
+    + '</div>'
+  );
+}
+
 // No todo lo que sale de la cuenta es gasto. Lo que mandas a Qik o pones a
 // invertir sigue siendo tuyo, solo cambio de lugar. Este tablero separa las
 // tres cosas: lo que consumiste, lo que moviste y lo que pagaste a terceros.
