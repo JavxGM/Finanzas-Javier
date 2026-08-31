@@ -341,7 +341,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <button class="tab"        data-page="registro"  onclick="showPage('registro',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Registro</span></button>
   <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analisis</span></button>
   <button class="tab"        data-page="deudas"    onclick="showPage('deudas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg><span>Deudas</span></button>
-  <button class="tab"        data-page="lista"     onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Lista</span></button>
+  <button class="tab"        data-page="lista"     onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Metas</span></button>
 </nav>
 
 
@@ -774,34 +774,21 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   </div>
 </div>
 
-<!-- LISTA (Cosas que quiero comprar) -->
+<!-- METAS -->
 <div class="page" id="page-lista">
-  <!-- Resumen -->
-  <div id="lista-resumen" style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:16px 18px">
-    <div style="font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace;margin-bottom:2px">Cosas que quiero comprar</div>
-    <div style="font-size:28px;font-weight:800;color:var(--amber);font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:-1px" id="lista-total">RD$0</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:2px" id="lista-count">0 artículos</div>
+  <div class="hero">
+    <div class="hero-label">Para juntar antes de diciembre</div>
+    <div class="hero-value" id="metas-falta">—</div>
+    <div class="hero-sub" id="metas-sub">—</div>
   </div>
-  <!-- Formulario agregar -->
-  <div class="card">
-    <div class="form-title">Agregar artículo</div>
-    <div class="field"><label>Nombre</label><input type="text" id="w-nombre" placeholder="AirPods Pro, tablet, silla de escritorio..." autocomplete="off"/></div>
-    <div class="frow">
-      <div class="field"><label>Precio estimado (RD$)</label><input type="number" id="w-precio" placeholder="0" inputmode="numeric"/></div>
-      <div class="field"><label>Prioridad</label>
-        <select id="w-prio">
-          <option value="alta">Alta</option>
-          <option value="media" selected>Media</option>
-          <option value="baja">Baja</option>
-        </select>
-      </div>
-    </div>
-    <div class="field"><label>Notas (opcional)</label><input type="text" id="w-notas" placeholder="Por qué lo quiero, dónde conseguirlo..." autocomplete="off"/></div>
-    <button class="btn btn-g" onclick="listaAgregar()">Agregar a la lista</button>
-  </div>
-  <!-- Lista de artículos -->
-  <div id="lista-items"><div class="an-empty">Tu lista está vacía · agrega cosas que quieres comprar</div></div>
+
+  <div class="sec">Mis metas</div>
+  <div id="metas-lista"></div>
+
+  <div class="sec">De donde sale</div>
+  <div id="metas-fuentes"></div>
 </div>
+
 
 <!-- MODAL SALDO -->
 <div class="modal-bg" id="modal-saldo-bg" onclick="closeModalSaldo(event)">
@@ -905,12 +892,14 @@ const TARJETA = {
   limite:  10000,
   corte:   29,
   diaPago: 21,
+  // Solo los consumos que YA se hicieron. Lo que esta planificado en MESES
+  // como cargo a la tarjeta se suma cuando marcas ese pago, no antes: si
+  // todavia no compraste la medicacion, no la debes.
   cargos: [
-    { desc: 'Pedido en linea',        monto: 1999,    fecha: '30 ago' },
-    { desc: 'Medicamentos septiembre', monto: 2642.30, fecha: '15 sep' },
+    { desc: 'Pedido en linea', monto: 1999, fecha: '30 ago' },
   ],
 };
-TARJETA.total = TARJETA.cargos.reduce(function(a,c){ return a + c.monto; }, 0);
+TARJETA.consumido = TARJETA.cargos.reduce(function(a,c){ return a + c.monto; }, 0);
 
 // Meta unica: el telefono. El precio se cubre entre el ahorro y la regalia;
 // aqui solo vive la parte que tiene que salir del ahorro.
@@ -1350,9 +1339,11 @@ function renderMeta(){
   var el = document.getElementById('meta-card');
   if(!el) return;
 
+  // El porcentaje se mide contra el precio COMPLETO y solo cuenta dinero en
+  // mano. La regalia llega en diciembre: hasta entonces no suma nada.
   var ahorrado = Math.max(0, (state.saldos.qik||0) - PISO_QIK);
-  var pct = META.delAhorro > 0 ? Math.min(100, Math.round(ahorrado/META.delAhorro*100)) : 0;
-  var falta = Math.max(0, META.delAhorro - ahorrado);
+  var pct = Math.min(100, Math.round(ahorrado/META.precio*100));
+  var falta = Math.max(0, META.precio - ahorrado);
 
   // Meses completos que quedan hasta la fecha limite de ahorro
   var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
@@ -1368,7 +1359,7 @@ function renderMeta(){
     +   '<div style="min-width:0">'
     +     '<div style="font-size:14px;font-weight:700">' + META.nombre + '</div>'
     +     '<div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">'
-    +       fmt(META.precio) + ' · ' + fmt(META.deRegalia) + ' salen de la regalia'
+    +       fmt(META.deRegalia) + ' saldran de la regalia en diciembre'
     +     '</div>'
     +   '</div>'
     +   '<div style="text-align:right;flex-shrink:0">'
@@ -1378,7 +1369,7 @@ function renderMeta(){
     + '<div>'
     +   '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
     +   '<div style="display:flex;justify-content:space-between;margin-top:6px">'
-    +     '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(ahorrado) + ' de ' + fmt(META.delAhorro) + '</span>'
+    +     '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(ahorrado) + ' de ' + fmt(META.precio) + '</span>'
     +     '<span style="font-size:11px;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (falta>0?'var(--amber)':'var(--green)') + '">'
     +       (falta > 0 ? 'faltan ' + fmt(falta) : 'meta cumplida') + '</span>'
     +   '</div>'
@@ -1397,18 +1388,24 @@ function renderTarjeta(){
   var el = document.getElementById('tc-card');
   if(!el) return;
 
-  var abonado = 0, proximo = null;
+  var abonado = 0, proximo = null, cargadoDelPlan = 0, porCargar = 0;
   Object.keys(MESES).forEach(function(k){
     MESES[k].quincenas.forEach(function(q){
       q.pagos.forEach(function(pg){
-        if(!pg.abonoTarjeta) return;
-        if(getPagoState(k, pg.id).done) abonado += pg.monto||0;
-        else if(!proximo) proximo = pg;
+        var hecho = getPagoState(k, pg.id).done;
+        if(pg.abonoTarjeta){
+          if(hecho) abonado += pg.monto||0;
+          else if(!proximo) proximo = pg;
+        } else if(pg.tarjeta){
+          // Un cargo planificado solo cuenta cuando de verdad se hizo
+          if(hecho) cargadoDelPlan += pg.monto||0;
+          else porCargar += pg.monto||0;
+        }
       });
     });
   });
 
-  var deuda = Math.max(0, TARJETA.total - abonado);
+  var deuda = Math.max(0, TARJETA.consumido + cargadoDelPlan - abonado);
   var pctUso = Math.round(deuda / TARJETA.limite * 100);
   var colorUso = pctUso >= 50 ? 'var(--red)' : pctUso >= 30 ? 'var(--amber)' : 'var(--green)';
 
@@ -1427,13 +1424,21 @@ function renderTarjeta(){
     +     '<span style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">sano bajo 30%</span>'
     +   '</div>'
     + '</div>'
-    + (deuda > 0 && proximo
-        ? '<div style="border-top:1px solid var(--border);padding-top:11px;display:flex;justify-content:space-between;align-items:baseline">'
-          + '<span style="font-size:12px;color:var(--muted)">Proximo abono</span>'
-          + '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(proximo.monto) + '</span></div>'
-        : deuda === 0
-          ? '<div style="border-top:1px solid var(--border);padding-top:11px;font-size:12px;color:var(--green)">Tarjeta liquidada · cero intereses</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:11px;display:flex;flex-direction:column;gap:7px">'
+    +   (porCargar > 0
+          ? '<div style="display:flex;justify-content:space-between;align-items:baseline">'
+            + '<span style="font-size:12px;color:var(--muted)">Por cargar segun el plan</span>'
+            + '<span style="font-size:12px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">+' + fmt(porCargar) + '</span></div>'
           : '')
+    +   (deuda > 0 && proximo
+          ? '<div style="display:flex;justify-content:space-between;align-items:baseline">'
+            + '<span style="font-size:12px;color:var(--muted)">Proximo abono</span>'
+            + '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(proximo.monto) + '</span></div>'
+          : '')
+    +   (deuda === 0
+          ? '<div style="font-size:12px;color:var(--green)">Tarjeta liquidada · cero intereses</div>'
+          : '')
+    + '</div>'
     + '</div>';
 }
 
@@ -2435,97 +2440,113 @@ function regSetTab(tab){
   }
 }
 
-// ─── LISTA (Cosas que quiero comprar) ────────────────────────────────────────
-var listaItems = JSON.parse(localStorage.getItem('fj-lista') || 'null');
-if (!listaItems) {
-  listaItems = [
-    {id:1751000001,nombre:'Casco para moto',precio:0,prioridad:'alta',notas:'Seguridad · prioridad máxima',comprado:false},
-    {id:1751000002,nombre:'Mesa en L',precio:0,prioridad:'media',notas:'Para el espacio de trabajo',comprado:false},
-    {id:1751000003,nombre:'Lona para motor',precio:0,prioridad:'media',notas:'Funda protectora para la pasola',comprado:false},
-    {id:1751000004,nombre:'UPS para el Internet',precio:0,prioridad:'media',notas:'Para que el router no se apague con los apagones',comprado:false},
-    {id:1751000005,nombre:'Proteína',precio:0,prioridad:'media',notas:'Suplemento',comprado:false},
-    {id:1751000006,nombre:'Pintar el motor',precio:0,prioridad:'baja',notas:'Pintura para la pasola',comprado:false},
-    {id:1751000007,nombre:'Polo chess lisos negros',precio:0,prioridad:'media',notas:'',comprado:false},
-    {id:1751000008,nombre:'Soporte elevador para laptop',precio:0,prioridad:'media',notas:'Para elevar la laptop del escritorio',comprado:false}
-  ];
-  listaGuardar();
-}
+// ─── METAS ───────────────────────────────────────────────────────────────────
+//
+// El telefono se financia con ahorro + regalia. La proteina y los tenis salen
+// del sobrante de las quincenas, asi que no tienen fondo propio: se marcan
+// cuando se compran.
 
-function listaGuardar(){localStorage.setItem('fj-lista',JSON.stringify(listaItems));}
+var METAS = [
+  { id: 'telefono', nombre: 'Telefono nuevo', monto: 40000, cuando: 'diciembre',
+    fondo: true, nota: '15,000 salen de la regalia' },
+  { id: 'proteina', nombre: 'Proteina',       monto: 3000,  cuando: 'antes de diciembre',
+    fondo: false, nota: 'Del sobrante de la quincena' },
+  { id: 'tenis',    nombre: 'Tenis',          monto: 3000,  cuando: 'diciembre',
+    fondo: false, nota: 'Del sobrante de la quincena' },
+];
 
-function listaAgregar(){
-  var nombre = (document.getElementById('w-nombre').value||'').trim();
-  if(!nombre){showToast('Agrega un nombre','err');return;}
-  listaItems.push({
-    id: Date.now(),
-    nombre: nombre,
-    precio: parseFloat(document.getElementById('w-precio').value)||0,
-    prioridad: document.getElementById('w-prio').value,
-    notas: (document.getElementById('w-notas').value||'').trim(),
-    comprado: false
-  });
-  listaGuardar();
-  document.getElementById('w-nombre').value='';
-  document.getElementById('w-precio').value='';
-  document.getElementById('w-notas').value='';
-  document.getElementById('w-prio').value='media';
+var metasCompradas = JSON.parse(localStorage.getItem('fj-metas') || '{}');
+
+function metasGuardar(){ localStorage.setItem('fj-metas', JSON.stringify(metasCompradas)); }
+
+function metasToggle(id){
+  metasCompradas[id] = !metasCompradas[id];
+  metasGuardar();
   listaRender();
-  showToast('Artículo agregado','ok');
 }
 
-function listaEliminar(id){
-  listaItems = listaItems.filter(function(i){return i.id!==id;});
-  listaGuardar();listaRender();
-}
-
-function listaToggleComprado(id){
-  var item = listaItems.find(function(i){return i.id===id;});
-  if(item){item.comprado=!item.comprado;listaGuardar();listaRender();}
+// Lo que llevas ahorrado para el telefono: Qik por encima del piso.
+function metasAhorrado(){
+  return Math.max(0, (state.saldos.qik||0) - PISO_QIK);
 }
 
 function listaRender(){
-  var order={alta:0,media:1,baja:2};
-  var pendientes = listaItems.filter(function(i){return!i.comprado;}).sort(function(a,b){return order[a.prioridad]-order[b.prioridad];});
-  var comprados  = listaItems.filter(function(i){return i.comprado;});
-  var total = pendientes.reduce(function(s,i){return s+(i.precio||0);},0);
+  var cont = document.getElementById('metas-lista');
+  if(!cont) return;
 
-  var totalEl = document.getElementById('lista-total');
-  var countEl = document.getElementById('lista-count');
-  if(totalEl) totalEl.textContent = 'RD$'+fmt(total);
-  if(countEl) countEl.textContent = pendientes.length+' artículo'+(pendientes.length!==1?'s':'')+' pendientes'+(comprados.length?' · '+comprados.length+' comprado'+(comprados.length!==1?'s':''):'');
+  var ahorrado = metasAhorrado();
+  var faltaTotal = 0;
 
-  var container = document.getElementById('lista-items');
-  if(!container)return;
-  if(!listaItems.length){container.innerHTML='<div class="an-empty">Tu lista está vacía · agrega cosas que quieres comprar</div>';return;}
+  var html = METAS.map(function(m){
+    var comprada = !!metasCompradas[m.id];
+    // Contra el precio completo: solo cuenta lo que ya tienes en mano.
+    var llevas = m.fondo ? Math.min(ahorrado, m.monto) : 0;
+    var falta = comprada ? 0 : Math.max(0, m.monto - llevas);
+    faltaTotal += falta;
 
-  function renderItem(item){
-    var prioMap={alta:['var(--red)','Alta'],media:['var(--amber)','Media'],baja:['var(--muted)','Baja']};
-    var p=prioMap[item.prioridad]||prioMap.media;
-    return '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 14px;margin-bottom:8px;opacity:'+(item.comprado?.55:1)+'">'
-      +'<div style="display:flex;align-items:flex-start;gap:10px">'
-      +'<div onclick="listaToggleComprado('+item.id+')" style="width:22px;height:22px;border-radius:7px;border:1.5px solid '+(item.comprado?'var(--green)':'var(--border2)')+';background:'+(item.comprado?'var(--green)':'transparent')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px">'
-      +(item.comprado?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#0a0a0f" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>':'')+'</div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:14px;font-weight:700;'+(item.comprado?'text-decoration:line-through;color:var(--muted);':'')+'">'+(item.nombre||'')+'</div>'
-      +(item.notas?'<div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:\'Chivo Mono\',monospace">'+(item.notas)+'</div>':'')
-      +'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">'
-      +'<span style="font-size:10px;font-weight:700;color:'+p[0]+';background:'+p[0]+'18;padding:2px 8px;border-radius:99px;border:1px solid '+p[0]+'44">'+p[1]+'</span>'
-      +(item.precio?'<span style="font-size:12px;font-weight:700;font-family:\'Chivo Mono\',monospace">RD$'+fmt(item.precio)+'</span>':'')
-      +(item.comprado?'<span style="font-size:10px;color:var(--green);font-family:\'Chivo Mono\',monospace">✓ Comprado</span>':'')
-      +'</div></div>'
-      +'<button onclick="listaEliminar('+item.id+')" style="background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0">×</button>'
-      +'</div></div>';
+    var pct = m.monto > 0 ? Math.min(100, Math.round(llevas/m.monto*100)) : 0;
+    if(comprada) pct = 100;
+    var color = comprada ? 'var(--green)' : pct >= 50 ? 'var(--green)' : 'var(--amber)';
+
+    return '<div style="background:var(--raised);border:1px solid ' + (comprada?'var(--gb)':'var(--border)') + ';border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'
+      +   '<div style="min-width:0">'
+      +     '<div style="font-size:14px;font-weight:700;' + (comprada?'text-decoration:line-through;color:var(--faint)':'') + '">' + m.nombre + '</div>'
+      +     '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">' + m.cuando + ' · ' + m.nota + '</div>'
+      +   '</div>'
+      +   '<div style="text-align:right;flex-shrink:0">'
+      +     '<div style="font-size:17px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + '">' + fmt(m.monto) + '</div>'
+      +   '</div>'
+      + '</div>'
+      + (m.fondo && !comprada
+          ? '<div>'
+            + '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
+            + '<div style="display:flex;justify-content:space-between;margin-top:6px">'
+            +   '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">llevas ' + fmt(llevas) + ' de ' + fmt(m.monto) + '</span>'
+            +   '<span style="font-size:11px;color:var(--amber);font-family:\'Chivo Mono\',ui-monospace,monospace">faltan ' + fmt(falta) + '</span>'
+            + '</div></div>'
+          : '')
+      + '<button class="btn ' + (comprada?'btn-b':'btn-g') + '" style="margin:0" onclick="metasToggle(\'' + m.id + '\')">'
+      +   (comprada ? 'Marcar como pendiente' : 'Ya la compre')
+      + '</button>'
+      + '</div>';
+  }).join('');
+
+  cont.innerHTML = '<div style="display:flex;flex-direction:column;gap:11px">' + html + '</div>';
+
+  // Hero
+  var heroEl = document.getElementById('metas-falta');
+  if(heroEl){
+    heroEl.textContent = faltaTotal > 0 ? fmt(faltaTotal) : 'Todo listo';
+    heroEl.style.color = faltaTotal > 0 ? 'var(--amber)' : 'var(--green)';
+  }
+  var subEl = document.getElementById('metas-sub');
+  if(subEl){
+    var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
+    var meses = Math.max(1, (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth()));
+    subEl.textContent = faltaTotal > 0
+      ? 'Unos ' + fmt(Math.ceil(faltaTotal/meses)) + ' al mes durante ' + meses + ' mes' + (meses===1?'':'es')
+      : 'No te falta nada por juntar';
   }
 
-  var html='';
-  if(pendientes.length){
-    html+=pendientes.map(renderItem).join('');
-  }
-  if(comprados.length){
-    html+='<div class="sec" style="margin-top:8px">Comprados</div>';
-    html+=comprados.map(renderItem).join('');
-  }
-  container.innerHTML=html;
+  metasFuentes(ahorrado);
+}
+
+// De donde sale el dinero de las metas
+function metasFuentes(ahorrado){
+  var el = document.getElementById('metas-fuentes');
+  if(!el) return;
+  var filas = [
+    ['Ahorrado en Qik (sobre el piso)', ahorrado, 'var(--green)'],
+    ['Reserva intocable de Qik',        PISO_QIK, 'var(--faint)'],
+    ['De la regalia de diciembre',      META.deRegalia, 'var(--amber)'],
+  ];
+  el.innerHTML = '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
+    + filas.map(function(f){
+        return '<div class="rrow"><span class="rrow-lbl">' + f[0] + '</span>'
+          + '<span class="rrow-val" style="color:' + f[2] + '">' + fmt(f[1]) + '</span></div>';
+      }).join('')
+    + '</div>';
 }
 
 // ─── UBER WEEK TRACKER ───────────────────────────────────────────────────────
