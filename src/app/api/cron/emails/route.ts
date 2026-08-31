@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { conInbox, buscarCorreos, type CorreoLeido } from '@/lib/imap'
+import { procesarVantage } from '@/lib/vantage'
 import { getSupabase } from '@/lib/supabase'
 import { categorizarGasto } from '@/lib/categorizar'
 
@@ -367,6 +368,7 @@ export async function GET(req: NextRequest) {
   const inserted: ParsedTx[] = []
   const errors:   string[]   = []
   const skipped:  Array<{ id: string; cuenta: string; reason: string; bodySnippet?: string }> = []
+  let trading = { leidos: 0, guardadas: 0 }
 
   try {
     await conInbox(async client => {
@@ -471,6 +473,17 @@ export async function GET(req: NextRequest) {
           }
         }
       }
+
+      // Los resultados de trading viajan con esta corrida en vez de tener cron
+      // propio: en el plan Hobby de Vercel no todos los crons declarados llegan
+      // a ejecutarse, y este si corre. Si falla, no debe tumbar los gastos.
+      try {
+        const v = await procesarVantage(client, { dias, limite: 60 })
+        trading = { leidos: v.leidos, guardadas: v.guardadas.length }
+        errors.push(...v.errores)
+      } catch (e) {
+        errors.push('vantage: ' + (e instanceof Error ? e.message : String(e)))
+      }
     })
   } catch (e) {
     // Falla de conexión IMAP: sin esto la corrida entera se cae sin explicación.
@@ -487,5 +500,6 @@ export async function GET(req: NextRequest) {
     errors,
     detail:   inserted,
     skipped,
+    trading,
   })
 }

@@ -11,10 +11,6 @@
     {
       "path": "/api/cron/emails",
       "schedule": "0 23 * * *"
-    },
-    {
-      "path": "/api/cron/inversion",
-      "schedule": "30 23 * * *"
     }
   ]
 }
