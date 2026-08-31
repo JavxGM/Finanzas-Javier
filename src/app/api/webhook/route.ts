@@ -28,7 +28,7 @@ export async function GET() {
     // Fin = mañana para incluir todo el día de hoy
     const mesActualHasta = tomorrowStartRD()
 
-    const [pagosRes, saldosRes, gastosRes, entradasRes, historialRes, analyticsRes, uberRes] = await Promise.all([
+    const [pagosRes, saldosRes, gastosRes, entradasRes, historialRes, analyticsRes, uberRes, inversionRes] = await Promise.all([
       sb.from('pagos').select('mes_idx, pago_id, done, ts, nombre, monto, cuenta'),
       sb.from('saldos_actuales').select('cuenta, monto'),
       sb.from('gastos').select('id, descripcion, categoria, monto, cuenta, notas, timestamp')
@@ -52,6 +52,8 @@ export async function GET() {
       }),
       // Uber week tracker — últimas 30 entradas ordenadas por fecha desc
       sb.from('uber_semana').select('*').order('fecha', { ascending: false }).limit(30),
+      // Resultados diarios de la cuenta de trading (Vantage)
+      sb.from('inversion').select('*').order('fecha', { ascending: true }),
     ])
 
     // Si la query de pagos falla (BD pausada, timeout, RLS mal configurado),
@@ -119,8 +121,17 @@ export async function GET() {
       fecha:       u.fecha,
     }))
 
+    // La tabla inversion puede no existir todavia; si falla, va vacia y la
+    // pestana simplemente no muestra nada.
+    const inversion = (inversionRes.data ?? []).map((i: Record<string, unknown>) => ({
+      fecha:    i.fecha,
+      pl:       Number(i.pl),
+      deposito: Number(i.deposito),
+      moneda:   i.moneda,
+    }))
+
     return NextResponse.json(
-      { pagos, saldos, gastosHoy, entradasMes, historialMes, gastosMes, uberEntradas, lastUpdate },
+      { pagos, saldos, gastosHoy, entradasMes, historialMes, gastosMes, uberEntradas, inversion, lastUpdate },
       { headers: CORS }
     )
   } catch (err) {

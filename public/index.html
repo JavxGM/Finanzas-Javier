@@ -58,7 +58,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
 /* Navegación: barra inferior en móvil (zona del pulgar), lateral en escritorio.
    Antes eran 7 pestañas en una tira horizontal que había que arrastrar. */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:60;
-  display:grid;grid-template-columns:repeat(6,1fr);gap:2px;
+  display:grid;grid-template-columns:repeat(7,1fr);gap:1px;
   background:rgba(0,0,0,.92);backdrop-filter:blur(20px);
   border-top:1px solid var(--border);
   padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
@@ -341,6 +341,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <button class="tab"        data-page="registro"  onclick="showPage('registro',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Registro</span></button>
   <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analisis</span></button>
   <button class="tab"        data-page="deudas"    onclick="showPage('deudas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg><span>Deudas</span></button>
+  <button class="tab"        data-page="inversion" onclick="showPage('inversion',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg><span>Trading</span></button>
   <button class="tab"        data-page="lista"     onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Metas</span></button>
 </nav>
 
@@ -780,6 +781,26 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   </div>
 </div>
 
+<!-- INVERSION -->
+<div class="page" id="page-inversion">
+  <div class="hero">
+    <div class="hero-label">Valor de la cuenta</div>
+    <div class="hero-value" id="inv-valor">—</div>
+    <div class="hero-sub" id="inv-sub">—</div>
+  </div>
+
+  <div class="grid3">
+    <div class="stat"><div class="stat-label">Capital</div><div class="stat-value" id="inv-capital">—</div></div>
+    <div class="stat"><div class="stat-label">Resultado</div><div class="stat-value" id="inv-pl">—</div></div>
+    <div class="stat"><div class="stat-label">Dias</div><div class="stat-value b" id="inv-dias">—</div></div>
+  </div>
+
+  <div id="inv-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
+
+  <div class="sec">Dia a dia</div>
+  <div id="inv-calendario"></div>
+</div>
+
 <!-- METAS -->
 <div class="page" id="page-lista">
   <div class="hero">
@@ -1201,6 +1222,7 @@ var state = {
   gastosHoy: [],
   entradasMes: [],
   historialMes: [], // todos los gastos desde mayo 2026
+  inversion: [],    // resultados diarios de la cuenta de trading
   gastosMes: [],    // breakdown por categoría del mes actual
   uberEntradas: []  // entradas de uber_semana (últimas 30)
 };
@@ -1263,6 +1285,7 @@ function cargarDesdeNube() {
       state.gastosHoy    = data.gastosHoy    || [];
       state.entradasMes  = data.entradasMes  || [];
       state.historialMes = data.historialMes || [];
+      state.inversion    = data.inversion    || [];
       state.gastosMes    = data.gastosMes    || [];
       state.uberEntradas = data.uberEntradas || [];
       _lastSyncTs = Date.now();
@@ -2518,6 +2541,7 @@ function showPage(id,btn){
   if(id==='analytics'){renderAnalytics();}
   if(id==='uber'){uberRender();}
   if(id==='lista'){listaRender();}
+  if(id==='inversion'){inversionRender();}
 }
 
 // ─── REGISTRO TAB TOGGLE ─────────────────────────────────────────────────────
@@ -2564,6 +2588,162 @@ function metasToggle(id){
 // Lo que llevas ahorrado para el telefono: Qik por encima del piso.
 function metasAhorrado(){
   return Math.max(0, (state.saldos.qik||0) - PISO_QIK);
+}
+
+// La cuenta de trading en Vantage. El capital es lo que depositaste, el
+// resultado es la suma de los cierres diarios, y el valor es la suma de ambos.
+// Esto NO entra en el disponible: es dinero puesto a riesgo, no plata a mano.
+
+var invMesFiltro = null; // 'YYYY-MM'; null = el mes mas reciente con datos
+
+function invUSD(n){
+  var s = Math.abs(n).toLocaleString('es-DO', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return (n < 0 ? '-' : '') + 'US' + String.fromCharCode(36) + s;
+}
+
+function invMesesConDatos(){
+  var filas = state.inversion || [];
+  var set = {};
+  filas.forEach(function(f){ set[String(f.fecha).slice(0,7)] = true; });
+  var meses = Object.keys(set).sort();
+  // El calendario arranca en agosto aunque el mes venga vacio
+  if(meses.indexOf('2026-08') === -1) meses.unshift('2026-08');
+  if(meses.indexOf('2026-09') === -1) meses.push('2026-09');
+  return meses.sort();
+}
+
+function invSetMes(iso){
+  invMesFiltro = iso;
+  inversionRender();
+}
+
+function inversionRender(){
+  var filas = state.inversion || [];
+
+  // ── Totales de toda la cuenta ──
+  var capital = 0, pl = 0;
+  filas.forEach(function(f){ capital += f.deposito||0; pl += f.pl||0; });
+  var valor = capital + pl;
+  var pct = capital > 0 ? (pl/capital*100) : 0;
+  var color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
+
+  var set = function(id, txt, col){
+    var e = document.getElementById(id);
+    if(!e) return;
+    e.textContent = txt;
+    if(col) e.style.color = col;
+  };
+
+  set('inv-valor', filas.length ? invUSD(valor) : '—', color);
+  set('inv-sub', filas.length
+    ? (pl >= 0 ? 'Vas ganando ' : 'Vas perdiendo ') + invUSD(Math.abs(pl)) + ' · ' + (pct>=0?'+':'') + pct.toFixed(1) + '%'
+    : 'Sin datos todavia · corre el lector de correos');
+  set('inv-capital', filas.length ? invUSD(capital) : '—');
+  set('inv-pl', filas.length ? (pl>=0?'+':'') + invUSD(pl) : '—', color);
+  set('inv-dias', String(filas.length));
+
+  invChips();
+  invCalendario();
+}
+
+// Selector de mes
+function invChips(){
+  var cont = document.getElementById('inv-chips');
+  if(!cont) return;
+  var meses = invMesesConDatos();
+  if(!invMesFiltro || meses.indexOf(invMesFiltro) === -1) invMesFiltro = meses[meses.length-1];
+
+  cont.innerHTML = meses.map(function(m){
+    var activo = m === invMesFiltro;
+    var nombre = new Date(m + '-02T12:00:00').toLocaleDateString('es-DO',{month:'short',year:'2-digit'});
+    return '<button onclick="invSetMes(\'' + m + '\')" style="flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:\'Chivo Mono\',ui-monospace,monospace;'
+      + (activo
+          ? 'background:var(--green);color:#000;border:1px solid var(--green)'
+          : 'background:transparent;color:var(--muted);border:1px solid var(--border2)')
+      + '">' + nombre + '</button>';
+  }).join('');
+}
+
+// Calendario del mes: cada dia con su resultado
+function invCalendario(){
+  var cont = document.getElementById('inv-calendario');
+  if(!cont) return;
+
+  var iso = invMesFiltro || '2026-09';
+  var anio = Number(iso.slice(0,4)), mes = Number(iso.slice(5,7));
+  var diasMes = new Date(anio, mes, 0).getDate();
+  var primerDia = new Date(anio, mes-1, 1).getDay(); // 0 = domingo
+
+  // Datos del mes indexados por dia
+  var porDia = {};
+  (state.inversion||[]).forEach(function(f){
+    var s = String(f.fecha);
+    if(s.slice(0,7) !== iso) return;
+    porDia[Number(s.slice(8,10))] = f;
+  });
+
+  var totalPL = 0, totalDep = 0, totalRet = 0, diasOp = 0;
+  Object.keys(porDia).forEach(function(d){
+    var f = porDia[d];
+    totalPL += f.pl||0;
+    if((f.deposito||0) > 0) totalDep += f.deposito;
+    if((f.deposito||0) < 0) totalRet += Math.abs(f.deposito);
+    if((f.pl||0) !== 0) diasOp++;
+  });
+
+  var cabecera = ['D','L','M','M','J','V','S'].map(function(d){
+    return '<div style="text-align:center;font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace;padding-bottom:6px">' + d + '</div>';
+  }).join('');
+
+  var celdas = '';
+  for(var i=0; i<primerDia; i++) celdas += '<div></div>';
+
+  for(var d=1; d<=diasMes; d++){
+    var f = porDia[d];
+    var val = f ? (f.pl||0) : null;
+    var hayDep = f && (f.deposito||0) !== 0;
+    var fondo = 'var(--card)', texto = 'var(--faint)', borde = 'var(--border)';
+    if(val !== null && val > 0){ fondo = 'var(--gdim)'; texto = 'var(--green)'; borde = 'var(--gb)'; }
+    else if(val !== null && val < 0){ fondo = 'var(--rdim)'; texto = 'var(--red)'; borde = 'var(--rb)'; }
+    else if(f){ fondo = 'var(--card)'; texto = 'var(--muted)'; }
+
+    celdas += '<div style="aspect-ratio:1;border-radius:9px;background:' + fondo + ';border:1px solid ' + borde + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;padding:2px">'
+      + '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace;line-height:1">' + d + '</div>'
+      + (val !== null
+          ? '<div style="font-size:9.5px;font-weight:700;color:' + texto + ';font-family:\'Chivo Mono\',ui-monospace,monospace;line-height:1.1;text-align:center">'
+            + (val>=0?'+':'-') + Math.abs(val).toFixed(0) + '</div>'
+          : '')
+      + (hayDep
+          ? '<div style="position:absolute;top:3px;right:4px;width:5px;height:5px;border-radius:50%;background:' + ((f.deposito||0)>0?'var(--blue)':'var(--amber)') + '"></div>'
+          : '')
+      + '</div>';
+  }
+
+  var nombreMes = new Date(iso + '-02T12:00:00').toLocaleDateString('es-DO',{month:'long',year:'numeric'});
+
+  cont.innerHTML =
+    '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px">'
+    + '<div style="display:flex;align-items:baseline;justify-content:space-between">'
+    +   '<div style="font-size:13px;font-weight:700;text-transform:capitalize">' + nombreMes + '</div>'
+    +   '<div style="font-size:16px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (totalPL>0?'var(--green)':totalPL<0?'var(--red)':'var(--muted)') + '">'
+    +     (totalPL>=0?'+':'') + invUSD(totalPL) + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">' + cabecera + celdas + '</div>'
+    + '<div style="display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px">'
+    +   '<div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:var(--blue)"></div>'
+    +     '<span style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">deposito</span></div>'
+    +   '<div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:var(--amber)"></div>'
+    +     '<span style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">retiro</span></div>'
+    + '</div>'
+    + '</div>'
+
+    // Resumen del mes
+    + '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:11px">'
+    +   '<div class="rrow"><span class="rrow-lbl">Dias operados</span><span class="rrow-val">' + diasOp + '</span></div>'
+    +   '<div class="rrow"><span class="rrow-lbl">Resultado del mes</span><span class="rrow-val" style="color:' + (totalPL>=0?'var(--green)':'var(--red)') + '">' + (totalPL>=0?'+':'') + invUSD(totalPL) + '</span></div>'
+    +   (totalDep > 0 ? '<div class="rrow"><span class="rrow-lbl">Depositos</span><span class="rrow-val b">' + invUSD(totalDep) + '</span></div>' : '')
+    +   (totalRet > 0 ? '<div class="rrow"><span class="rrow-lbl">Retiros</span><span class="rrow-val a">' + invUSD(totalRet) + '</span></div>' : '')
+    + '</div>';
 }
 
 function listaRender(){

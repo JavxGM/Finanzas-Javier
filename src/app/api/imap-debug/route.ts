@@ -34,6 +34,9 @@ export async function GET(req: NextRequest) {
   const uno    = req.nextUrl.searchParams.get('emisor')
   const full   = req.nextUrl.searchParams.get('full') === '1'
   const limite = Number(req.nextUrl.searchParams.get('limite') ?? 25)
+  // Filtro por asunto: sin esto solo se ven los ultimos correos del remitente,
+  // que casi siempre son del tipo mas frecuente.
+  const asunto = req.nextUrl.searchParams.get('asunto') ?? undefined
   const corte  = full ? 1500 : 300
   const lista  = uno ? [uno] : EMISORES
 
@@ -41,7 +44,7 @@ export async function GET(req: NextRequest) {
     const resultado = await conInbox(async client => {
       const out: Record<string, unknown> = {}
       for (const emisor of lista) {
-        const correos = await buscarCorreos(client, emisor, dias, undefined, limite)
+        const correos = await buscarCorreos(client, emisor, dias, asunto, limite)
         out[emisor] = {
           total: correos.length,
           correos: correos.slice(-5).map(c => ({
