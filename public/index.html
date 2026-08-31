@@ -68,18 +68,6 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   transition:color .15s}
 .tab svg{width:20px;height:20px;flex-shrink:0}
 .tab.active{color:var(--green)}
-.nav-mas{position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:61;
-  background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);
-  padding:6px;display:none;flex-direction:column;gap:2px;min-width:150px;
-  box-shadow:0 12px 32px rgba(0,0,0,.6)}
-.nav-mas.abierto{display:flex}
-/* IA y Lista: en movil viven en el menu "Mas"; en escritorio son items
-   normales de la barra lateral y el boton "Mas" deja de existir. */
-.solo-escritorio{display:none}
-.nav-mas .tab{flex-direction:row;justify-content:flex-start;gap:10px;padding:11px 12px;
-  border-radius:var(--rsm);font-size:13px;font-family:'Chivo','Helvetica Neue',sans-serif;
-  font-weight:600;color:var(--muted)}
-.nav-mas .tab.active{background:var(--gdim);color:var(--green)}
 
 @media(min-width:900px){
   .nav{top:0;bottom:0;right:auto;width:236px;
@@ -91,8 +79,6 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
     font-family:'Chivo','Helvetica Neue',sans-serif;color:var(--muted)}
   .tab.active{background:var(--gdim);color:var(--green)}
   .solo-escritorio{display:flex}
-  .nav .tab[data-page="mas"]{display:none}
-  .nav-mas{display:none !important}
   .topbar{padding-left:calc(236px + 20px)}
   body{padding-left:236px;padding-bottom:32px}
   .page{max-width:1080px;margin:0 auto;padding:24px 28px;gap:14px}
@@ -355,15 +341,9 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <button class="tab"        data-page="registro"  onclick="showPage('registro',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Registro</span></button>
   <button class="tab"        data-page="analytics" onclick="showPage('analytics',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Analisis</span></button>
   <button class="tab"        data-page="deudas"    onclick="showPage('deudas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg><span>Deudas</span></button>
-  <button class="tab solo-escritorio" data-page="ia"    onclick="showPage('ia',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg><span>IA</span></button>
-  <button class="tab solo-escritorio" data-page="lista" onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Lista</span></button>
-  <button class="tab"        data-page="mas"       onclick="toggleMas(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mas</span></button>
+  <button class="tab"        data-page="lista"     onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Lista</span></button>
 </nav>
 
-<div class="nav-mas" id="nav-mas">
-  <button class="tab" data-page="ia"    onclick="showPage('ia',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg><span>IA</span></button>
-  <button class="tab" data-page="lista" onclick="showPage('lista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Lista</span></button>
-</div>
 
 <!-- INICIO -->
 <div class="page active" id="page-inicio">
@@ -789,36 +769,6 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--muted)"></div><div class="tl-line"></div></div><div class="tl-body"><div class="tl-month">Sep 2026 - Mar 2027</div><div class="tl-detail">Apartar RD$1,179 por quincena para cubrir la cuota del dia 21</div></div></div>
     <div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:var(--green)"></div></div><div class="tl-body"><div class="tl-month">Abril 2027</div><div class="tl-detail">Ultima cuota · segundo prestamo liquidado · historial bancario de 12+ meses</div></div></div>
   </div>
-</div>
-
-<!-- IA -->
-<div class="page" id="page-ia">
-  <div class="an-hero" style="margin-bottom:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div>
-        <div class="an-hero-label">Asistente financiero</div>
-        <div style="font-size:18px;font-weight:800;letter-spacing:-.5px">IA · Finanzas</div>
-      </div>
-      <button id="ia-analizar-btn" onclick="iaAnalizar()" style="background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Analizar mes</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Google Gemma 4 31B · datos reales de Supabase</div>
-  </div>
-
-  <!-- Resultado análisis -->
-  <div id="ia-resultado" style="display:none">
-    <div class="sec">Análisis del mes</div>
-    <div id="ia-resultado-body" style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:16px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;font-family:inherit"></div>
-  </div>
-
-  <!-- Chat -->
-  <div class="sec" style="margin-top:4px">Chat · pregúntale a tus finanzas</div>
-  <div id="ia-chat" style="display:flex;flex-direction:column;gap:8px;min-height:60px;margin-bottom:12px"></div>
-  <div style="display:flex;gap:8px;align-items:flex-end">
-    <textarea id="ia-input" rows="2" placeholder="¿Cuánto gasté en comida este mes? ¿Me alcanza para el carro?" style="flex:1;background:var(--raised);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit;resize:none;outline:none;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaChat()}"></textarea>
-    <button onclick="iaChat()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Enviar</button>
-  </div>
-  <div id="ia-loading" style="display:none;text-align:center;padding:16px;font-size:12px;color:var(--muted);font-family:'Chivo Mono',ui-monospace,monospace">Consultando IA...</div>
-  <div id="ia-error" style="display:none" class="alert" style="margin-top:8px"></div>
 </div>
 
 <!-- LISTA (Cosas que quiero comprar) -->
@@ -2381,36 +2331,15 @@ function setSyncOk(){document.getElementById('sync-dot').className='sync-dot';do
 function setSyncErr(){document.getElementById('sync-dot').className='sync-dot err';document.getElementById('sync-txt').textContent='Sin red';}
 function setSyncLoading(){document.getElementById('sync-dot').className='sync-dot loading';document.getElementById('sync-txt').textContent='...';}
 
-function toggleMas(ev){
-  if(ev)ev.stopPropagation();
-  document.getElementById('nav-mas').classList.toggle('abierto');
-}
-function cerrarMas(){
-  document.getElementById('nav-mas').classList.remove('abierto');
-}
-document.addEventListener('click',function(ev){
-  var menu=document.getElementById('nav-mas');
-  if(!menu||!menu.classList.contains('abierto'))return;
-  if(!menu.contains(ev.target)&&!ev.target.closest('[data-page="mas"]'))cerrarMas();
-});
-
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById('page-'+id).classList.add('active');
   // IA y Lista viven en el menú secundario: si no tienen boton propio en la
   // barra, se resalta el de "Mas" para que se note donde estas parado.
-  var copias=document.querySelectorAll('.tab[data-page="'+id+'"]');
-  var enBarra=false;
-  copias.forEach(function(b){
+  document.querySelectorAll('.tab[data-page="'+id+'"]').forEach(function(b){
     b.classList.add('active');
-    if(b.closest('.nav')&&b.offsetParent!==null)enBarra=true;
   });
-  if(!enBarra){
-    var mas=document.querySelector('.nav .tab[data-page="mas"]');
-    if(mas)mas.classList.add('active');
-  }
-  cerrarMas();
   window.scrollTo(0,0);
   if(id==='pagos'){renderMes();renderHechos();updateStats();}
   if(id==='analytics'){renderAnalytics();}
@@ -2730,67 +2659,6 @@ function showToast(msg,type){
   setTimeout(function(){t.classList.remove('show');},3000);
 }
 
-// ─── IA ──────────────────────────────────────────────────────────────────────
-var iaChatHistory = [];
-
-function iaSetLoading(on){
-  document.getElementById('ia-loading').style.display = on ? 'block' : 'none';
-  document.getElementById('ia-analizar-btn').disabled = on;
-}
-
-function iaShowError(msg){
-  var el = document.getElementById('ia-error');
-  el.textContent = msg;
-  el.style.display = msg ? 'block' : 'none';
-}
-
-function iaBubble(role, text){
-  var el = document.createElement('div');
-  var isUser = role === 'user';
-  el.style.cssText = 'padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.6;max-width:90%;white-space:pre-wrap;'
-    + (isUser
-      ? 'background:var(--blue);color:#fff;align-self:flex-end;margin-left:auto;'
-      : 'background:var(--raised);border:1px solid var(--border2);color:var(--text);');
-  el.textContent = text;
-  document.getElementById('ia-chat').appendChild(el);
-  el.scrollIntoView({behavior:'smooth'});
-}
-
-function iaAnalizar(){
-  iaSetLoading(true);
-  iaShowError('');
-  fetch('/api/ia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'analysis'})})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.error){iaShowError('Error: '+d.error);return;}
-      var res = document.getElementById('ia-resultado');
-      var body = document.getElementById('ia-resultado-body');
-      body.textContent = d.reply;
-      res.style.display = 'block';
-    })
-    .catch(function(e){iaShowError('Error de conexión: '+e.message);})
-    .finally(function(){iaSetLoading(false);});
-}
-
-function iaChat(){
-  var input = document.getElementById('ia-input');
-  var msg = input.value.trim();
-  if(!msg) return;
-  input.value = '';
-  iaBubble('user', msg);
-  iaChatHistory.push({role:'user', content:msg});
-  iaSetLoading(true);
-  iaShowError('');
-  fetch('/api/ia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'chat',message:msg})})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.error){iaShowError('Error: '+d.error);return;}
-      iaBubble('assistant', d.reply);
-      iaChatHistory.push({role:'assistant', content:d.reply});
-    })
-    .catch(function(e){iaShowError('Error de conexión: '+e.message);})
-    .finally(function(){iaSetLoading(false);});
-}
 </script>
 </body>
 </html>
