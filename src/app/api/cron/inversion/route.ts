@@ -32,7 +32,7 @@ function numero(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
 }
 
-export function parseVantage(texto: string): Fila | null {
+function parseVantage(texto: string): Fila | null {
   // El cuerpo llega con asteriscos de formato: "*Closed P/L:* *36.18*"
   const plano = texto.replace(/\*/g, ' ').replace(/\s+/g, ' ')
 
