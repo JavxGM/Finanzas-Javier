@@ -106,7 +106,12 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
 .stat{background:var(--raised);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 12px}
 .stat-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'Chivo Mono',ui-monospace,monospace;letter-spacing:.04em}
-.stat-value{font-size:20px;font-weight:700}
+.stat-value{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* En pantallas angostas los montos en dolares no caben a 20px */
+@media(max-width:400px){
+  .stat-value{font-size:16px;letter-spacing:-.4px}
+  .stat-label{font-size:9px}
+}
 .g{color:var(--green)}.a{color:var(--amber)}.r{color:var(--red)}.b{color:var(--blue)}.p{color:var(--purple)}.m{color:var(--muted)}
 .total-pagado-bar{background:var(--raised);border:1px solid var(--gb);border-radius:var(--rsm);padding:12px 14px}
 .prog-track{height:4px;background:var(--card);border-radius:3px;overflow:hidden;margin:6px 0 3px}
@@ -2751,6 +2756,75 @@ function invSetMes(iso){
   inversionRender();
 }
 
+// Detalle de un dia: cada operacion con su hora, tipo, tamano y resultado.
+// El correo de Vantage trae toda esa tabla y hasta ahora solo usabamos el total.
+var invDiaAbierto = null;
+
+function invVerDia(fecha){
+  invDiaAbierto = (invDiaAbierto === fecha) ? null : fecha;
+  invCalendario();
+  if(invDiaAbierto){
+    var el = document.getElementById('inv-detalle-dia');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+function invDetalleDia(){
+  if(!invDiaAbierto) return '';
+  var f = (state.inversion||[]).find(function(x){ return String(x.fecha) === invDiaAbierto; });
+  if(!f) return '';
+
+  var ops = f.detalle || [];
+  var cierres = ops.filter(function(o){ return o.entry === 'out'; });
+  var aperturas = ops.filter(function(o){ return o.entry === 'in'; });
+  var fecha = new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'long'});
+  var color = (f.pl||0) > 0 ? 'var(--green)' : (f.pl||0) < 0 ? 'var(--red)' : 'var(--muted)';
+
+  var filaOp = function(o){
+    var c = o.profit > 0 ? 'var(--green)' : o.profit < 0 ? 'var(--red)' : 'var(--faint)';
+    var tipoColor = o.tipo === 'buy' ? 'var(--green)' : 'var(--red)';
+    return '<div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">'
+      + '<div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:3px">'
+      +   '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+      +     '<span style="font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--card);color:' + tipoColor + ';font-family:\'Chivo Mono\',ui-monospace,monospace">' + o.tipo + '</span>'
+      +     '<span style="font-size:12.5px;font-weight:600">' + o.item + '</span>'
+      +     '<span style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">' + o.size + ' lotes</span>'
+      +   '</div>'
+      +   '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + o.hora + ' · ' + o.precio + '</div>'
+      + '</div>'
+      + (o.entry === 'out'
+          ? '<div style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + c + ';white-space:nowrap">' + (o.profit>=0?'+':'') + invUSD(o.profit) + '</div>'
+          : '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace;white-space:nowrap">abre</div>')
+      + '</div>';
+  };
+
+  var mejor = cierres.length ? cierres.reduce(function(a,b){ return b.profit > a.profit ? b : a; }) : null;
+  var peor  = cierres.length ? cierres.reduce(function(a,b){ return b.profit < a.profit ? b : a; }) : null;
+
+  return '<div id="inv-detalle-dia" style="margin-top:11px;background:var(--raised);border:1px solid var(--line2, var(--border2));border-radius:var(--r);overflow:hidden">'
+    + '<div style="padding:15px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+    +   '<div style="min-width:0">'
+    +     '<div style="font-size:13px;font-weight:700;text-transform:capitalize">' + fecha + '</div>'
+    +     '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">'
+    +       cierres.length + ' cerrada' + (cierres.length===1?'':'s') + ' · ' + aperturas.length + ' abierta' + (aperturas.length===1?'':'s') + '</div>'
+    +   '</div>'
+    +   '<div style="font-size:18px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + ';white-space:nowrap">'
+    +     ((f.pl||0)>=0?'+':'') + invUSD(f.pl||0) + '</div>'
+    + '</div>'
+    + (mejor && cierres.length > 1
+        ? '<div style="padding:11px 16px;border-bottom:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap">'
+          + '<div><div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">Mejor</div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--green);font-family:\'Chivo Mono\',ui-monospace,monospace">+' + invUSD(mejor.profit) + '</div></div>'
+          + '<div><div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">Peor</div>'
+          + '<div style="font-size:13px;font-weight:700;color:' + (peor.profit<0?'var(--red)':'var(--green)') + ';font-family:\'Chivo Mono\',ui-monospace,monospace">' + (peor.profit>=0?'+':'') + invUSD(peor.profit) + '</div></div>'
+          + '</div>'
+        : '')
+    + (ops.length
+        ? ops.map(filaOp).join('')
+        : '<div class="an-empty">Sin operaciones registradas ese dia</div>')
+    + '</div>';
+}
+
 function inversionRender(){
   var filas = state.inversion || [];
 
@@ -2866,7 +2940,10 @@ function invCalendario(){
     else if(val !== null && val < 0){ fondo = 'var(--rdim)'; texto = 'var(--red)'; borde = 'var(--rb)'; }
     else if(f){ fondo = 'var(--card)'; texto = 'var(--muted)'; }
 
-    celdas += '<div style="aspect-ratio:1;border-radius:9px;background:' + fondo + ';border:1px solid ' + borde + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;padding:2px">'
+    var clicable = !!f;
+    celdas += '<div ' + (clicable ? 'onclick="invVerDia(\'' + f.fecha + '\')" ' : '')
+      + 'style="aspect-ratio:1;border-radius:9px;background:' + fondo + ';border:1px solid ' + borde + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;padding:2px;'
+      + (clicable ? 'cursor:pointer' : '') + '">'
       + '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace;line-height:1">' + d + '</div>'
       + (val !== null
           ? '<div style="font-size:9.5px;font-weight:700;color:' + texto + ';font-family:\'Chivo Mono\',ui-monospace,monospace;line-height:1.1;text-align:center">'
@@ -2904,6 +2981,8 @@ function invCalendario(){
     +   (totalRet > 0 ? '<div class="rrow"><span class="rrow-lbl">Retiros</span><span class="rrow-val a">' + invUSD(totalRet) + '</span></div>' : '')
     + '</div>'
 
+    + invDetalleDia()
+
     // Detalle dia por dia del mes
     + (Object.keys(porDia).length
         ? '<div class="sec" style="margin-top:14px">Detalle</div>'
@@ -2912,7 +2991,7 @@ function invCalendario(){
               var f = porDia[d];
               var c = (f.pl||0) > 0 ? 'var(--green)' : (f.pl||0) < 0 ? 'var(--red)' : 'var(--faint)';
               var fecha = new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-DO',{weekday:'short',day:'numeric',month:'short'});
-              return '<div style="padding:12px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">'
+              return '<div onclick="invVerDia(\'' + f.fecha + '\')" style="padding:12px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer">'
                 + '<div style="flex:1;min-width:0">'
                 +   '<div style="font-size:13px;font-weight:600;text-transform:capitalize">' + fecha + '</div>'
                 +   '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:2px">'

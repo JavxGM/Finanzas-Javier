@@ -26,7 +26,51 @@ const ASUNTO = 'Daily Confirmation'
 // Corte por defecto: los dias anteriores fueron pruebas. Se mueve con ?desde=
 const DESDE_DEFECTO = '2026-08-28'
 
-type Fila = { fecha: string; pl: number; deposito: number; cuenta: string | null; operaciones: number }
+type Operacion = {
+  hora:   string
+  tipo:   string   // buy | sell
+  size:   number
+  item:   string   // XAUUSD, etc
+  precio: number
+  entry:  string   // in = abre posicion, out = la cierra
+  profit: number
+}
+
+type Fila = {
+  fecha: string
+  pl: number
+  deposito: number
+  cuenta: string | null
+  operaciones: number
+  detalle: Operacion[]
+}
+
+/**
+ * Extrae la tabla "Deals" del correo: cada fila es una operacion con su hora,
+ * tipo, tamano, instrumento, precio y resultado.
+ *
+ * Formato de una fila (ya aplanada):
+ *   2026.08.28 18:22:23 178054284 sell 0.02 XAUUSD 4562.03 191981389 out 0.00 0.00 4.94
+ *
+ * Algunas traen un comentario entre corchetes antes de in/out: [sl 4622.00]
+ */
+function parseOperaciones(plano: string): Operacion[] {
+  const re = /(\d{4}\.\d{2}\.\d{2})\s+(\d{2}:\d{2}:\d{2})\s+\d+\s+(buy|sell)\s+([\d.]+)\s+([A-Z]{3,10})\s+([\d.]+)\s+\d+\s+(?:\[[^\]]*\]\s+)?(in|out)\s+(-?[\d.,]+)\s+(-?[\d.,]+)\s+(-?[\d.,]+)/gi
+  const ops: Operacion[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(plano)) !== null) {
+    ops.push({
+      hora:   m[2],
+      tipo:   m[3].toLowerCase(),
+      size:   parseFloat(m[4]),
+      item:   m[5],
+      precio: parseFloat(m[6]),
+      entry:  m[7].toLowerCase(),
+      profit: parseFloat(m[10].replace(/,/g, '')),
+    })
+  }
+  return ops
+}
 
 function numero(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
@@ -52,8 +96,9 @@ function parseVantage(texto: string): Fila | null {
   const depM = plano.match(/Deposit\s*\/\s*Withdrawal\s*:?\s*(-?[\d,]+\.?\d*)/i)
   const cuentaM = plano.match(/A\/C\s*No\s*:?\s*(\d+)/i)
 
-  // En la tabla Deals cada cierre de posicion lleva la marca ' out '.
-  const operaciones = (plano.match(/\sout\s/gi) || []).length
+  // Cada cierre de posicion lleva entry = "out"; las de "in" solo abren.
+  const detalle = parseOperaciones(plano)
+  const operaciones = detalle.filter(o => o.entry === 'out').length
 
   return {
     fecha,
@@ -61,6 +106,7 @@ function parseVantage(texto: string): Fila | null {
     deposito:    depM ? numero(depM[1]) : 0,
     cuenta:      cuentaM ? cuentaM[1] : null,
     operaciones,
+    detalle,
   }
 }
 
@@ -100,6 +146,7 @@ export async function GET(req: NextRequest) {
           moneda:      'USD',
           cuenta:      fila.cuenta,
           operaciones: fila.operaciones,
+          detalle:     fila.detalle,
         }, { onConflict: 'fecha' })
 
         if (error) errores.push(fila.fecha + ': ' + error.message)

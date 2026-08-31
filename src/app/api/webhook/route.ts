@@ -128,6 +128,7 @@ export async function GET() {
       pl:       Number(i.pl),
       deposito: Number(i.deposito),
       operaciones: Number(i.operaciones ?? 0),
+      detalle:     i.detalle ?? [],
       moneda:   i.moneda,
     }))
 
