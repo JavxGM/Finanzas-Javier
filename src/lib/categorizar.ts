@@ -18,6 +18,8 @@ export const CATEGORIAS_VALIDAS = [
   'Servicios Hogar',
   'Bienestar',
   'Transferencia',
+  'Compras',
+  'Retiro',
   'Otros',
 ] as const
 
@@ -27,7 +29,10 @@ export type Categoria = (typeof CATEGORIAS_VALIDAS)[number]
 const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
   // Delivery de comida (antes que "UBER" genérico)
   {
-    keywords: ['UBER EATS', 'UBEREATS', 'RAPPI', 'YUMMY', 'DIDI FOOD', 'PEDIDOS YA'],
+    keywords: [
+      'UBER EATS', 'UBEREATS', 'RAPPI', 'YUMMY', 'DIDI FOOD',
+      'PEDIDOS YA', 'PEDIDOSYA',
+    ],
     categoria: 'Comida',
   },
 
@@ -55,6 +60,9 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'PANADERIA', 'SUSHI', 'TACOS', 'WENDY', 'TACO BELL', 'CHIMI',
       'ASADERO', 'ASADOR', 'FRITURAS', 'COMEDOR', 'PAPA JOHN',
       'PIZZA HUT', 'BOCA CHICA',
+      // Comercios reales que caian en "Otros"
+      'BURGUER', 'SMASH', 'LITTLE CAESARS', 'TERIYAKI', 'PAIN DE SUCRE',
+      'WHATS THAT FOOD', 'LO MUYAYO', 'EL RAMERO', 'HELADOS', 'BON ',
     ],
     categoria: 'Comida',
   },
@@ -65,6 +73,9 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'TEXACO', 'SHELL', 'PUMA ENERGY', 'ESSO', 'GASOLINERA',
       'GAS STATION', 'GULF', 'TOTALGAS', 'GLOBAL GAS', 'PDV',
       'ESTACION DE SERVICIO', 'SUNIX',
+      // Reales: DIDI para viajes (DIDI FOOD ya matcheo antes como Comida)
+      'DIDI RIDES', 'DIDI', 'SIGMA', 'PETRONAN',
+      'TOTAL MILLENIUM', 'TOTAL OZAMA',
     ],
     categoria: 'Transporte',
   },
@@ -81,6 +92,8 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'NETFLIX', 'SPOTIFY', 'DISNEY', 'CRUNCHYROLL', 'AMAZON PRIME',
       'HBO', 'YOUTUBE', 'STEAM', 'PLAYSTATION', 'XBOX',
       'PARAMOUNT', 'DEEZER', 'TIDAL', 'TWITCH', 'APPLE',
+      'SUPERBETS', 'SPORT BAR', 'TRAMPOLINE', 'TERRA MAGICA', 'PARCO',
+      'LICORMART', 'CINEMA', 'CARIBBEAN CINEMAS',
     ],
     categoria: 'Entretenimiento',
   },
@@ -90,6 +103,7 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
     keywords: [
       'FARMACIA', 'FARMACORP', 'CAROL', 'FARMAVIDA', 'CLINICA',
       'HOSPITAL', 'MEDICO', 'LABORATORIO', 'DENTAL', 'OPTICA',
+      'GBC GAZCUE', 'REF LAB', 'LAB CLINIC', 'VITASALUD',
     ],
     categoria: 'Salud',
   },
@@ -99,6 +113,7 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
     keywords: [
       'EDEESTE', 'EDENORTE', 'EDESUR', 'CAASD', 'INAPA',
       'GAS NATURAL', 'SEGUROS', 'SEGURO', 'LUZ', 'AGUA', 'INTERNET',
+      'CONDOMINIO', 'COND CIUDAD', 'RESIDENCIAL',
     ],
     categoria: 'Servicios Hogar',
   },
@@ -109,6 +124,7 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'GYM', 'GIMNASIO', 'FITNESS', 'BARBERIA', 'BARBERSHOP',
       'BARBER', 'SPA', 'SALON', 'BEAUTY', 'PELUQUERIA',
       'ESCUELA', 'COLEGIO', 'UNIVERSIDAD', 'ACADEMIA',
+      'SMART FIT', 'SMARTFIT', 'COURSERA', 'UDEMY', 'PLATZI',
     ],
     categoria: 'Bienestar',
   },
@@ -121,6 +137,24 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'TOMMY', 'PRIMARK', 'BOUTIQUE',
     ],
     categoria: 'Ropa',
+  },
+
+  // Tiendas, malls y compras en general
+  {
+    keywords: [
+      'INNOVA', 'AMAZON', 'GALERIA 360', 'MINISO', 'PLAZA AMANECER',
+      'SAMBIL', 'IKEA', 'CASA CUESTA', 'LA CURACAO', 'CORRIPIO',
+    ],
+    categoria: 'Compras',
+  },
+
+  // Retiros y operaciones en ventanilla/cajero del banco
+  {
+    keywords: [
+      'BANCO BHD', 'BANCO RESERVAS', 'BANRESERVAS R.D', 'BANCO POPULAR',
+      'BANCO SANTA CRUZ', 'SCOTIABANK',
+    ],
+    categoria: 'Retiro',
   },
 
   // Transferencias y cajeros

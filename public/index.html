@@ -380,6 +380,9 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
     </div>
     <div class="hero-sub" id="h-sub">—</div>
   </div>
+  <div class="sec">Meta</div>
+  <div id="meta-card"></div>
+
   <div class="grid3">
     <div class="stat"><div class="stat-label">Ingresos mes</div><div class="stat-value g" id="s-ingresos">RD$0</div></div>
     <div class="stat"><div class="stat-label">Gastos hoy</div><div class="stat-value r" id="s-gastos">RD$0</div></div>
@@ -405,7 +408,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   </div>
   <div class="cuenta" onclick="openModalSaldo('qik')">
     <div class="cuenta-dot" style="background:var(--bdim);color:var(--blue)">Q</div>
-    <div class="cuenta-info"><div class="cuenta-name">Qik</div><div class="cuenta-desc">Solo ahorro · intocable</div></div>
+    <div class="cuenta-info"><div class="cuenta-name">Qik</div><div class="cuenta-desc">Ahorro · RD$10,000 reservados</div></div>
     <div class="cuenta-saldo"><div class="cuenta-monto b" id="saldo-qik">—</div><div class="cuenta-edit">tocar para editar</div></div>
   </div>
   <div class="cuenta" onclick="openModalSaldo('banreservas')">
@@ -912,13 +915,16 @@ const CAT_COLORS={
   'Salud':              '#2dd4bf',
   'Bienestar':          '#a78bfa',
   'Entretenimiento':    '#f472b6',
-  'Ropa':               '#ffb830',
+  'Compras':            '#ffb830',
   'Telecomunicaciones': '#8b9dff',
+  'Servicios Hogar':    '#7dd3fc',
+  'Ropa':               '#ffd166',
+  'Retiro':             '#7c8aa0',
   'Transferencia':      '#8888a0',
   'Otros':              '#5a5a70',
   // Categorias viejas: siguen mapeadas para que el historico no salga gris.
   'Gasolina':           '#ffb830',
-  'Hogar':              '#ff8a5c',
+  'Hogar':              '#7dd3fc',
   'Auto-email':         '#4f9eff',
   'General':            '#5a5a70',
 };
@@ -930,7 +936,23 @@ const CAT_COLORS={
 // ═══════════════════════════════════════════════════
 // Ingreso bruto por quincena. Vive aqui arriba porque lo usan tanto el resumen
 // de cada quincena como los tableros de Analisis.
+
 const INGRESO_QUINC = 18596;
+
+// Reserva intocable de Qik: por debajo de esto no se toca ni cuenta como
+// disponible. Es el colchon, no el fondo del telefono.
+const PISO_QIK = 10000;
+
+// Meta unica: el telefono. El precio se cubre entre el ahorro y la regalia;
+// aqui solo vive la parte que tiene que salir del ahorro.
+const META = {
+  nombre:     'Telefono nuevo',
+  precio:     40000,
+  deRegalia:  15000,
+  hastaMes:   10,          // 10 = noviembre (0 = enero)
+  hastaAnio:  2026,
+};
+META.delAhorro = META.precio - META.deRegalia;
 
 const MESES = {
   0: {
@@ -1123,8 +1145,77 @@ const MESES = {
         ]
       }
     ]
+  },
+  6: {
+    nombre: 'Octubre 2026',
+    hoja: 'Presupuesto Octubre',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        pagos: [
+          {id:'p6-carro',   nombre:'Pago carro completo',      monto:5007, cuenta:'BHD', color:'var(--bdim)', tc:'', icon:'CAR'},
+          {id:'p6-cabello', nombre:'Tratamiento de cabello',   monto:4000, cuenta:'BHD', color:'var(--pdim)', tc:'', icon:'CAB'},
+          {id:'p6-gym',     nombre:'Gimnasio',                 monto:1850, cuenta:'BHD', color:'var(--bdim)', tc:'', icon:'GYM'},
+          {id:'p6-net',     nombre:'Internet · Claro',         monto:900,  cuenta:'BHD', color:'var(--rdim)', tc:'', icon:'NET'},
+          {id:'p6-barb1',   nombre:'Barberia parte 1',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
+          {id:'p6-crun',    nombre:'Crunchyroll',              monto:250,  cuenta:'BHD', color:'var(--adim)', tc:'', icon:'CR'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        pagos: [
+          {id:'p6-qik',     nombre:'Qik ahorro',               monto:5000, cuenta:'Qik', color:'var(--bdim)', tc:'var(--blue)', icon:'QIK'},
+          {id:'p6-res',     nombre:'Residencial',              monto:3000, cuenta:'BHD', color:'var(--card)', tc:'', icon:'HSE'},
+          {id:'p6-medic',   nombre:'Medicamentos',             monto:2642.30, cuenta:'Tarjeta', color:'var(--gdim)', tc:'var(--green)', icon:'MED', nota:'A la tarjeta Ademi'},
+          {id:'p6-ademi',   nombre:'Ademi cuota 2/8 · dia 21', monto:2358, cuenta:'Ademi', color:'var(--pdim)', tc:'var(--purple)', icon:'ADM', nota:'Automatico · depositar antes del dia 20'},
+          {id:'p6-barb2',   nombre:'Barberia parte 2',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
+        ]
+      }
+    ]
+  },
+  7: {
+    nombre: 'Noviembre 2026',
+    hoja: 'Presupuesto Noviembre',
+    quincenas: [
+      {
+        titulo: 'Quincena 1 · cobras dia 5',
+        pagos: [
+          {id:'p7-carro',   nombre:'Pago carro completo',      monto:5007, cuenta:'BHD', color:'var(--bdim)', tc:'', icon:'CAR'},
+          {id:'p7-cabello', nombre:'Tratamiento de cabello',   monto:4000, cuenta:'BHD', color:'var(--pdim)', tc:'', icon:'CAB'},
+          {id:'p7-gym',     nombre:'Gimnasio',                 monto:1850, cuenta:'BHD', color:'var(--bdim)', tc:'', icon:'GYM'},
+          {id:'p7-net',     nombre:'Internet · Claro',         monto:900,  cuenta:'BHD', color:'var(--rdim)', tc:'', icon:'NET'},
+          {id:'p7-barb1',   nombre:'Barberia parte 1',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
+          {id:'p7-crun',    nombre:'Crunchyroll',              monto:250,  cuenta:'BHD', color:'var(--adim)', tc:'', icon:'CR'},
+        ]
+      },
+      {
+        titulo: 'Quincena 2 · cobras dia 20',
+        pagos: [
+          {id:'p7-qik',     nombre:'Qik ahorro',               monto:5000, cuenta:'Qik', color:'var(--bdim)', tc:'var(--blue)', icon:'QIK'},
+          {id:'p7-res',     nombre:'Residencial',              monto:3000, cuenta:'BHD', color:'var(--card)', tc:'', icon:'HSE'},
+          {id:'p7-medic',   nombre:'Medicamentos',             monto:2642.30, cuenta:'Tarjeta', color:'var(--gdim)', tc:'var(--green)', icon:'MED', nota:'A la tarjeta Ademi'},
+          {id:'p7-ademi',   nombre:'Ademi cuota 3/8 · dia 21', monto:2358, cuenta:'Ademi', color:'var(--pdim)', tc:'var(--purple)', icon:'ADM', nota:'Automatico · depositar antes del dia 20'},
+          {id:'p7-barb2',   nombre:'Barberia parte 2',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
+        ]
+      }
+    ]
   }
 };
+
+// Los totales de cada quincena y el comprometido del mes se calculan de la
+// suma real de sus items. Antes se escribian a mano y ya habia dos meses en
+// los que el numero declarado no cuadraba con sus propios pagos.
+(function calcularTotales(){
+  Object.keys(MESES).forEach(function(k){
+    var mes = MESES[k];
+    var totalMes = 0;
+    mes.quincenas.forEach(function(q){
+      q.total = q.pagos.reduce(function(a,p){ return a + (p.monto||0); }, 0);
+      totalMes += q.total;
+    });
+    mes.comprometido = totalMes;
+  });
+})();
 
 // ═══════════════════════════════════════════════════
 // ESTADO
@@ -1277,6 +1368,54 @@ function calcPendienteQuincena(mesIdx,qIdx){
 
 // Dinero con el que realmente cuentas: excluye Qik (ahorro intocable) y
 // Ademi (cuenta de prestamo), y le resta lo que falta pagar en la quincena.
+// Cuanto llevas del fondo del telefono. Solo cuenta lo que hay en Qik POR
+// ENCIMA del piso: los primeros 10,000 son colchon, no fondo.
+function renderMeta(){
+  var el = document.getElementById('meta-card');
+  if(!el) return;
+
+  var ahorrado = Math.max(0, (state.saldos.qik||0) - PISO_QIK);
+  var pct = META.delAhorro > 0 ? Math.min(100, Math.round(ahorrado/META.delAhorro*100)) : 0;
+  var falta = Math.max(0, META.delAhorro - ahorrado);
+
+  // Meses completos que quedan hasta la fecha limite de ahorro
+  var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
+  var meses = (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth());
+  meses = Math.max(1, meses);
+  var porMes = Math.ceil(falta/meses);
+
+  var color = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--green)' : 'var(--amber)';
+
+  el.innerHTML =
+    '<div style="background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'
+    +   '<div style="min-width:0">'
+    +     '<div style="font-size:14px;font-weight:700">' + META.nombre + '</div>'
+    +     '<div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">'
+    +       fmt(META.precio) + ' · ' + fmt(META.deRegalia) + ' salen de la regalia'
+    +     '</div>'
+    +   '</div>'
+    +   '<div style="text-align:right;flex-shrink:0">'
+    +     '<div style="font-size:22px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + '">' + pct + '%</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div>'
+    +   '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
+    +   '<div style="display:flex;justify-content:space-between;margin-top:6px">'
+    +     '<span style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(ahorrado) + ' de ' + fmt(META.delAhorro) + '</span>'
+    +     '<span style="font-size:11px;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (falta>0?'var(--amber)':'var(--green)') + '">'
+    +       (falta > 0 ? 'faltan ' + fmt(falta) : 'meta cumplida') + '</span>'
+    +   '</div>'
+    + '</div>'
+    + (falta > 0
+        ? '<div style="border-top:1px solid var(--border);padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">'
+          + '<span style="font-size:12px;color:var(--muted)">Para llegar en ' + meses + ' mes' + (meses===1?'':'es') + '</span>'
+          + '<span style="font-size:14px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(porMes) + '/mes</span>'
+          + '</div>'
+        : '')
+    + '</div>';
+}
+
 function actualizarHero(){
   var qIdx=quincenaActual();
   var pend=calcPendienteQuincena(mesActual,qIdx);
@@ -1335,6 +1474,7 @@ function updateStats(){
   document.getElementById('r-gastos').textContent=fmt(gT);
   document.getElementById('r-comprometido').textContent=fmt(comp);
   actualizarHero();
+  renderMeta();
   var mg=eT-gT-comp;
   var mEl=document.getElementById('r-margen');
   mEl.textContent=fmt(mg);mEl.className='rrow-val '+(mg>=0?'g':'r');
