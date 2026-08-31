@@ -1358,7 +1358,9 @@ function renderMeta(){
   var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
   var meses = (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth());
   meses = Math.max(1, meses);
-  var porMes = Math.ceil(falta/meses);
+  // De lo que falta, 15,000 llegan con la regalia: no hay que ahorrarlos.
+  var porAhorrar = Math.max(0, falta - META.deRegalia);
+  var porMes = Math.ceil(porAhorrar/meses);
 
   var color = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--green)' : 'var(--amber)';
 
@@ -2114,7 +2116,14 @@ function anAhorro(txs, iso){
   var el = document.getElementById('an-ahorro');
   if(!el) return;
 
-  var gastado = txs.reduce(function(a,g){ return a+(g.monto||0); }, 0);
+  // Una transferencia a tu propia cuenta no es gasto: el dinero sigue siendo
+  // tuyo. Contarla como salida hacia que el ahorro saliera en negativo.
+  var consumo = 0, transferido = 0;
+  txs.forEach(function(g){
+    if(g.categoria === 'Transferencia') transferido += g.monto||0;
+    else consumo += g.monto||0;
+  });
+  var gastado = consumo;
   var entradas = (state.entradasMes||[]).reduce(function(a,e){ return a+(e.monto||0); }, 0);
   var esMesActual = iso === anGetMesISO();
   var ingreso = (esMesActual && entradas > 0) ? entradas : INGRESO_QUINC*2;
@@ -2134,7 +2143,8 @@ function anAhorro(txs, iso){
     + '</div>'
     + anBarra(Math.max(0, Math.min(100, Math.round(ahorro/Math.max(1,meta)*100))), color)
     + anFila('Entro' + (estimado ? ' (nomina)' : ''), fmt(ingreso), 'var(--green)')
-    + anFila('Salio', '-' + fmt(gastado), 'var(--red)')
+    + anFila('Consumo', '-' + fmt(consumo), 'var(--red)')
+    + (transferido > 0 ? anFila('Transferencias entre cuentas', fmt(transferido), 'var(--muted)') : '')
     + anFila('Necesitas para el telefono', fmt(meta) + '/mes', 'var(--muted)')
     + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
     + (ahorro >= meta
@@ -2657,7 +2667,7 @@ function listaRender(){
     var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
     var meses = Math.max(1, (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth()));
     subEl.textContent = faltaTotal > 0
-      ? 'Unos ' + fmt(Math.ceil(faltaTotal/meses)) + ' al mes durante ' + meses + ' mes' + (meses===1?'':'es')
+      ? 'Unos ' + fmt(Math.ceil(Math.max(0, faltaTotal - META.deRegalia)/meses)) + ' al mes durante ' + meses + ' mes' + (meses===1?'':'es') + ' · el resto lo pone la regalia'
       : 'No te falta nada por juntar';
   }
 
