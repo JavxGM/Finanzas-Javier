@@ -546,7 +546,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <div class="sec">Fijos vs variables</div>
   <div id="an-fijos"></div>
 
-  <div class="sec">De donde sale</div>
+  <div class="sec">De dónde sale</div>
   <div id="an-cuentas"></div>
 
   <div class="sec">Donde se va</div>
@@ -791,7 +791,7 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <div class="sec">Mis metas</div>
   <div id="metas-lista"></div>
 
-  <div class="sec">De donde sale</div>
+  <div class="sec">De dónde sale</div>
   <div id="metas-fuentes"></div>
 </div>
 
@@ -866,6 +866,7 @@ const CAT_COLORS={
   'Servicios Hogar':    '#7dd3fc',
   'Ropa':               '#ffd166',
   'Retiro':             '#7c8aa0',
+  'Ahorro e inversion': '#2dd4bf',
   'Transferencia':      '#8888a0',
   'Otros':              '#5a5a70',
   // Categorias viejas: siguen mapeadas para que el historico no salga gris.
@@ -2054,48 +2055,57 @@ function anMesIdx(iso){
 }
 
 // ¿Voy rapido o voy bien? Gasto por dia y a donde llego si sigo asi.
-// Lo unico que importa para el telefono: cuanto quedo al final del mes.
-// Si el mes no tiene entradas registradas usamos la nomina, que es fija.
+// No todo lo que sale de la cuenta es gasto. Lo que mandas a Qik o pones a
+// invertir sigue siendo tuyo, solo cambio de lugar. Este tablero separa las
+// tres cosas: lo que consumiste, lo que moviste y lo que pagaste a terceros.
 function anAhorro(txs, iso){
   var el = document.getElementById('an-ahorro');
   if(!el) return;
 
-  // Una transferencia a tu propia cuenta no es gasto: el dinero sigue siendo
-  // tuyo. Contarla como salida hacia que el ahorro saliera en negativo.
-  var consumo = 0, transferido = 0;
+  var consumo = 0, guardado = 0, terceros = 0;
   txs.forEach(function(g){
-    if(g.categoria === 'Transferencia') transferido += g.monto||0;
-    else consumo += g.monto||0;
+    var cat = g.categoria || 'Otros';
+    if(cat === 'Ahorro e inversion')      guardado += g.monto||0;
+    else if(cat === 'Transferencia')      terceros += g.monto||0;
+    else                                   consumo += g.monto||0;
   });
-  var gastado = consumo;
+
   var entradas = (state.entradasMes||[]).reduce(function(a,e){ return a+(e.monto||0); }, 0);
   var esMesActual = iso === anGetMesISO();
   var ingreso = (esMesActual && entradas > 0) ? entradas : INGRESO_QUINC*2;
   var estimado = !(esMesActual && entradas > 0);
 
-  var ahorro = ingreso - gastado;
+  // Lo que salio de verdad de tu bolsillo
+  var perdido = consumo + terceros;
+  var quedo = ingreso - perdido;
+  // El patrimonio suma lo que guardaste: ese dinero no se fue
+  var patrimonio = quedo;
+
   var meta = Math.ceil((META.precio - META.deRegalia - Math.max(0,(state.saldos.qik||0)-PISO_QIK)) / 3);
-  var pct = ingreso > 0 ? Math.round(ahorro/ingreso*100) : 0;
-  var color = ahorro >= meta ? 'var(--green)' : ahorro > 0 ? 'var(--amber)' : 'var(--red)';
+  var pct = ingreso > 0 ? Math.round(quedo/ingreso*100) : 0;
+  var color = quedo >= meta ? 'var(--green)' : quedo > 0 ? 'var(--amber)' : 'var(--red)';
 
   el.innerHTML = anCaja(
     '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">'
     + '<div><div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">Te quedo</div>'
-    + '<div style="font-size:30px;font-weight:500;font-family:\'Chivo Mono\',ui-monospace,monospace;letter-spacing:-1px;line-height:1.1;color:' + color + '">' + fmt(ahorro) + '</div></div>'
+    + '<div style="font-size:30px;font-weight:500;font-family:\'Chivo Mono\',ui-monospace,monospace;letter-spacing:-1px;line-height:1.1;color:' + color + '">' + fmt(quedo) + '</div></div>'
     + '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">del ingreso</div>'
     + '<div style="font-size:15px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + pct + '%</div></div>'
     + '</div>'
-    + anBarra(Math.max(0, Math.min(100, Math.round(ahorro/Math.max(1,meta)*100))), color)
-    + anFila('Entro' + (estimado ? ' (nomina)' : ''), fmt(ingreso), 'var(--green)')
+    + anBarra(Math.max(0, Math.min(100, Math.round(quedo/Math.max(1,meta)*100))), color)
+    + anFila('Entro' + (estimado ? ' · nomina' : ''), fmt(ingreso), 'var(--green)')
     + anFila('Consumo', '-' + fmt(consumo), 'var(--red)')
-    + (transferido > 0 ? anFila('Transferencias entre cuentas', fmt(transferido), 'var(--muted)') : '')
-    + anFila('Necesitas para el telefono', fmt(meta) + '/mes', 'var(--muted)')
+    + (terceros > 0 ? anFila('Pagos a terceros', '-' + fmt(terceros), 'var(--red)') : '')
+    + (guardado > 0 ? anFila('A ahorro e inversion', fmt(guardado), 'var(--cool)') : '')
     + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
-    + (ahorro >= meta
-        ? 'Vas por encima de lo que necesitas. Lo que sobre acelera la meta.'
-        : ahorro > 0
-          ? 'Te faltaron ' + fmt(meta-ahorro) + ' para el ritmo de la meta este mes.'
-          : 'Gastaste mas de lo que entro. Ese mes salio del ahorro.')
+    + (guardado > 0
+        ? 'Los ' + fmt(guardado) + ' que guardaste no cuentan como gasto: ese dinero sigue siendo tuyo. '
+        : '')
+    + (quedo >= meta
+        ? 'Vas por encima de los ' + fmt(meta) + ' que necesitas ahorrar al mes.'
+        : quedo > 0
+          ? 'Te faltaron ' + fmt(meta-quedo) + ' para el ritmo de la meta.'
+          : 'Gastaste mas de lo que entro. La diferencia salio del ahorro.')
     + '</div>'
   );
 }
@@ -2533,9 +2543,9 @@ function regSetTab(tab){
 // cuando se compran.
 
 var METAS = [
-  { id: 'telefono', nombre: 'Telefono nuevo', monto: 40000, cuando: 'diciembre',
-    fondo: true, nota: '15,000 salen de la regalia' },
-  { id: 'proteina', nombre: 'Proteina',       monto: 3000,  cuando: 'antes de diciembre',
+  { id: 'telefono', nombre: 'Teléfono nuevo', monto: 40000, cuando: 'diciembre',
+    fondo: true, nota: '15,000 salen de la regalía' },
+  { id: 'proteina', nombre: 'Proteína',       monto: 3000,  cuando: 'antes de diciembre',
     fondo: false, nota: 'Del sobrante de la quincena' },
   { id: 'tenis',    nombre: 'Tenis',          monto: 3000,  cuando: 'diciembre',
     fondo: false, nota: 'Del sobrante de la quincena' },
@@ -2580,11 +2590,12 @@ function listaRender(){
       +     '<div style="font-size:14px;font-weight:700;' + (comprada?'text-decoration:line-through;color:var(--faint)':'') + '">' + m.nombre + '</div>'
       +     '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">' + m.cuando + ' · ' + m.nota + '</div>'
       +   '</div>'
-      +   '<div style="text-align:right;flex-shrink:0">'
-      +     '<div style="font-size:17px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + '">' + fmt(m.monto) + '</div>'
+      +   '<div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:2px">'
+      +     '<div style="font-size:22px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + ';line-height:1">' + pct + '%</div>'
+      +     '<div style="font-size:12px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(m.monto) + '</div>'
       +   '</div>'
       + '</div>'
-      + (m.fondo && !comprada
+      + (!comprada
           ? '<div>'
             + '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
             + '<div style="display:flex;justify-content:space-between;margin-top:6px">'
@@ -2593,7 +2604,7 @@ function listaRender(){
             + '</div></div>'
           : '')
       + '<button class="btn ' + (comprada?'btn-b':'btn-g') + '" style="margin:0" onclick="metasToggle(\'' + m.id + '\')">'
-      +   (comprada ? 'Marcar como pendiente' : 'Ya la compre')
+      +   (comprada ? 'Marcar como pendiente' : 'Ya la compré')
       + '</button>'
       + '</div>';
   }).join('');
@@ -2611,7 +2622,7 @@ function listaRender(){
     var rd = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Santo_Domingo'}));
     var meses = Math.max(1, (META.hastaAnio - rd.getFullYear())*12 + (META.hastaMes - rd.getMonth()));
     subEl.textContent = faltaTotal > 0
-      ? 'Unos ' + fmt(Math.ceil(Math.max(0, faltaTotal - META.deRegalia)/meses)) + ' al mes durante ' + meses + ' mes' + (meses===1?'':'es') + ' · el resto lo pone la regalia'
+      ? 'Unos ' + fmt(Math.ceil(Math.max(0, faltaTotal - META.deRegalia)/meses)) + ' al mes durante ' + meses + ' mes' + (meses===1?'':'es') + ' · el resto lo pone la regalía'
       : 'No te falta nada por juntar';
   }
 
@@ -2623,9 +2634,9 @@ function metasFuentes(ahorrado){
   var el = document.getElementById('metas-fuentes');
   if(!el) return;
   var filas = [
-    ['Ahorrado en Qik (sobre el piso)', ahorrado, 'var(--green)'],
+    ['Ahorrado en Qik · sobre el piso', ahorrado, 'var(--green)'],
     ['Reserva intocable de Qik',        PISO_QIK, 'var(--faint)'],
-    ['De la regalia de diciembre',      META.deRegalia, 'var(--amber)'],
+    ['De la regalía de diciembre',      META.deRegalia, 'var(--amber)'],
   ];
   el.innerHTML = '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
     + filas.map(function(f){

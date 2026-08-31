@@ -18,6 +18,7 @@ export const CATEGORIAS_VALIDAS = [
   'Servicios Hogar',
   'Bienestar',
   'Transferencia',
+  'Ahorro e inversion',
   'Compras',
   'Retiro',
   'Otros',
@@ -137,6 +138,13 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'TOMMY', 'PRIMARK', 'BOUTIQUE',
     ],
     categoria: 'Ropa',
+  },
+
+  // Ahorro e inversion: sale de la cuenta pero NO es gasto, el dinero sigue
+  // siendo tuyo en otra forma.
+  {
+    keywords: ['METATRADER', 'META TRADER', 'MT5', 'TRADING', 'BROKER', 'INVERSION'],
+    categoria: 'Ahorro e inversion',
   },
 
   // Tiendas, malls y compras en general
