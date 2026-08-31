@@ -127,6 +127,7 @@ export async function GET() {
       fecha:    i.fecha,
       pl:       Number(i.pl),
       deposito: Number(i.deposito),
+      operaciones: Number(i.operaciones ?? 0),
       moneda:   i.moneda,
     }))
 

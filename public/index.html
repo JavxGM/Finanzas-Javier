@@ -791,8 +791,8 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
 
   <div class="grid3">
     <div class="stat"><div class="stat-label">Depositado</div><div class="stat-value" id="inv-capital">—</div></div>
-    <div class="stat"><div class="stat-label">Resultado</div><div class="stat-value" id="inv-pl">—</div></div>
-    <div class="stat"><div class="stat-label">Dias</div><div class="stat-value b" id="inv-dias">—</div></div>
+    <div class="stat"><div class="stat-label">Total ganado</div><div class="stat-value" id="inv-pl">—</div></div>
+    <div class="stat"><div class="stat-label">Operaciones</div><div class="stat-value b" id="inv-dias">—</div></div>
   </div>
 
   <div id="inv-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
@@ -2594,7 +2594,12 @@ function metasAhorrado(){
 // resultado es la suma de los cierres diarios, y el valor es la suma de ambos.
 // Esto NO entra en el disponible: es dinero puesto a riesgo, no plata a mano.
 
-var invMesFiltro = null; // 'YYYY-MM'; null = el mes mas reciente con datos
+var invMesFiltro = null; // 'YYYY-MM'; null = el mes con datos mas reciente
+
+// Lo que habia en la cuenta al arrancar el seguimiento el 28 de agosto, antes
+// del resultado de ese dia. Javier lo confirmo: la cuenta tenia US$185 con los
+// 36.18 del 28 ya dentro.
+var INV_CAPITAL_BASE = 148.82;
 
 function invUSD(n){
   var s = Math.abs(n).toLocaleString('es-DO', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -2620,12 +2625,26 @@ function invSetMes(iso){
 function inversionRender(){
   var filas = state.inversion || [];
 
-  // ── Totales de toda la cuenta ──
-  var capital = 0, pl = 0;
-  filas.forEach(function(f){ capital += f.deposito||0; pl += f.pl||0; });
-  var valor = capital + pl;
-  var pct = capital > 0 ? (pl/capital*100) : 0;
-  var color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
+  invChips(); // fija invMesFiltro antes de calcular
+
+  // ── Toda la cuenta ──
+  var plTotal = 0, depTotal = 0;
+  filas.forEach(function(f){ plTotal += f.pl||0; depTotal += f.deposito||0; });
+  var valor = INV_CAPITAL_BASE + depTotal + plTotal;
+
+  // ── Solo el mes seleccionado ──
+  var mes = invMesFiltro;
+  var plMes = 0, depMes = 0, diasMes = 0, opsMes = 0;
+  filas.forEach(function(f){
+    if(String(f.fecha).slice(0,7) !== mes) return;
+    plMes += f.pl||0;
+    depMes += f.deposito||0;
+    opsMes += f.operaciones||0;
+    if((f.pl||0) !== 0) diasMes++;
+  });
+
+  var color = plMes > 0 ? 'var(--green)' : plMes < 0 ? 'var(--red)' : 'var(--muted)';
+  var pctMes = INV_CAPITAL_BASE > 0 ? (plMes/INV_CAPITAL_BASE*100) : 0;
 
   var set = function(id, txt, col){
     var e = document.getElementById(id);
@@ -2634,20 +2653,19 @@ function inversionRender(){
     if(col) e.style.color = col;
   };
 
-  // Si no hay depositos registrados en el periodo, el 'valor de la cuenta' no
-  // se puede calcular: lo que si sabemos es cuanto llevas ganado o perdido.
-  var hayCapital = capital > 0;
-  set('inv-valor', filas.length ? ((pl>=0?'+':'') + invUSD(pl)) : '—', color);
-  set('inv-sub', filas.length
-    ? (hayCapital
-        ? 'Valor de la cuenta ' + invUSD(valor) + ' · ' + (pct>=0?'+':'') + pct.toFixed(1) + '%'
-        : 'Acumulado en ' + filas.length + ' dia' + (filas.length===1?'':'s') + ' de operacion')
-    : 'Sin datos todavia · corre el lector de correos');
-  set('inv-capital', filas.length ? invUSD(capital) : '—');
-  set('inv-pl', filas.length ? (pl>=0?'+':'') + invUSD(pl) : '—', color);
-  set('inv-dias', String(filas.length));
+  var nombreMes = mes
+    ? new Date(mes + '-02T12:00:00').toLocaleDateString('es-DO',{month:'long'})
+    : '';
 
-  invChips();
+  set('inv-valor', filas.length ? ((plMes>=0?'+':'') + invUSD(plMes)) : '—', color);
+  set('inv-sub', filas.length
+    ? 'En ' + nombreMes + ' · ' + (pctMes>=0?'+':'') + pctMes.toFixed(1) + '% del capital · cuenta en ' + invUSD(valor)
+    : 'Sin datos todavia · corre el lector de correos');
+  set('inv-capital', invUSD(INV_CAPITAL_BASE + depTotal));
+  set('inv-pl', filas.length ? (plTotal>=0?'+':'') + invUSD(plTotal) : '—',
+      plTotal>0?'var(--green)':plTotal<0?'var(--red)':'var(--muted)');
+  set('inv-dias', String(opsMes));
+
   invCalendario();
 }
 
@@ -2656,7 +2674,14 @@ function invChips(){
   var cont = document.getElementById('inv-chips');
   if(!cont) return;
   var meses = invMesesConDatos();
-  if(!invMesFiltro || meses.indexOf(invMesFiltro) === -1) invMesFiltro = meses[meses.length-1];
+  // Por defecto abre donde hay datos, no en el mes mas nuevo del calendario:
+  // si septiembre esta vacio no tiene sentido mostrarlo en blanco.
+  if(!invMesFiltro || meses.indexOf(invMesFiltro) === -1){
+    var filas = state.inversion || [];
+    invMesFiltro = filas.length
+      ? String(filas[filas.length-1].fecha).slice(0,7)
+      : meses[meses.length-1];
+  }
 
   cont.innerHTML = meses.map(function(m){
     var activo = m === invMesFiltro;
@@ -2748,7 +2773,31 @@ function invCalendario(){
     +   '<div class="rrow"><span class="rrow-lbl">Resultado del mes</span><span class="rrow-val" style="color:' + (totalPL>=0?'var(--green)':'var(--red)') + '">' + (totalPL>=0?'+':'') + invUSD(totalPL) + '</span></div>'
     +   (totalDep > 0 ? '<div class="rrow"><span class="rrow-lbl">Depositos</span><span class="rrow-val b">' + invUSD(totalDep) + '</span></div>' : '')
     +   (totalRet > 0 ? '<div class="rrow"><span class="rrow-lbl">Retiros</span><span class="rrow-val a">' + invUSD(totalRet) + '</span></div>' : '')
-    + '</div>';
+    + '</div>'
+
+    // Detalle dia por dia del mes
+    + (Object.keys(porDia).length
+        ? '<div class="sec" style="margin-top:14px">Detalle</div>'
+          + '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
+          + Object.keys(porDia).sort(function(a,b){ return Number(b)-Number(a); }).map(function(d){
+              var f = porDia[d];
+              var c = (f.pl||0) > 0 ? 'var(--green)' : (f.pl||0) < 0 ? 'var(--red)' : 'var(--faint)';
+              var fecha = new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-DO',{weekday:'short',day:'numeric',month:'short'});
+              return '<div style="padding:12px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">'
+                + '<div style="flex:1;min-width:0">'
+                +   '<div style="font-size:13px;font-weight:600;text-transform:capitalize">' + fecha + '</div>'
+                +   '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:2px">'
+                +     (f.operaciones ? f.operaciones + ' operacion' + (f.operaciones===1?'':'es') : 'sin operaciones')
+                +     ((f.deposito||0) > 0 ? ' · deposito ' + invUSD(f.deposito) : '')
+                +     ((f.deposito||0) < 0 ? ' · retiro ' + invUSD(Math.abs(f.deposito)) : '')
+                +   '</div>'
+                + '</div>'
+                + '<div style="font-size:15px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + c + '">'
+                +   ((f.pl||0)>=0?'+':'') + invUSD(f.pl||0) + '</div>'
+                + '</div>';
+            }).join('')
+          + '</div>'
+        : '');
 }
 
 function listaRender(){

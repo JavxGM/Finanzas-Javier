@@ -26,7 +26,7 @@ const ASUNTO = 'Daily Confirmation'
 // Corte por defecto: los dias anteriores fueron pruebas. Se mueve con ?desde=
 const DESDE_DEFECTO = '2026-08-28'
 
-type Fila = { fecha: string; pl: number; deposito: number; cuenta: string | null }
+type Fila = { fecha: string; pl: number; deposito: number; cuenta: string | null; operaciones: number }
 
 function numero(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
@@ -52,11 +52,15 @@ function parseVantage(texto: string): Fila | null {
   const depM = plano.match(/Deposit\s*\/\s*Withdrawal\s*:?\s*(-?[\d,]+\.?\d*)/i)
   const cuentaM = plano.match(/A\/C\s*No\s*:?\s*(\d+)/i)
 
+  // En la tabla Deals cada cierre de posicion lleva la marca ' out '.
+  const operaciones = (plano.match(/\sout\s/gi) || []).length
+
   return {
     fecha,
-    pl:       numero(plM[1]),
-    deposito: depM ? numero(depM[1]) : 0,
-    cuenta:   cuentaM ? cuentaM[1] : null,
+    pl:          numero(plM[1]),
+    deposito:    depM ? numero(depM[1]) : 0,
+    cuenta:      cuentaM ? cuentaM[1] : null,
+    operaciones,
   }
 }
 
@@ -93,8 +97,9 @@ export async function GET(req: NextRequest) {
           fecha:    fila.fecha,
           pl:       fila.pl,
           deposito: fila.deposito,
-          moneda:   'USD',
-          cuenta:   fila.cuenta,
+          moneda:      'USD',
+          cuenta:      fila.cuenta,
+          operaciones: fila.operaciones,
         }, { onConflict: 'fecha' })
 
         if (error) errores.push(fila.fecha + ': ' + error.message)
