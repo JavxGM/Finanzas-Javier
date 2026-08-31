@@ -23,8 +23,8 @@ export const maxDuration = 300
 const EMISOR = 'vantage'
 const ASUNTO = 'Daily Confirmation'
 
-// Solo se guarda de esta fecha en adelante: es cuando arranco la cuenta.
-const DESDE = '2026-08-25'
+// Corte por defecto: los dias anteriores fueron pruebas. Se mueve con ?desde=
+const DESDE_DEFECTO = '2026-08-28'
 
 type Fila = { fecha: string; pl: number; deposito: number; cuenta: string | null }
 
@@ -42,7 +42,11 @@ function parseVantage(texto: string): Fila | null {
   if (!fechaM) return null
   const fecha = `${fechaM[1]}-${fechaM[2]}-${fechaM[3]}`
 
-  const plM = plano.match(/Closed\s+P\/L\s*:?\s*(-?[\d,]+\.?\d*)/i)
+  // "Total" es el neto del dia: incluye comisiones y swaps. "Closed P/L" solo
+  // trae el resultado de las operaciones, asi que Total manda cuando aparece.
+  const totalM = plano.match(/\bTotal\s*:?\s*(-?[\d,]+\.?\d*)\s*$/i)
+    ?? plano.match(/Additional\s+Operations\s*:?\s*-?[\d,.]+\s+Total\s*:?\s*(-?[\d,]+\.?\d*)/i)
+  const plM = totalM ?? plano.match(/Closed\s+P\/L\s*:?\s*(-?[\d,]+\.?\d*)/i)
   if (!plM) return null
 
   const depM = plano.match(/Deposit\s*\/\s*Withdrawal\s*:?\s*(-?[\d,]+\.?\d*)/i)
@@ -66,6 +70,7 @@ export async function GET(req: NextRequest) {
 
   const dias   = Number(req.nextUrl.searchParams.get('dias') ?? 7)
   const limite = Number(req.nextUrl.searchParams.get('limite') ?? 60)
+  const desde  = req.nextUrl.searchParams.get('desde') ?? DESDE_DEFECTO
 
   const sb = getSupabase()
   const guardadas: Fila[] = []
@@ -82,7 +87,7 @@ export async function GET(req: NextRequest) {
         const texto = c.texto || htmlATexto(c.html)
         const fila = parseVantage(texto)
         if (!fila) { errores.push('sin parsear: ' + (c.fecha?.toISOString().slice(0, 10) ?? c.uid)); continue }
-        if (fila.fecha < DESDE) continue
+        if (fila.fecha < desde) continue
 
         const { error } = await sb.from('inversion').upsert({
           fecha:    fila.fecha,

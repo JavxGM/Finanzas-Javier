@@ -784,13 +784,13 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
 <!-- INVERSION -->
 <div class="page" id="page-inversion">
   <div class="hero">
-    <div class="hero-label">Valor de la cuenta</div>
+    <div class="hero-label">Resultado acumulado</div>
     <div class="hero-value" id="inv-valor">—</div>
     <div class="hero-sub" id="inv-sub">—</div>
   </div>
 
   <div class="grid3">
-    <div class="stat"><div class="stat-label">Capital</div><div class="stat-value" id="inv-capital">—</div></div>
+    <div class="stat"><div class="stat-label">Depositado</div><div class="stat-value" id="inv-capital">—</div></div>
     <div class="stat"><div class="stat-label">Resultado</div><div class="stat-value" id="inv-pl">—</div></div>
     <div class="stat"><div class="stat-label">Dias</div><div class="stat-value b" id="inv-dias">—</div></div>
   </div>
@@ -2634,9 +2634,14 @@ function inversionRender(){
     if(col) e.style.color = col;
   };
 
-  set('inv-valor', filas.length ? invUSD(valor) : '—', color);
+  // Si no hay depositos registrados en el periodo, el 'valor de la cuenta' no
+  // se puede calcular: lo que si sabemos es cuanto llevas ganado o perdido.
+  var hayCapital = capital > 0;
+  set('inv-valor', filas.length ? ((pl>=0?'+':'') + invUSD(pl)) : '—', color);
   set('inv-sub', filas.length
-    ? (pl >= 0 ? 'Vas ganando ' : 'Vas perdiendo ') + invUSD(Math.abs(pl)) + ' · ' + (pct>=0?'+':'') + pct.toFixed(1) + '%'
+    ? (hayCapital
+        ? 'Valor de la cuenta ' + invUSD(valor) + ' · ' + (pct>=0?'+':'') + pct.toFixed(1) + '%'
+        : 'Acumulado en ' + filas.length + ' dia' + (filas.length===1?'':'s') + ' de operacion')
     : 'Sin datos todavia · corre el lector de correos');
   set('inv-capital', filas.length ? invUSD(capital) : '—');
   set('inv-pl', filas.length ? (pl>=0?'+':'') + invUSD(pl) : '—', color);
