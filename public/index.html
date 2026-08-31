@@ -363,6 +363,9 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <div class="sec">Meta</div>
   <div id="meta-card"></div>
 
+  <div class="sec">Tarjeta de credito</div>
+  <div id="tc-card"></div>
+
   <div class="grid3">
     <div class="stat"><div class="stat-label">Ingresos mes</div><div class="stat-value g" id="s-ingresos">RD$0</div></div>
     <div class="stat"><div class="stat-label">Gastos hoy</div><div class="stat-value r" id="s-gastos">RD$0</div></div>
@@ -893,6 +896,22 @@ const INGRESO_QUINC = 18596;
 // disponible. Es el colchon, no el fondo del telefono.
 const PISO_QIK = 10000;
 
+// Tarjeta Visa Clasica Internacional de Ademi.
+// Corta el 29 y da 22 dias de gracia, asi que el corte del 29 de septiembre
+// se paga a mas tardar el 21 de octubre. Los cargos NO son salida de efectivo
+// el mes que se hacen: el dinero sale cuando se abona.
+const TARJETA = {
+  nombre:  'Visa Clasica · Ademi',
+  limite:  10000,
+  corte:   29,
+  diaPago: 21,
+  cargos: [
+    { desc: 'Pedido en linea',        monto: 1999,    fecha: '30 ago' },
+    { desc: 'Medicamentos septiembre', monto: 2642.30, fecha: '15 sep' },
+  ],
+};
+TARJETA.total = TARJETA.cargos.reduce(function(a,c){ return a + c.monto; }, 0);
+
 // Meta unica: el telefono. El precio se cubre entre el ahorro y la regalia;
 // aqui solo vive la parte que tiene que salir del ahorro.
 const META = {
@@ -1089,7 +1108,8 @@ const MESES = {
         pagos: [
           {id:'ps-qik',      nombre:'Qik ahorro',                  monto:5000,  cuenta:'Qik',        color:'var(--bdim)', tc:'var(--blue)',   icon:'QIK'},
           {id:'ps-res',      nombre:'Residencial',                 monto:3000,  cuenta:'BHD',        color:'var(--card)',tc:'',icon:'HSE'},
-          {id:'ps-medic',    nombre:'Medicamentos',                monto:2642.30, cuenta:'BHD',      color:'var(--gdim)',tc:'var(--green)',icon:'MED'},
+          {id:'ps-medic',    nombre:'Medicamentos',                monto:2642.30, cuenta:'Tarjeta',  color:'var(--gdim)',tc:'var(--green)',icon:'MED', tarjeta:true, nota:'A la tarjeta · se paga en octubre'},
+          {id:'ps-tc1',      nombre:'Abono tarjeta 1 de 3',        monto:1550,  cuenta:'BHD',        color:'var(--adim)', tc:'var(--amber)', icon:'TC', abonoTarjeta:true, nota:'Antes del corte del 29'},
           {id:'ps-ademi-1',  nombre:'Ademi cuota 1/8 · dia 21',    monto:2358,  cuenta:'Ademi',      color:'var(--pdim)', tc:'var(--purple)',icon:'ADM', nota:'Automatico · depositar antes del dia 20'},
           {id:'ps-barb2',    nombre:'Barberia parte 2',            monto:500,   cuenta:'BHD',        color:'var(--gdim)',tc:'',icon:'BAR'},
         ]
@@ -1109,6 +1129,7 @@ const MESES = {
           {id:'p6-net',     nombre:'Internet · Claro',         monto:900,  cuenta:'BHD', color:'var(--rdim)', tc:'', icon:'NET'},
           {id:'p6-barb1',   nombre:'Barberia parte 1',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
           {id:'p6-crun',    nombre:'Crunchyroll',              monto:250,  cuenta:'BHD', color:'var(--adim)', tc:'', icon:'CR'},
+          {id:'p6-tc2',     nombre:'Abono tarjeta 2 de 3',     monto:1550, cuenta:'BHD', color:'var(--adim)', tc:'var(--amber)', icon:'TC', abonoTarjeta:true},
         ]
       },
       {
@@ -1119,6 +1140,7 @@ const MESES = {
           {id:'p6-medic',   nombre:'Medicamentos',             monto:2642.30, cuenta:'Tarjeta', color:'var(--gdim)', tc:'var(--green)', icon:'MED', nota:'A la tarjeta Ademi'},
           {id:'p6-ademi',   nombre:'Ademi cuota 2/8 · dia 21', monto:2358, cuenta:'Ademi', color:'var(--pdim)', tc:'var(--purple)', icon:'ADM', nota:'Automatico · depositar antes del dia 20'},
           {id:'p6-barb2',   nombre:'Barberia parte 2',         monto:500,  cuenta:'BHD', color:'var(--gdim)', tc:'', icon:'BAR'},
+          {id:'p6-tc3',     nombre:'Abono tarjeta 3 de 3 · liquida', monto:1541, cuenta:'BHD', color:'var(--adim)', tc:'var(--amber)', icon:'TC', abonoTarjeta:true, nota:'Fecha limite 21 de octubre'},
         ]
       }
     ]
@@ -1160,7 +1182,11 @@ const MESES = {
     var mes = MESES[k];
     var totalMes = 0;
     mes.quincenas.forEach(function(q){
-      q.total = q.pagos.reduce(function(a,p){ return a + (p.monto||0); }, 0);
+      // Un cargo a la tarjeta se ve en su quincena pero no sale de la cuenta
+      // ese mes: el efectivo se mueve cuando se abona a la tarjeta.
+      q.total = q.pagos.reduce(function(a,p){
+        return a + (p.tarjeta ? 0 : (p.monto||0));
+      }, 0);
       totalMes += q.total;
     });
     mes.comprometido = totalMes;
@@ -1366,6 +1392,51 @@ function renderMeta(){
     + '</div>';
 }
 
+// Cuanto debes en la tarjeta: los cargos menos los abonos ya marcados.
+function renderTarjeta(){
+  var el = document.getElementById('tc-card');
+  if(!el) return;
+
+  var abonado = 0, proximo = null;
+  Object.keys(MESES).forEach(function(k){
+    MESES[k].quincenas.forEach(function(q){
+      q.pagos.forEach(function(pg){
+        if(!pg.abonoTarjeta) return;
+        if(getPagoState(k, pg.id).done) abonado += pg.monto||0;
+        else if(!proximo) proximo = pg;
+      });
+    });
+  });
+
+  var deuda = Math.max(0, TARJETA.total - abonado);
+  var pctUso = Math.round(deuda / TARJETA.limite * 100);
+  var colorUso = pctUso >= 50 ? 'var(--red)' : pctUso >= 30 ? 'var(--amber)' : 'var(--green)';
+
+  el.innerHTML =
+    '<div style="background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:13px">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'
+    +   '<div><div style="font-size:13px;font-weight:700">' + TARJETA.nombre + '</div>'
+    +   '<div style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace;margin-top:3px">corta el ' + TARJETA.corte + ' · paga el ' + TARJETA.diaPago + '</div></div>'
+    +   '<div style="text-align:right"><div style="font-size:20px;font-weight:800;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + (deuda>0?'var(--amber)':'var(--green)') + '">' + fmt(deuda) + '</div>'
+    +   '<div style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">de ' + fmt(TARJETA.limite) + '</div></div>'
+    + '</div>'
+    + '<div>'
+    +   '<div class="prog-track" style="margin:0"><div class="prog-fill" style="width:' + Math.min(100,pctUso) + '%;background:' + colorUso + '"></div></div>'
+    +   '<div style="display:flex;justify-content:space-between;margin-top:6px">'
+    +     '<span style="font-size:10px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">' + pctUso + '% del limite usado</span>'
+    +     '<span style="font-size:10px;color:var(--faint);font-family:\'Chivo Mono\',ui-monospace,monospace">sano bajo 30%</span>'
+    +   '</div>'
+    + '</div>'
+    + (deuda > 0 && proximo
+        ? '<div style="border-top:1px solid var(--border);padding-top:11px;display:flex;justify-content:space-between;align-items:baseline">'
+          + '<span style="font-size:12px;color:var(--muted)">Proximo abono</span>'
+          + '<span style="font-size:13px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + fmt(proximo.monto) + '</span></div>'
+        : deuda === 0
+          ? '<div style="border-top:1px solid var(--border);padding-top:11px;font-size:12px;color:var(--green)">Tarjeta liquidada · cero intereses</div>'
+          : '')
+    + '</div>';
+}
+
 function actualizarHero(){
   var qIdx=quincenaActual();
   var pend=calcPendienteQuincena(mesActual,qIdx);
@@ -1425,6 +1496,7 @@ function updateStats(){
   document.getElementById('r-comprometido').textContent=fmt(comp);
   actualizarHero();
   renderMeta();
+  renderTarjeta();
   var mg=eT-gT-comp;
   var mEl=document.getElementById('r-margen');
   mEl.textContent=fmt(mg);mEl.className='rrow-val '+(mg>=0?'g':'r');
