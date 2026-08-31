@@ -867,6 +867,7 @@ const CAT_COLORS={
   'Ropa':               '#ffd166',
   'Retiro':             '#7c8aa0',
   'Ahorro e inversion': '#2dd4bf',
+  'Deuda':              '#c9a0ff',
   'Transferencia':      '#8888a0',
   'Otros':              '#5a5a70',
   // Categorias viejas: siguen mapeadas para que el historico no salga gris.
@@ -2099,13 +2100,12 @@ function anAhorro(txs, iso){
     + (guardado > 0 ? anFila('A ahorro e inversion', fmt(guardado), 'var(--cool)') : '')
     + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
     + (guardado > 0
-        ? 'Los ' + fmt(guardado) + ' que guardaste no cuentan como gasto: ese dinero sigue siendo tuyo. '
+        ? 'Guardaste ' + fmt(guardado) + ', que no cuenta como gasto: ese dinero sigue siendo tuyo. '
         : '')
-    + (quedo >= meta
-        ? 'Vas por encima de los ' + fmt(meta) + ' que necesitas ahorrar al mes.'
-        : quedo > 0
-          ? 'Te faltaron ' + fmt(meta-quedo) + ' para el ritmo de la meta.'
-          : 'Gastaste mas de lo que entro. La diferencia salio del ahorro.')
+    + (guardado >= meta
+        ? 'Por encima de los ' + fmt(meta) + ' que necesitas al mes para el telefono.'
+        : 'Para el telefono necesitas ' + fmt(meta) + ' al mes; este mes guardaste ' + fmt(guardado) + '.')
+    + (quedo < 0 ? ' Ojo: gastaste mas de lo que entro, la diferencia salio de tus cuentas.' : '')
     + '</div>'
   );
 }

@@ -19,6 +19,7 @@ export const CATEGORIAS_VALIDAS = [
   'Bienestar',
   'Transferencia',
   'Ahorro e inversion',
+  'Deuda',
   'Compras',
   'Retiro',
   'Otros',
@@ -138,6 +139,12 @@ const REGLAS: Array<{ keywords: string[]; categoria: Categoria }> = [
       'TOMMY', 'PRIMARK', 'BOUTIQUE',
     ],
     categoria: 'Ropa',
+  },
+
+  // Pagos de prestamo y tarjeta
+  {
+    keywords: ['CUOTA PRESTAMO', 'PRESTAMO', 'ABONO TARJETA', 'PAGO TARJETA'],
+    categoria: 'Deuda',
   },
 
   // Ahorro e inversion: sale de la cuenta pero NO es gasto, el dinero sigue
