@@ -534,8 +534,17 @@ body{background:var(--bg);color:var(--text);font-family:'Chivo','Helvetica Neue'
   <!-- Selector de mes -->
   <div id="an-mes-chips" style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
   <!-- Breakdown por categoría -->
+  <div class="sec">Ahorro del mes</div>
+  <div id="an-ahorro"></div>
+
   <div class="sec">Ritmo del mes</div>
   <div id="an-ritmo"></div>
+
+  <div class="sec">Quincena 1 vs quincena 2</div>
+  <div id="an-quincenas"></div>
+
+  <div class="sec">Contra el mes anterior</div>
+  <div id="an-comparativa"></div>
 
   <div class="sec">Fijos vs variables</div>
   <div id="an-fijos"></div>
@@ -2052,7 +2061,10 @@ function renderAnalytics(){
   renderAnMesChips();
 
   // Tableros
+  anAhorro(txs, filtroISO);
   anRitmo(txs, filtroISO);
+  anQuincenas(txs);
+  anComparativa(filtroISO);
   anFijosVsVariables(txs, filtroISO);
   anPorCuenta(txs);
   anTopComercios(txs);
@@ -2096,6 +2108,126 @@ function anMesIdx(iso){
 }
 
 // ¿Voy rapido o voy bien? Gasto por dia y a donde llego si sigo asi.
+// Lo unico que importa para el telefono: cuanto quedo al final del mes.
+// Si el mes no tiene entradas registradas usamos la nomina, que es fija.
+function anAhorro(txs, iso){
+  var el = document.getElementById('an-ahorro');
+  if(!el) return;
+
+  var gastado = txs.reduce(function(a,g){ return a+(g.monto||0); }, 0);
+  var entradas = (state.entradasMes||[]).reduce(function(a,e){ return a+(e.monto||0); }, 0);
+  var esMesActual = iso === anGetMesISO();
+  var ingreso = (esMesActual && entradas > 0) ? entradas : INGRESO_QUINC*2;
+  var estimado = !(esMesActual && entradas > 0);
+
+  var ahorro = ingreso - gastado;
+  var meta = Math.ceil((META.precio - META.deRegalia - Math.max(0,(state.saldos.qik||0)-PISO_QIK)) / 3);
+  var pct = ingreso > 0 ? Math.round(ahorro/ingreso*100) : 0;
+  var color = ahorro >= meta ? 'var(--green)' : ahorro > 0 ? 'var(--amber)' : 'var(--red)';
+
+  el.innerHTML = anCaja(
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">'
+    + '<div><div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">Te quedo</div>'
+    + '<div style="font-size:30px;font-weight:500;font-family:\'Chivo Mono\',ui-monospace,monospace;letter-spacing:-1px;line-height:1.1;color:' + color + '">' + fmt(ahorro) + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">del ingreso</div>'
+    + '<div style="font-size:15px;font-weight:700;font-family:\'Chivo Mono\',ui-monospace,monospace">' + pct + '%</div></div>'
+    + '</div>'
+    + anBarra(Math.max(0, Math.min(100, Math.round(ahorro/Math.max(1,meta)*100))), color)
+    + anFila('Entro' + (estimado ? ' (nomina)' : ''), fmt(ingreso), 'var(--green)')
+    + anFila('Salio', '-' + fmt(gastado), 'var(--red)')
+    + anFila('Necesitas para el telefono', fmt(meta) + '/mes', 'var(--muted)')
+    + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
+    + (ahorro >= meta
+        ? 'Vas por encima de lo que necesitas. Lo que sobre acelera la meta.'
+        : ahorro > 0
+          ? 'Te faltaron ' + fmt(meta-ahorro) + ' para el ritmo de la meta este mes.'
+          : 'Gastaste mas de lo que entro. Ese mes salio del ahorro.')
+    + '</div>'
+  );
+}
+
+// Cual mitad del mes te cuesta mas. Cobras el 5 y el 20, asi que la primera
+// quincena va del 5 al 19 y la segunda del 20 al 4.
+function anQuincenas(txs){
+  var el = document.getElementById('an-quincenas');
+  if(!el) return;
+  if(!txs.length){ el.innerHTML = '<div class="an-empty">Sin gastos este mes</div>'; return; }
+
+  var q1 = 0, q2 = 0, n1 = 0, n2 = 0;
+  txs.forEach(function(g){
+    var d = new Date(g.timestamp);
+    var dia = Number(d.toLocaleDateString('en-CA',{timeZone:'America/Santo_Domingo'}).slice(8,10));
+    if(dia >= 5 && dia < 20){ q1 += g.monto||0; n1++; } else { q2 += g.monto||0; n2++; }
+  });
+  var tot = q1 + q2;
+  var pct1 = tot > 0 ? Math.round(q1/tot*100) : 0;
+
+  el.innerHTML = anCaja(
+    '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--card)">'
+    + '<div style="width:' + pct1 + '%;background:var(--green)"></div>'
+    + '<div style="width:' + (100-pct1) + '%;background:var(--blue)"></div></div>'
+    + anFila('Del 5 al 19 · ' + n1 + ' tx', fmt(q1) + ' · ' + pct1 + '%', 'var(--green)')
+    + anFila('Del 20 al 4 · ' + n2 + ' tx', fmt(q2) + ' · ' + (100-pct1) + '%', 'var(--blue)')
+    + '<div style="font-size:11px;color:var(--muted);line-height:1.5">'
+    + (Math.abs(pct1-50) < 8
+        ? 'Gastas parejo en las dos mitades del mes.'
+        : pct1 > 50
+          ? 'La primera quincena se lleva mas. Suele pasar cuando el dinero recien entra.'
+          : 'La segunda quincena se lleva mas.')
+    + '</div>'
+  );
+}
+
+// Que subio y que bajo contra el mes pasado, por categoria.
+function anComparativa(iso){
+  var el = document.getElementById('an-comparativa');
+  if(!el) return;
+
+  var pr = iso.split('-');
+  var d = new Date(Number(pr[0]), Number(pr[1])-1, 1);
+  d.setMonth(d.getMonth()-1);
+  var isoPrev = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+
+  var actual = {}, previo = {};
+  (state.historialMes||[]).forEach(function(g){
+    var m = anTsToMes(g.timestamp);
+    var cat = g.categoria || 'Otros';
+    if(m === iso)     actual[cat] = (actual[cat]||0) + (g.monto||0);
+    if(m === isoPrev) previo[cat] = (previo[cat]||0) + (g.monto||0);
+  });
+
+  if(!Object.keys(previo).length){
+    el.innerHTML = '<div class="an-empty">No hay mes anterior con que comparar</div>';
+    return;
+  }
+
+  var cats = Object.keys(actual).concat(Object.keys(previo)).filter(function(v,i,a){ return a.indexOf(v)===i; });
+  var filas = cats.map(function(c){
+    var a = actual[c]||0, b = previo[c]||0;
+    return { cat: c, actual: a, previo: b, dif: a-b };
+  }).filter(function(f){ return Math.abs(f.dif) > 100; })
+    .sort(function(x,y){ return Math.abs(y.dif) - Math.abs(x.dif); })
+    .slice(0, 6);
+
+  if(!filas.length){ el.innerHTML = '<div class="an-empty">Sin cambios importantes contra el mes anterior</div>'; return; }
+
+  var nombrePrev = new Date(isoPrev + '-02').toLocaleDateString('es-DO',{month:'long'});
+
+  el.innerHTML = anCaja(
+    '<div style="font-size:11px;color:var(--muted);font-family:\'Chivo Mono\',ui-monospace,monospace">vs ' + nombrePrev + '</div>'
+    + filas.map(function(f){
+        var sube = f.dif > 0;
+        var flecha = sube ? '&#9650;' : '&#9660;';
+        var color = sube ? 'var(--red)' : 'var(--green)';
+        return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">'
+          + '<span style="font-size:12.5px">' + f.cat + '</span>'
+          + '<span style="font-size:12px;font-family:\'Chivo Mono\',ui-monospace,monospace;color:' + color + ';white-space:nowrap">'
+          +   flecha + ' ' + fmt(Math.abs(f.dif)) + '</span>'
+          + '</div>';
+      }).join('')
+  );
+}
+
 function anRitmo(txs, iso){
   var el = document.getElementById('an-ritmo');
   if(!el) return;
