@@ -75,10 +75,16 @@ async function descontarSaldo(
   const saldoActual = actual ? Number(actual.monto) : 0
   const nuevoSaldo  = saldoActual - monto
 
+  // El saldo nuevo se sella con la hora de la TRANSACCION, no con la de ahora.
+  //
+  // Sellarlo con new Date() rompia la corrida: al procesar varios gastos
+  // seguidos, el primero dejaba un saldo con hora actual y todos los demas
+  // del mismo dia quedaban "antes" de el, asi que la guardia de arriba los
+  // saltaba por creerlos ya contabilizados. Solo se descontaba el primero.
   await sb.from('saldos').insert({
     cuenta,
     monto:     nuevoSaldo,
-    timestamp: new Date(),
+    timestamp: tsTransaccion,
   })
 }
 
@@ -383,6 +389,11 @@ export async function GET(req: NextRequest) {
           console.error(`[cron/emails] ${errMsg}`)
           continue
         }
+
+        // Del mas viejo al mas nuevo: el saldo se va sellando con la hora de
+        // cada transaccion, asi que procesarlas fuera de orden haria que una
+        // anterior quedara por detras del saldo ya escrito y se saltara.
+        correos.sort((a, b) => (a.fecha?.getTime() ?? 0) - (b.fecha?.getTime() ?? 0))
 
         for (const correo of correos) {
           const id = correo.messageId
