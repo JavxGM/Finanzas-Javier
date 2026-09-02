@@ -90,6 +90,11 @@ async function descontarSaldo(
 
 // ── Helpers de parseo ─────────────────────────────────────────────────────────
 
+// Tasa para convertir compras en dolares. Sale del deposito real de Javier a
+// Vantage: RD$5,938.21 se convirtieron en US$100. Es aproximada, y por eso los
+// gastos convertidos quedan marcados con su monto original en dolares.
+const TASA_USD = 59.38
+
 function parseAmount(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
 }
@@ -133,9 +138,20 @@ function parseBHD(bodyText: string, _attachmentText: string, cuenta: string): Pa
   // Ignorar transacciones rechazadas o reversadas — no representan un gasto real.
   if (/Rechazada|Reversada/i.test(text)) return SKIPPED
 
-  // Ignorar transacciones en moneda extranjera (US, EUR, etc.) — la app trabaja en RD$.
-  // La celda de moneda contiene "US" cuando es dólares y "RD" cuando es pesos dominicanos.
-  if (/\bUS\s+\$[\d,]+\.\d{2}/.test(text) && !/\bRD\s+\$[\d,]+\.\d{2}/.test(text)) return SKIPPED
+  // Compras en dolares: el banco te las debita en pesos, asi que ignorarlas
+  // hacia que el saldo se fuera desviando en silencio. Se convierten con una
+  // tasa fija y quedan marcadas para que se sepa que son aproximadas.
+  const usdMatch = text.match(/\bUS\s+\$([\d,]+\.\d{2})/)
+  if (usdMatch && !/\bRD\s+\$[\d,]+\.\d{2}/.test(text)) {
+    const usd = parseAmount(usdMatch[1])
+    const rowUSD = text.match(/\$[\d,]+\.?\d*\s+(.+?)\s+(?:Aprobada|Pendiente)/i)
+    const nombre = rowUSD ? rowUSD[1].trim().slice(0, 44) : 'Compra en dolares'
+    return {
+      monto:    Math.round(usd * TASA_USD * 100) / 100,
+      comercio: `${nombre} (US$${usd})`,
+      cuenta,
+    }
+  }
 
   // Monto: moneda (RD) y valor ($X,XXX.XX) están en celdas HTML separadas.
   // Tras stripHtml quedan como "RD $1,850.00" con un espacio entre ellos.
