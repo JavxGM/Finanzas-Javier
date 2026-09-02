@@ -28,12 +28,20 @@ async function registrarQuincena(
   const quincena = dia === 5 ? 'Q1' : 'Q2'
   const marca = `nomina:${hoyISO}`
 
-  const { data: yaEsta } = await sb
+  // No basta con buscar la marca de HOY: la empresa a veces adelanta el pago
+  // (paso el 2 de septiembre en vez del 5), y esa quincena ya quedo anotada
+  // con otra fecha. Si hubo una en los ultimos 10 dias, esta ya se cobro.
+  const hace10dias = new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString()
+  const { data: reciente } = await sb
     .from('entradas')
-    .select('id')
-    .eq('descripcion', marca)
-    .maybeSingle()
-  if (yaEsta) return { registrada: false, motivo: 'ya estaba registrada' }
+    .select('id, descripcion, timestamp')
+    .eq('tipo', 'Quincena')
+    .gte('timestamp', hace10dias)
+    .limit(1)
+
+  if (reciente && reciente.length) {
+    return { registrada: false, motivo: 'ya hubo una quincena en los ultimos 10 dias' }
+  }
 
   const { error } = await sb.from('entradas').insert({
     descripcion: marca,
