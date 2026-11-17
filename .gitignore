@@ -9,3 +9,9 @@ node_modules/
 .env*.tmp
 .env.debug
 credentials.local.md
+
+# Volcados de depuracion y archivos temporales
+*email-debug*.json
+C:*
+*.local.md
+debug-*.json
